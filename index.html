@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block body %}
+<h1>Institutions</h1>
+<table><tr><td>
+  <form method=post action="/">
+  <input type="hidden" name="action" value="add_institution">
+  Add Institution &gt;&gt;<br>
+  <input type=text name=institution>
+  <input type="submit" style="visibility: hidden;" />
+  </form>
+</td><td>
+  Go to Institution<br>
+  <table>
+  {% for item in institutions %}
+    <tr><td><a href="{{ item.url }}">{{ item.name }}</a></td></tr> 
+  {% endfor %}
+  </table>
+</td></tr></table>
+<h1>Global Admins</h1>
+<table><tr><td>
+  <form method=post action="/">
+  <input type="hidden" name="action" value="add_admin">
+  Add Administrator Email &gt;&gt;<br>
+  <input type=text name=administrator>
+  <input type="submit" style="visibility: hidden;" />
+  </form>
+</td><td>
+  <form method=post action="/">
+  <input type="hidden" name="action" value="delete_admin">
+  <select name="administrator" multiple>
+  {% for item in administrators %}
+    <option value="{{ item }}">{{ item }}</option> 
+  {% endfor %}
+  </select>
+  <input type="submit" name=delete value="Delete">
+  </form>
+</td></tr></table>
+
+{% endblock body %}

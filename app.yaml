@@ -1,0 +1,25 @@
+application: selectives-web
+version: 1
+runtime: python27
+api_version: 1
+threadsafe: true
+
+handlers:
+- url: /stylesheets
+  static_dir: stylesheets
+- url: /.*
+  script: index.application 
+
+# Note: The above line means:
+# use the script index.py and the variable called: application
+# Also you can use RE groups in the url and refer to them in script.
+# Example:
+# - url: /foo/(.*)
+#   script: \1.catalog.app
+
+
+libraries:
+- name: webapp2
+  version: latest
+- name: jinja2
+  version: latest

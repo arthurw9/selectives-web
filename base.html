@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+{% autoescape true %}
+<html>
+  <head>
+    <title>Selectives Web</title>
+    <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
+  </head>
+  <body>
+    <table width=100%><tr><td align=left><h1>Selectives Web</h1></td>
+    <td align=right>{{ user.email() }} <a href="{{ logout_url }}">logout</a></td>
+    </tr></table>
+    <hr>
+    {% block body %} {% endblock %}
+  </body>
+</html>
+{% endautoescape %}
+
