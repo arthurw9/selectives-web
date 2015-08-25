@@ -45,6 +45,10 @@ class Index(webapp2.RequestHandler):
           {'message': 'added institution: ' + name}))
       return
 
+    self.redirect("/?%s" % urllib.urlencode(
+          {'message': 'unrecognized command: %s' % action}))
+    return
+
   def get(self):
     auth = authorizer.Authorizer()
     if auth.ShouldRedirect(self):

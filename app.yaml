@@ -7,6 +7,8 @@ threadsafe: true
 handlers:
 - url: /stylesheets
   static_dir: stylesheets
+- url: /institution?.*
+  script: institution.application
 - url: /.*
   script: index.application 
 

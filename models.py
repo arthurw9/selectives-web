@@ -2,23 +2,30 @@ from google.appengine.ext import ndb
 
 GLOBAL_KEY = ndb.Key("global", "global")
 
+
 def global_admin_key(email):
   return ndb.Key("global", "global", Admin, email);
 
+
+def admin_key_partial(institution):
+  return ndb.Key('InstitutionKey', institution);
+
+
 def admin_key(institution, email):
-  return ndb.Key("Institution", institution, Admin, email);
+  return ndb.Key('InstitutionKey', institution, Admin, email);
+
 
 class Admin(ndb.Model):
   """Administrator email address."""
   email = ndb.StringProperty()
 
   @classmethod
-  def store(cls, institution, email_addr):
+  def storeInstitutionAdmin(cls, institution, email_addr):
     key = admin_key(institution, email_addr)
     Admin(email=email_addr, key=key).put();
 
   @classmethod
-  def delete(cls, institution, email_addr):
+  def deleteInstitutionAdmin(cls, institution, email_addr):
     admin_key(institution, email_addr).delete()
 
   @classmethod
@@ -34,8 +41,14 @@ class Admin(ndb.Model):
   def FetchAllGlobalAdmins(cls):
     return Admin.query(ancestor=GLOBAL_KEY).fetch()
 
+  @classmethod
+  def FetchAllInstitutionAdmins(cls, institution):
+    return Admin.query(ancestor=admin_key_partial(institution)).fetch()
+
+
 def institution_key(name):
   return ndb.Key("global", "global", Institution, name)
+
 
 class Institution(ndb.Model):
   """Institution name"""
@@ -48,3 +61,27 @@ class Institution(ndb.Model):
   @classmethod
   def FetchAllInstitutions(cls):
     return Institution.query(ancestor=GLOBAL_KEY).fetch()
+
+
+def session_key_partial(institution):
+  return ndb.Key("InstitutionKey", institution)
+
+def session_key(institution, session_name):
+  return ndb.Key(Session, session_name,
+                 parent=ndb.Key("InstitutionKey", institution))
+
+
+class Session(ndb.Model):
+  """Session name"""
+  name = ndb.StringProperty()
+
+  @classmethod
+  def FetchAllSessions(cls, institution):
+    return Session.query(
+        ancestor=session_key_partial(institution)).fetch()
+
+  @classmethod
+  def store(cls, institution, session_name):
+    session = Session(name=session_name)
+    session.key = session_key(institution, session_name) 
+    session.put()
