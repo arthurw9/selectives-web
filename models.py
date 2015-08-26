@@ -99,7 +99,11 @@ class Dayparts(ndb.Model):
 
   @classmethod
   def fetch(cls, institution, session):
-    return dayparts_key(institution, session).get().data
+    dayparts = dayparts_key(institution, session).get()
+    if dayparts:
+      return dayparts.data
+    else:
+      return ''
 
   @classmethod
   def store(cls, institution, session_name, dayparts_data):
