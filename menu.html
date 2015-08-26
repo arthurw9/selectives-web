@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block body %}
+
+<table><tr><td width=15% valign='top' style="border-right: 1px solid black; padding: 5px;">
+  <p><a href="/dayparts?{{ session_query }}">Dayparts</a></p>
+  <p><a href="/classes?{{ session_query }}">Classes</a></p>
+  <p><a href="/students?{{ session_query }}">Students</a></p>
+  <p><a href="/requirements?{{ session_query }}">Requirements</a></p>
+  <p><a href="/preferences?{{ session_query }}">Preferences</a></p>
+  <p><a href="/class_demand?{{ session_query }}">Class Demand</a></p>
+  <p><a href="/student_happiness?{{ session_query }}">Student Happiness</a></p>
+</td>
+<td valign='top' width=85%>
+  {% block session_body %} {% endblock %}
+</td></tr></table>
+
+{% endblock body %}

@@ -66,7 +66,7 @@ class Institution(webapp2.RequestHandler):
                                'session': session.name})
       sessions_and_urls.append(
           {'name': session.name,
-           'url': ('/session?%s' % args)})
+           'url': ('/dayparts?%s' % args)})
 
     message = self.request.get('message')
 

@@ -1,0 +1,14 @@
+{% extends 'menu.html' %}
+{% block session_body %}
+
+<h3>Dayparts</h3>
+<form method=post>
+<input type=hidden name="institution" value="{{ institution }}" />
+<input type=hidden name="session" value="{{ session }}" />
+<textarea name=dayparts>
+{{ dayparts }}
+</textarea>
+<br />
+<input type=submit />
+</form>
+{% endblock %}

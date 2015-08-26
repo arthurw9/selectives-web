@@ -85,3 +85,24 @@ class Session(ndb.Model):
     session = Session(name=session_name)
     session.key = session_key(institution, session_name) 
     session.put()
+
+
+def dayparts_key(institution, session):
+  return ndb.Key("InstitutionKey", institution,
+                 Session, session,
+                 Dayparts, "dayparts")
+
+
+class Dayparts(ndb.Model):
+  """Examples: Monday AM, or M-W-F 8am-9am"""
+  data = ndb.StringProperty()
+
+  @classmethod
+  def fetch(cls, institution, session):
+    return dayparts_key(institution, session).get().data
+
+  @classmethod
+  def store(cls, institution, session_name, dayparts_data):
+    dayparts = Dayparts(data = dayparts_data)
+    dayparts.key = dayparts_key(institution, session_name)
+    dayparts.put()
