@@ -2,6 +2,13 @@
 {% block session_body %}
 
 <h3>Dayparts</h3>
+<table width='50%'><tr><td>
+TIP: Each daypart should be separate and not overlap with others.
+Dayparts like M-W-F 8-9am are fine, but then don't also add 
+Friday 8am-9am because it overlaps. When in doubt it's better to keep
+everything separate.  You can always add multiple dayparts to a class
+schedule.  Enter a list of simple strings below.</p>
+</td></tr></table>
 <form method=post>
 <input type=hidden name="institution" value="{{ institution }}" />
 <input type=hidden name="session" value="{{ session }}" />

@@ -7,10 +7,9 @@
   </head>
   <body>
     <table width=100%><tr>
-      <td align=left><h1>Selectives Web</h1></td>
+      <td align=left><h1>{{ institution }} {{ session }} Selectives Web</h1></td>
       <td align=right>{{ user.email() }} <a href="{{ logout_url }}">logout</a></td>
     </tr></table>
-    {{ institution }} {{ session }}
     <hr>
     {% block body %} {% endblock %}
   </body>
