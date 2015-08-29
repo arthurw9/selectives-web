@@ -11,7 +11,7 @@
       {# to do: determine if we are an institution admin or a 
          global admin before displaying this navigation. #}
       {% if true %} <a href="/">home</a> {% endif %}
-      {% if true %} <a href="/institution?{{ session_query }}">{{ institution }}</a> {% endif %}</td>
+      {% if session_query %} <a href="/institution?{{ session_query }}">{{ institution }}</a> {% endif %}</td>
       <td align=right>{{ user.email() }} <a href="{{ logout_url }}">logout</a></td>
     </tr></table>
     <hr>
