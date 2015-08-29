@@ -110,3 +110,29 @@ class Dayparts(ndb.Model):
     dayparts = Dayparts(data = dayparts_data)
     dayparts.key = dayparts_key(institution, session_name)
     dayparts.put()
+
+
+def classes_key(institution, session):
+  return ndb.Key("InstitutionKey", institution,
+                 Session, session,
+                 Classes, "classes")
+
+
+class Classes(ndb.Model):
+  """List of classes in yaml format."""
+  data = ndb.StringProperty()
+
+  @classmethod
+  def fetch(cls, institution, session):
+    classes = classes_key(institution, session).get()
+    if classes:
+      return classes.data
+    else:
+      return ''
+
+  @classmethod
+  def store(cls, institution, session_name, classes_data):
+    classes = Classes(data = classes_data)
+    classes.key = classes_key(institution, session_name)
+    classes.put()
+

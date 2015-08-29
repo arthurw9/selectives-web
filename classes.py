@@ -16,33 +16,18 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 
 class Parser(object):
 
-  def __init__(self, dayparts):
-    self.string = dayparts
-    self.yaml = yaml.load(dayparts.lower())
-
-  def isValid(self):
-    if not isinstance(self.yaml, list):
-      err_msg = "# Dayparts should be a list not %s\n" % type(self.yaml)
-      self.string = err_msg + self.string
-      return False
-    for d in self.yaml:
-      if not isinstance(d, str):
-        err_msg = "# %s should be a string not %s\n" % (d, type(d))
-        self.string = err_msg + self.string
-        return False
-    return True
+  def __init__(self, classes):
+    self.string = classes
+    self.yaml = yaml.load(classes.lower())
 
   def normalize(self):
-    if self.isValid():
-      return yaml.dump(self.yaml, default_flow_style=False)
-    else:
-      return self.string
+    return yaml.dump(self.yaml, default_flow_style=False)
 
 
-class Dayparts(webapp2.RequestHandler):
+class Classes(webapp2.RequestHandler):
 
   def RedirectToSelf(self, institution, session, message):
-    self.redirect("/dayparts?%s" % urllib.urlencode(
+    self.redirect("/classes?%s" % urllib.urlencode(
         {'message': message, 
          'institution': institution,
          'session': session}))
@@ -59,12 +44,12 @@ class Dayparts(webapp2.RequestHandler):
     session = self.request.get("session")
     if not session:
       logging.fatal("no session")
-    dayparts = self.request.get("dayparts")
+    classes = self.request.get("classes")
     if not session:
-      logging.fatal("no dayparts")
-    dayparts = str(Parser(dayparts).normalize())
-    models.Dayparts.store(institution, session, dayparts)
-    self.RedirectToSelf(institution, session, "saved dayparts")
+      logging.fatal("no classes")
+    classes = str(Parser(classes).normalize())
+    models.Classes.store(institution, session, classes)
+    self.RedirectToSelf(institution, session, "saved classes")
 
   def get(self):
     auth = authorizer.Authorizer()
@@ -83,13 +68,21 @@ class Dayparts(webapp2.RequestHandler):
     message = self.request.get('message')
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
-    dayparts = models.Dayparts.fetch(institution, session)
-    if not dayparts:
-      dayparts = '\n'.join([
+    classes = models.Classes.fetch(institution, session)
+    if not classes:
+      classes = '\n'.join([
           "# Sample data. Lines with leading # signs are comments.",
           "# Change the data below.",
-          "- monday am",
-          "- Tuesday pm",])
+          "- name: basket weaving",
+          "  lead: mr. brown",
+          "  size: 25 # max number of students",
+          "  schedule:",
+          "    - when: monday A",
+          "      room: 13",
+          "    - when: thursday B",
+          "      room: 13",
+          "  prerequisites:",
+          "    - grade: 6"])
 
     template_values = {
       'logout_url': logout_url,
@@ -98,13 +91,13 @@ class Dayparts(webapp2.RequestHandler):
       'session' : session,
       'message': message,
       'session_query': session_query,
-      'dayparts': dayparts,
+      'classes': classes,
       'self': self.request.uri,
     }
-    template = JINJA_ENVIRONMENT.get_template('dayparts.html')
+    template = JINJA_ENVIRONMENT.get_template('classes.html')
     self.response.write(template.render(template_values))
 
 
 application = webapp2.WSGIApplication([
-  ('/dayparts', Dayparts),
+  ('/classes', Classes),
 ], debug=True)

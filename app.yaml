@@ -11,6 +11,8 @@ handlers:
   script: institution.application
 - url: /dayparts?.*
   script: dayparts.application
+- url: /classes?.*
+  script: classes.application
 - url: /.*
   script: index.application 
 
