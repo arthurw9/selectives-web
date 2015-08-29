@@ -49,6 +49,10 @@ class Index(webapp2.RequestHandler):
           {'message': 'unrecognized command: %s' % action}))
     return
 
+  def institutionUrl(self, institution_name):
+    args = urllib.urlencode({'institution': institution_name})
+    return '/institution?%s' % args
+
   def get(self):
     auth = authorizer.Authorizer()
     if auth.ShouldRedirect(self):
@@ -61,10 +65,9 @@ class Index(webapp2.RequestHandler):
     institutions = models.Institution.FetchAllInstitutions()
     institutions_and_urls = []
     for institution in institutions:
-      args = urllib.urlencode({'institution': institution.name})
       institutions_and_urls.append(
           {'name': institution.name,
-           'url': ('/institution?%s' % args)})
+           'url': self.institutionUrl(institution.name)})
 
     message = self.request.get('message')
 
