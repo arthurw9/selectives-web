@@ -13,6 +13,8 @@ handlers:
   script: dayparts.application
 - url: /classes?.*
   script: classes.application
+- url: /students?.*
+  script: students.application
 - url: /.*
   script: index.application 
 

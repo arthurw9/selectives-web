@@ -136,3 +136,27 @@ class Classes(ndb.Model):
     classes.key = classes_key(institution, session_name)
     classes.put()
 
+
+def students_key(institution, session):
+  return ndb.Key("InstitutionKey", institution,
+                 Session, session,
+                 Students, "students")
+
+
+class Students(ndb.Model):
+  """List of students in yaml format."""
+  data = ndb.StringProperty()
+
+  @classmethod
+  def fetch(cls, institution, session):
+    students = students_key(institution, session).get()
+    if students:
+      return students.data
+    else:
+      return ''
+
+  @classmethod
+  def store(cls, institution, session_name, students_data):
+    students = Students(data = students_data)
+    students.key = students_key(institution, session_name)
+    students.put()
