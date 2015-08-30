@@ -98,20 +98,28 @@ def serving_session_key(institution):
 class ServingSession(ndb.Model):
   """Which session is currently serving. Empty if none."""
   session_name = ndb.StringProperty()
+  login_type = ndb.StringProperty()
 
   @classmethod
   def fetch(cls, institution):
-    session_name = serving_session_key(institution).get()
-    if session_name:
-      return session_name.session_name
-    else:
-      return ''
+    ss = serving_session_key(institution).get()
+    if ss:
+      return ss
+    ss = ServingSession()
+    ss.key = serving_session_key(institution)
+    return ss
 
   @classmethod
-  def store(cls, institution, session_name):
-    serving_session = ServingSession(session_name=session_name)
+  def store(cls, institution, session_name, login_type):
+    serving_session = ServingSession()
+    serving_session.session_name = session_name
+    serving_session.login_type = login_type
     serving_session.key = serving_session_key(institution)
     serving_session.put()
+
+  @classmethod
+  def delete(cls, institution):
+    serving_session_key(institution).delete()
 
 
 def dayparts_key(institution, session):

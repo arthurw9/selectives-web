@@ -58,20 +58,25 @@ class Institution(webapp2.RequestHandler):
 
     if action == "enable_logins":
       name = self.request.get("session")
-      logging.info('enable serving for session: %s from institution: %s' % (name, institution))
-      models.ServingSession.store(institution, name)
+      login_type = self.request.get("login_type")
+      logging.info('enable login: %s for session: %s from institution: %s'
+                    % (login_type, name, institution))
+      models.ServingSession.store(institution, name, login_type)
       self.RedirectToSelf(institution, 'enabled logins for %s' % name)
       return
 
     if action == "disable_logins":
       name = self.request.get("session")
-      logging.info('enable serving for session: %s from institution: %s' % (name, institution))
-      models.ServingSession.store(institution, '')
-      self.RedirectToSelf(institution, 'disabled logins for %s' % name)
+      login_type = self.request.get("login_type")
+      logging.info('disable login: %s for session: %s from institution: %s'
+                   % (login_type, name, institution))
+      models.ServingSession.delete(institution)
+      self.RedirectToSelf(institution, 'disabled logins for %s %s'
+                          % (login_type, name))
       return
 
     name = self.request.get("session")
-    logging.error('Unexpected action %s with session: %s and institution: %s' % ( action, name, institution))
+    logging.error('Unexpected action: %s session: %s institution: %s' % ( action, name, institution))
     return
 
   def get(self):
@@ -91,10 +96,16 @@ class Institution(webapp2.RequestHandler):
     for session in sessions:
       args = urllib.urlencode({'institution': institution,
                                'session': session.name})
+      enabled = serving_session.session_name == session.name
+      preferences_enabled = serving_session.login_type == "preferences"
+      verification_enabled = serving_session.login_type == "verification"
+      preferences_enabled = preferences_enabled and enabled
+      verification_enabled = verification_enabled and enabled
       sessions_and_urls.append(
           {'name': session.name,
            'management_url': ('/dayparts?%s' % args),
-           'enabled': serving_session == session.name,})
+           'verification_enabled': verification_enabled,
+           'preferences_enabled': preferences_enabled,})
 
     message = self.request.get('message')
 
