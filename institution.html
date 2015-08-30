@@ -1,8 +1,30 @@
 {% extends 'base.html' %}
 {% block body %}
+<script>
+function RemoveSession(session_name) {
+  if (!confirm("Are you sure you want to remove session " + session_name)) {
+    return false;
+  }
+  document.getElementById("action").value = "remove_session";
+  document.getElementById("session").value = session_name;
+  document.getElementById("session_form").submit();
+  return false;
+}
+function EnableLogins(session_name, enabled) {
+  if (enabled) {
+    document.getElementById("action").value = "enable_logins";
+  } else {
+    document.getElementById("action").value = "disable_logins";
+  }
+  document.getElementById("session").value = session_name;
+  document.getElementById("session_form").submit();
+  return false;
+}
+</script>
+
 <h1>Sessions</h1>
 <table><tr><td>
-  <form method=post action="/institution">
+  <form method=post>
   <input type="hidden" name="action" value="add_session">
   <input type="hidden" name="institution" value="{{ institution }}">
   Add Session &gt;&gt;<br>
@@ -10,12 +32,20 @@
   <input type="submit" style="visibility: hidden;" />
   </form>
 </td><td>
-  Go to Session<br>
-  <table>
+  <form id="session_form" method=post>
+  <input type="hidden" id="action" name="action" value="">
+  <input type="hidden" name="institution" value="{{ institution }}">
+  <input type="hidden" id="session" name="session" value="">
+  <table border=1><th colspan=2>Session</th><th>Allow Logins</th>
   {% for item in sessions %}
-    <tr><td><a href="{{ item.url }}">{{ item.name }}</a></td></tr> 
+    <tr>
+      <td><a href="{{ item.management_url }}">{{ item.name }}</a></td>
+      <td><a href="" onclick="return RemoveSession('{{ item.name }}');">remove</a></td>
+      <td><input type="checkbox" onchange="return EnableLogins('{{ item.name }}', this.checked);" {% if item.enabled %}checked{% endif %}></td>
+    </tr> 
   {% endfor %}
   </table>
+  </form>
 </td></tr></table>
 <h1>{{ institution }} Admins</h1>
 <table><tr><td>

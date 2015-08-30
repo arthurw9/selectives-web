@@ -86,6 +86,33 @@ class Session(ndb.Model):
     session.key = session_key(institution, session_name) 
     session.put()
 
+  @classmethod
+  def delete(cls, institution, session_name):
+    session_key(institution, session_name).delete()
+
+
+def serving_session_key(institution):
+  return ndb.Key("InstitutionKey", institution, ServingSession, "serving_session")
+
+
+class ServingSession(ndb.Model):
+  """Which session is currently serving. Empty if none."""
+  session_name = ndb.StringProperty()
+
+  @classmethod
+  def fetch(cls, institution):
+    session_name = serving_session_key(institution).get()
+    if session_name:
+      return session_name.session_name
+    else:
+      return ''
+
+  @classmethod
+  def store(cls, institution, session_name):
+    serving_session = ServingSession(session_name=session_name)
+    serving_session.key = serving_session_key(institution)
+    serving_session.put()
+
 
 def dayparts_key(institution, session):
   return ndb.Key("InstitutionKey", institution,
