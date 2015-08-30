@@ -1,0 +1,19 @@
+{% extends 'menu.html' %}
+{% block session_body %}
+
+<h3>Requirements</h3>
+<table width='50%'><tr><td>
+Requirements are required classes for every student or groups of students (for instance all 8th graders).
+Students may be exempt from requirements.
+TIP: Each requirement has applies_to, exempt, class_options.
+</td></tr></table>
+<form method=post>
+<input type=hidden name="institution" value="{{ institution }}" />
+<input type=hidden name="session" value="{{ session }}" />
+<textarea name=requirements>
+{{ requirements }}
+</textarea>
+<br />
+<input type=submit />
+</form>
+{% endblock %}
