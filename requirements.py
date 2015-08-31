@@ -26,8 +26,8 @@ class Parser(object):
       self.string = err_msg + self.string
       return False
     for d in self.yaml:
-      if not isinstance(d, str):
-        err_msg = "# %s should be a string not %s\n" % (d, type(d))
+      if not isinstance(d, dict):
+        err_msg = "# %s should be a dict not %s\n" % (d, type(d))
         self.string = err_msg + self.string
         return False
     return True
