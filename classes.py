@@ -45,7 +45,7 @@ class Classes(webapp2.RequestHandler):
     if not session:
       logging.fatal("no session")
     classes = self.request.get("classes")
-    if not session:
+    if not classes:
       logging.fatal("no classes")
     classes = str(Parser(classes).normalize())
     models.Classes.store(institution, session, classes)
