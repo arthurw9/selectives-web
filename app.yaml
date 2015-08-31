@@ -17,6 +17,10 @@ handlers:
   script: students.application
 - url: /requirements?.*
   script: requirements.application
+- url: /verification?.*
+  script: verification.application
+- url: /preferences?.*
+  script: preferences.application
 - url: /.*
   script: index.application 
 
