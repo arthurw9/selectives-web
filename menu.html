@@ -8,11 +8,20 @@
   <li><a href="/students?{{ session_query }}">Students</a>
   <li><a href="/requirements?{{ session_query }}">Requirements</a>
   <li><a href="/preferences?{{ session_query }}">Preferences</a>
-  <h3>Results</h3>
+
+  <h3>Reports</h3>
+  <li><a href="/un_verified?{{ session_query }}">Never Verified</a>
+  <li><a href="/un_verified?{{ session_query }}">No selected preference</a>
+  <li><a href="/class_demand?{{ session_query }}">Class Demand</a>
+
+  <h3>Schedule</h3>
   <li><a href="/schedule?{{ session_query }}">Student Schedule</a>
   <li><a href="/roster?{{ session_query }}">Class Roster</a>
-  <li><a href="/class_demand?{{ session_query }}">Class Demand</a>
+
+  <h3>Reports</h3>
   <li><a href="/student_happiness?{{ session_query }}">Student Happiness</a>
+  <li><a href="/student_happiness?{{ session_query }}">Students with open dayparts</a>
+  <li><a href="/student_happiness?{{ session_query }}">Overbooked classes</a>
 </td>
 <td valign='top' width=85%>
   {% block session_body %} {% endblock %}
