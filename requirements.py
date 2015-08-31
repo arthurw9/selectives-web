@@ -60,7 +60,7 @@ class Requirements(webapp2.RequestHandler):
     if not session:
       logging.fatal("no session")
     requirements = self.request.get("requirements")
-    if not session:
+    if not requirements:
       logging.fatal("no requirements")
     requirements = str(Parser(requirements).normalize())
     models.Requirements.store(institution, session, requirements)

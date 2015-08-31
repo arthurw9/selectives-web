@@ -60,7 +60,7 @@ class Dayparts(webapp2.RequestHandler):
     if not session:
       logging.fatal("no session")
     dayparts = self.request.get("dayparts")
-    if not session:
+    if not dayparts:
       logging.fatal("no dayparts")
     dayparts = str(Parser(dayparts).normalize())
     models.Dayparts.store(institution, session, dayparts)
