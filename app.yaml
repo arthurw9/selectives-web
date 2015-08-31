@@ -1,4 +1,4 @@
-application: selectives-web
+application: selectives-web-sarah
 version: 1
 runtime: python27
 api_version: 1
@@ -13,6 +13,8 @@ handlers:
   script: dayparts.application
 - url: /classes?.*
   script: classes.application
+- url: /requirements?.*
+  script: requirements.application
 - url: /.*
   script: index.application 
 

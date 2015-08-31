@@ -136,3 +136,27 @@ class Classes(ndb.Model):
     classes.key = classes_key(institution, session_name)
     classes.put()
 
+
+def requirements_key(institution, session):
+  return ndb.Key("InstitutionKey", institution,
+                 Session, session,
+                 Requirements, "requirements")
+
+
+class Requirements(ndb.Model):
+  """Examples: 8th Core, PE"""
+  data = ndb.StringProperty()
+
+  @classmethod
+  def fetch(cls, institution, session):
+    requirements = requirements_key(institution, session).get()
+    if requirements:
+      return requirements.data
+    else:
+      return ''
+
+  @classmethod
+  def store(cls, institution, session_name, requirements_data):
+    requirements = Requirements(data = requirements_data)
+    requirements.key = requirements_key(institution, session_name)
+    requirements.put()
