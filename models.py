@@ -120,7 +120,7 @@ def classes_key(institution, session):
 
 class Classes(ndb.Model):
   """List of classes in yaml format."""
-  data = ndb.StringProperty()
+  data = ndb.TextProperty()
 
   @classmethod
   def fetch(cls, institution, session):
