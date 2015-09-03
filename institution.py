@@ -29,7 +29,7 @@ class Institution(webapp2.RequestHandler):
     action = self.request.get("action");
     if action == "add_admin":
       email = self.request.get("administrator")
-      models.Admin.storeInstitutionAdmin(institution, email)
+      models.Admin.Store(institution, email)
       self.RedirectToSelf(institution, 'added admin %s' % email)
       return
 
@@ -38,7 +38,7 @@ class Institution(webapp2.RequestHandler):
       administrators = self.request.get("administrator", allow_multiple=True)
       for email in administrators:
         msgs.append(email)
-        models.Admin.deleteInstitutionAdmin(institution, email)
+        models.Admin.Delete(institution, email)
       self.RedirectToSelf(institution, 'deleted admins %s' % ','.join(msgs))
       return
 
@@ -86,7 +86,7 @@ class Institution(webapp2.RequestHandler):
       return
 
     institution = self.request.get("institution")
-    administrators = models.Admin.FetchAllInstitutionAdmins(institution)
+    administrators = models.Admin.FetchAll(institution)
     administrators = [x.email for x in administrators]
 
     sessions = models.Session.FetchAllSessions(institution)

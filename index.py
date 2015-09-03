@@ -23,7 +23,7 @@ class Index(webapp2.RequestHandler):
     action = self.request.get("action");
     if action == "add_admin":
       email = self.request.get("administrator")
-      models.Admin.store(email)
+      models.GlobalAdmin.Store(email)
       self.redirect("/?%s" % urllib.urlencode(
           {'message': 'added user: ' + email}))
       return
@@ -33,7 +33,7 @@ class Index(webapp2.RequestHandler):
       administrators = self.request.get("administrator", allow_multiple=True)
       for email in administrators:
         msgs.append(email)
-        models.Admin.delete(email)
+        models.GlobalAdmin.Delete(email)
       self.redirect("/?%s" % urllib.urlencode(
           {'message': 'delete users: ' + ','.join(msgs)}))
       return
@@ -59,7 +59,7 @@ class Index(webapp2.RequestHandler):
       auth.Redirect(self)
       return
 
-    administrators = models.Admin.FetchAllGlobalAdmins()
+    administrators = models.GlobalAdmin.FetchAll()
     administrators = [x.email for x in administrators]
 
     institutions = models.Institution.FetchAllInstitutions()
