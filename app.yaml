@@ -13,8 +13,14 @@ handlers:
   script: dayparts.application
 - url: /classes?.*
   script: classes.application
+- url: /students?.*
+  script: students.application
 - url: /requirements?.*
   script: requirements.application
+- url: /verification?.*
+  script: verification.application
+- url: /preferences?.*
+  script: preferences.application
 - url: /.*
   script: index.application 
 

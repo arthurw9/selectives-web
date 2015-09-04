@@ -1,8 +1,41 @@
 {% extends 'base.html' %}
 {% block body %}
+<script>
+function RemoveSession(session_name) {
+  if (!confirm("Are you sure you want to remove session " + session_name)) {
+    return false;
+  }
+  document.getElementById("action").value = "remove_session";
+  document.getElementById("session").value = session_name;
+  document.getElementById("session_form").submit();
+  return false;
+}
+
+function EnableLogins(session_name, login_type, enabled) {
+  if (enabled) {
+    document.getElementById("action").value = "enable_logins";
+  } else {
+    document.getElementById("action").value = "disable_logins";
+  }
+  document.getElementById("login_type").value = login_type;
+  document.getElementById("session").value = session_name;
+  document.getElementById("session_form").submit();
+  return false;
+}
+
+function TestLogin(session_name, login_type) {
+  url = "/" + login_type + "?session=" + 
+        encodeURIComponent(session_name) +
+        "&institution=" +
+        encodeURIComponent('{{ institution }}');
+  window.location.href = url;
+  return false;
+}
+</script>
+
 <h1>Sessions</h1>
 <table><tr><td>
-  <form method=post action="/institution">
+  <form method=post>
   <input type="hidden" name="action" value="add_session">
   <input type="hidden" name="institution" value="{{ institution }}">
   Add Session &gt;&gt;<br>
@@ -10,12 +43,33 @@
   <input type="submit" style="visibility: hidden;" />
   </form>
 </td><td>
-  Go to Session<br>
-  <table>
+  <form id="session_form" method=post>
+  <input type="hidden" id="action" name="action" value="">
+  <input type="hidden" name="institution" value="{{ institution }}">
+  <input type="hidden" id="session" name="session" value="">
+  <input type="hidden" id="login_type" name="login_type" value="">
+  <table border=1>
+  <th colspan=2>Session</th><th colspan=2>Student Logins</th>
   {% for item in sessions %}
-    <tr><td><a href="{{ item.url }}">{{ item.name }}</a></td></tr> 
+    <tr>
+      <td class="left-right-padding">
+        <a href="" onclick="return RemoveSession('{{ item.name }}');">remove</a></td>
+      <td  class="left-right-padding">
+        <a href="{{ item.management_url }}">{{ item.name }}</a></td>
+      <td  class="left-right-padding">
+        <input type="checkbox" 
+               onchange="return EnableLogins('{{ item.name }}', 'verification', this.checked);"
+               {% if item.verification_enabled %}checked{% endif %}>
+        <a href="" onclick="return TestLogin('{{ item.name }}', 'verification');">Login Verification</a></td>
+      <td  class="left-right-padding">
+        <input type="checkbox" 
+               onchange="return EnableLogins('{{ item.name }}', 'preferences', this.checked);"
+               {% if item.preferences_enabled %}checked{% endif %}>
+        <a href="" onclick="return TestLogin('{{ item.name }}', 'preferences');">Preferences</a></td>
+    </tr>
   {% endfor %}
   </table>
+  </form>
 </td></tr></table>
 <h1>{{ institution }} Admins</h1>
 <table><tr><td>

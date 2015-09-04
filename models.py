@@ -86,6 +86,41 @@ class Session(ndb.Model):
     session.key = session_key(institution, session_name) 
     session.put()
 
+  @classmethod
+  def delete(cls, institution, session_name):
+    session_key(institution, session_name).delete()
+
+
+def serving_session_key(institution):
+  return ndb.Key("InstitutionKey", institution, ServingSession, "serving_session")
+
+
+class ServingSession(ndb.Model):
+  """Which session is currently serving. Empty if none."""
+  session_name = ndb.StringProperty()
+  login_type = ndb.StringProperty()
+
+  @classmethod
+  def fetch(cls, institution):
+    ss = serving_session_key(institution).get()
+    if ss:
+      return ss
+    ss = ServingSession()
+    ss.key = serving_session_key(institution)
+    return ss
+
+  @classmethod
+  def store(cls, institution, session_name, login_type):
+    serving_session = ServingSession()
+    serving_session.session_name = session_name
+    serving_session.login_type = login_type
+    serving_session.key = serving_session_key(institution)
+    serving_session.put()
+
+  @classmethod
+  def delete(cls, institution):
+    serving_session_key(institution).delete()
+
 
 def dayparts_key(institution, session):
   return ndb.Key("InstitutionKey", institution,
@@ -135,6 +170,31 @@ class Classes(ndb.Model):
     classes = Classes(data = classes_data)
     classes.key = classes_key(institution, session_name)
     classes.put()
+
+
+def students_key(institution, session):
+  return ndb.Key("InstitutionKey", institution,
+                 Session, session,
+                 Students, "students")
+
+
+class Students(ndb.Model):
+  """List of students in yaml format."""
+  data = ndb.StringProperty()
+
+  @classmethod
+  def fetch(cls, institution, session):
+    students = students_key(institution, session).get()
+    if students:
+      return students.data
+    else:
+      return ''
+
+  @classmethod
+  def store(cls, institution, session_name, students_data):
+    students = Students(data = students_data)
+    students.key = students_key(institution, session_name)
+    students.put()
 
 
 def requirements_key(institution, session):
