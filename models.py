@@ -161,7 +161,7 @@ class ServingSession(ndb.Model):
 
 class Dayparts(ndb.Model):
   """Examples: Monday AM, or M-W-F 8am-9am"""
-  data = ndb.StringProperty()
+  data = ndb.TextProperty()
 
   @classmethod
   def dayparts_key(cls, institution, session):
@@ -211,7 +211,7 @@ class Classes(ndb.Model):
 
 class Students(ndb.Model):
   """List of students in yaml format."""
-  data = ndb.StringProperty()
+  data = ndb.TextProperty()
 
   @classmethod
   def students_key(cls, institution, session):
@@ -236,7 +236,7 @@ class Students(ndb.Model):
 
 class Requirements(ndb.Model):
   """Examples: 8th Core, PE"""
-  data = ndb.StringProperty()
+  data = ndb.TextProperty()
 
   @classmethod
   def requirements_key(cls, institution, session):
