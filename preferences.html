@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block body %}
+
+<h3>Preferences</h3>
+
+<form method=post>
+<input type=hidden name="institution" value="{{ institution }}" />
+<input type=hidden name="session" value="{{ session }}" />
+<table><tr><th>Don't Want</th><th></th><th>Don't Care</th><th></th><th>Want</th></tr>
+<tr>
+<td><select name="DontWant" multiple>
+<option value="a">a</option>
+<option value="b">b</option>
+<option value="c">c</option>
+</select></td>
+<td><button>&lt;&lt;</button><br><button>&gt;&gt;</button></td>
+<td><select name="DontCare" multiple>
+<option value="a">a</option>
+<option value="b">b</option>
+<option value="c">c</option>
+</select></td>
+<td><button>&lt;&lt;</button><br><button>&gt;&gt;</button></td>
+<td><select name="Want" multiple>
+<option value="a">a</option>
+<option value="b">b</option>
+<option value="c">c</option>
+</select></td>
+</tr></table>
+{% for item in administrators %}
+  <option value="{{ item }}">{{ item }}</option> 
+{% endfor %}
+
+<button>Reset</button>
+</form>
+{% endblock %}

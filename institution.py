@@ -102,16 +102,20 @@ class Institution(webapp2.RequestHandler):
     for session in sessions:
       args = urllib.urlencode({'institution': institution,
                                'session': session.name})
-      enabled = serving_session.session_name == session.name
       preferences_enabled = serving_session.login_type == "preferences"
       verification_enabled = serving_session.login_type == "verification"
-      preferences_enabled = preferences_enabled and enabled
-      verification_enabled = verification_enabled and enabled
+      schedule_enabled = serving_session.login_type == "schedule"
+      if not serving_session.session_name == session.name:
+        preferences_enabled = False
+        verification_enabled = False
+        schedule_enabled = False
       sessions_and_urls.append(
           {'name': session.name,
            'management_url': ('/dayparts?%s' % args),
            'verification_enabled': verification_enabled,
-           'preferences_enabled': preferences_enabled,})
+           'preferences_enabled': preferences_enabled,
+           'schedule_enabled': schedule_enabled,
+          })
 
     message = self.request.get('message')
 
