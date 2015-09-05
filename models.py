@@ -137,6 +137,9 @@ class ServingSession(ndb.Model):
 
   @classmethod
   def store(cls, institution, session_name, login_type):
+    if not login_type in ['verification', 'preferences', 'schedule']:
+      logging.error("unexpected serving session login type %s" % login_type)
+      return
     serving_session = ServingSession()
     serving_session.session_name = session_name
     serving_session.login_type = login_type
