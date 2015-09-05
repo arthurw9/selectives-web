@@ -186,7 +186,7 @@ class Dayparts(ndb.Model):
 
 class Classes(ndb.Model):
   """List of classes in yaml format."""
-  data = ndb.StringProperty()
+  data = ndb.TextProperty()
 
   @classmethod
   def classes_key(cls, institution, session):
