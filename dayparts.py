@@ -48,9 +48,9 @@ class Dayparts(webapp2.RequestHandler):
          'session': session}))
 
   def post(self):
-    auth = authorizer.Authorizer()
-    if auth.ShouldRedirect(self):
-      auth.Redirect(self)
+    auth = authorizer.Authorizer(self)
+    if not auth.CanAdministerInstitutionFromUrl():
+      auth.Redirect()
       return
 
     institution = self.request.get("institution")
@@ -67,9 +67,9 @@ class Dayparts(webapp2.RequestHandler):
     self.RedirectToSelf(institution, session, "saved dayparts")
 
   def get(self):
-    auth = authorizer.Authorizer()
-    if auth.ShouldRedirect(self):
-      auth.Redirect(self)
+    auth = authorizer.Authorizer(self)
+    if not auth.CanAdministerInstitutionFromUrl():
+      auth.Redirect()
       return
 
     institution = self.request.get("institution")

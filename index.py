@@ -2,7 +2,7 @@ import os
 import urllib
 import jinja2
 import webapp2
-
+import logging
 import models
 import authorizer
 
@@ -15,9 +15,9 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 class Index(webapp2.RequestHandler):
   
   def post(self):
-    auth = authorizer.Authorizer()
-    if auth.ShouldRedirect(self):
-      auth.Redirect(self)
+    auth = authorizer.Authorizer(self)
+    if not auth.IsGlobalAdmin():
+      auth.Redirect()
       return
 
     action = self.request.get("action");
@@ -54,13 +54,12 @@ class Index(webapp2.RequestHandler):
     return '/institution?%s' % args
 
   def get(self):
-    auth = authorizer.Authorizer()
-    if auth.ShouldRedirect(self):
-      auth.Redirect(self)
+    auth = authorizer.Authorizer(self)
+    if not auth.IsGlobalAdmin():
+      auth.Redirect()
       return
 
     administrators = models.GlobalAdmin.FetchAll()
-    administrators = [x.email for x in administrators]
 
     institutions = models.Institution.FetchAllInstitutions()
     institutions_and_urls = []

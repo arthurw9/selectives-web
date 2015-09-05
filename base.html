@@ -7,12 +7,24 @@
   </head>
   <body>
     <table width=100%><tr>
-      <td align=left><h1>{{ institution }} {{ session }} Selectives Web</h1>
-      {# to do: determine if we are an institution admin or a 
-         global admin before displaying this navigation. #}
-      {% if true %} <a href="/">home</a> {% endif %}
-      {% if session_query %} <a href="/institution?{{ session_query }}">{{ institution }}</a> {% endif %}</td>
-      <td align=right>{{ user.email() }} <a href="{{ logout_url }}">logout</a></td>
+      <td align=left><h1>
+        {# TODO fix this hack:
+           We need an institution url not a session_query #}
+        {% if session_query %}
+          <a href="/institution?{{ session_query }}">
+        {% else %}
+          <a href="/">
+        {% endif %}
+        {{ institution }} {{ session }} Selectives Web
+        </a></h1>
+      </td>
+      <td align=right>
+        {% if user %}
+          {{ user.email() }} <a href="{{ logout_url }}">logout</a>
+        {% else %}
+          <a href="/">Log In</a>
+        {% endif %}
+      </td>
     </tr></table>
     <hr>
     {% block body %} {% endblock %}

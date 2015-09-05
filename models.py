@@ -2,6 +2,13 @@ from google.appengine.ext import ndb
 
 GLOBAL_KEY = ndb.Key("global", "global")
 
+# TODO: make all methods camel case with initial caps
+# TODO: Fetch methods should come in predictable flavors:
+# - Plain Fetch returns a string
+# - FetchAll returns a list of strings
+# - FetchEntity returns a ndbModel object
+# - FetchAllEntities returns a list of ndbModel object
+
 
 class GlobalAdmin(ndb.Model):
   """email addresses for users with full access to the site."""
@@ -23,7 +30,7 @@ class GlobalAdmin(ndb.Model):
 
   @classmethod
   def FetchAll(cls):
-    return GlobalAdmin.query(ancestor=GLOBAL_KEY).fetch()
+    return [ a.email for a in GlobalAdmin.query(ancestor=GLOBAL_KEY).fetch() ]
 
 
 class Admin(ndb.Model):
@@ -49,7 +56,19 @@ class Admin(ndb.Model):
 
   @classmethod
   def FetchAll(cls, institution):
-    return Admin.query(ancestor=Admin.admin_key_partial(institution)).fetch()
+    admins = Admin.query(ancestor=Admin.admin_key_partial(institution)).fetch()
+    return [ a.email for a in admins ]
+
+  @classmethod
+  def GetInstitutionNames(cls, email):
+    """returns False or a list of institution names."""
+    admin_list = Admin.query(Admin.email == email).fetch()
+    if admin_list == None:
+      return []
+    elif len(admin_list) <= 0:
+      return []
+    else:
+      return [ admin.key.parent().id() for admin in admin_list ]
 
 
 class Institution(ndb.Model):
@@ -108,7 +127,7 @@ class ServingSession(ndb.Model):
     return ndb.Key("InstitutionKey", institution, ServingSession, "serving_session")
 
   @classmethod
-  def fetch(cls, institution):
+  def FetchEntity(cls, institution):
     ss = ServingSession.serving_session_key(institution).get()
     if ss:
       return ss
@@ -127,6 +146,14 @@ class ServingSession(ndb.Model):
   @classmethod
   def delete(cls, institution):
     ServingSession.serving_session_key(institution).delete()
+
+  @classmethod
+  def FetchAllEntities(cls):
+    """Returns a list of triples (institution_name, session_name, login_type)"""
+    serving_sessions = ServingSession.query().fetch()
+    for ss in serving_sessions:
+      ss.institution_name = ss.key.parent().id()
+    return serving_sessions
 
 
 class Dayparts(ndb.Model):

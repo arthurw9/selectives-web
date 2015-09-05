@@ -20,8 +20,8 @@ class Institution(webapp2.RequestHandler):
         {'message': message, 'institution': institution}))
     
   def post(self):
-    auth = authorizer.Authorizer()
-    if auth.ShouldRedirect(self):
+    auth = authorizer.Authorizer(self)
+    if not auth.CanAdministerInstitutionFromUrl():
       auth.Redirect(self)
       return
 
@@ -80,18 +80,24 @@ class Institution(webapp2.RequestHandler):
     return
 
   def get(self):
-    auth = authorizer.Authorizer()
-    if auth.ShouldRedirect(self):
-      auth.Redirect(self)
+    auth = authorizer.Authorizer(self)
+    if not auth.CanAdministerInstitutionFromUrl():
+      auth.Redirect()
       return
 
     institution = self.request.get("institution")
+
+    # Hack: fixing a bug. URL parameters override posted form fields.
+    # so lets get rid of the offending url parameter
+    if self.request.get("session"):
+      self.RedirectToSelf(institution, "hack remove session from url")
+      return
+
     administrators = models.Admin.FetchAll(institution)
-    administrators = [x.email for x in administrators]
 
     sessions = models.Session.FetchAllSessions(institution)
     sessions_and_urls = []
-    serving_session = models.ServingSession.fetch(institution)
+    serving_session = models.ServingSession.FetchEntity(institution)
     logging.info("currently serving session = %s" % serving_session)
     for session in sessions:
       args = urllib.urlencode({'institution': institution,
