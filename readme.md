@@ -20,13 +20,22 @@ killall python
 git remote add origin https://github.com/arthurw9/selectives-web.git
 git push -u origin master
 
-# process for merging upstream changes
+# process for merging upstream changes into my local repository
   # pull master down to a new branch: origin/master
   git fetch origin
   # switch back to master branch
   git checkout master
   # merge the upstream changes
   git merge origin/master
+
+# process for merging a pull request into my local repository
+  # pull remote changes into a local branch
+  git checkout -b s-moffatt-master master
+  git pull git://github.com/s-moffatt/selectives-web.git master
+  # switch back to master branch
+  git checkout master
+  # merge the changes --no-ff means use a merge commit even if not required
+  git merge --no-ff s-moffatt-master
 
 # stash uncommited changes in the current branch:
 git add <any untracked files>
