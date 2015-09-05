@@ -119,8 +119,3 @@ class Requirements(webapp2.RequestHandler):
     }
     template = JINJA_ENVIRONMENT.get_template('requirements.html')
     self.response.write(template.render(template_values))
-
-
-application = webapp2.WSGIApplication([
-  ('/requirements', Requirements),
-], debug=True)

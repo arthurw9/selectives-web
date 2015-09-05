@@ -26,8 +26,3 @@ class Welcome(webapp2.RequestHandler):
     }
     template = JINJA_ENVIRONMENT.get_template('welcome.html')
     self.response.write(template.render(template_values))
-
-
-application = webapp2.WSGIApplication([
-  ('/welcome', Welcome),
-], debug=True)

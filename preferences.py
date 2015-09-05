@@ -63,8 +63,3 @@ class Preferences(webapp2.RequestHandler):
     }
     template = JINJA_ENVIRONMENT.get_template('preferences.html')
     self.response.write(template.render(template_values))
-
-
-application = webapp2.WSGIApplication([
-  ('/preferences', Preferences),
-], debug=True)

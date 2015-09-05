@@ -5,39 +5,10 @@ api_version: 1
 threadsafe: true
 
 handlers:
-- url: /welcome
-  script: welcome.application 
 - url: /stylesheets
   static_dir: stylesheets
-- url: /institution?.*
-  script: institution.application
-- url: /dayparts?.*
-  script: dayparts.application
-- url: /classes?.*
-  script: classes.application
-- url: /students?.*
-  script: students.application
-- url: /requirements?.*
-  script: requirements.application
-- url: /verification?.*
-  script: verification.application
-- url: /preferences?.*
-  script: preferences.application
 - url: /.*
-  script: index.application 
-
-# Note: The following line means use the script index.py and the variable
-# called application to handle all urls:
-#
-# handlers:
-# - url: /.*
-#   script: index.application
-#
-# Also you can use regular expression groups in the url to pick the
-# name of the script or the variable:
-# Example:
-# - url: /foo/(.*)
-#   script: \1.app
+  script: application.application 
 
 
 libraries:

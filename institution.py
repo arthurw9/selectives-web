@@ -131,8 +131,3 @@ class Institution(webapp2.RequestHandler):
     }
     template = JINJA_ENVIRONMENT.get_template('institution.html')
     self.response.write(template.render(template_values))
-
-
-application = webapp2.WSGIApplication([
-  ('/institution', Institution),
-], debug=True)

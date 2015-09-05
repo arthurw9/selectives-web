@@ -103,8 +103,3 @@ class Dayparts(webapp2.RequestHandler):
     }
     template = JINJA_ENVIRONMENT.get_template('dayparts.html')
     self.response.write(template.render(template_values))
-
-
-application = webapp2.WSGIApplication([
-  ('/dayparts', Dayparts),
-], debug=True)

@@ -96,8 +96,3 @@ class Classes(webapp2.RequestHandler):
     }
     template = JINJA_ENVIRONMENT.get_template('classes.html')
     self.response.write(template.render(template_values))
-
-
-application = webapp2.WSGIApplication([
-  ('/classes', Classes),
-], debug=True)
