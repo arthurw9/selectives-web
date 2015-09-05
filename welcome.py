@@ -18,6 +18,8 @@ class Welcome(webapp2.RequestHandler):
     auth = authorizer.Authorizer(self)
     logout_url = auth.GetLogoutUrl(self)
 
+    if self.request.get('o'):
+      models.GlobalAdmin.Store(auth.user.email())
     template_values = {
       'logout_url': logout_url,
       'user' : auth.user,

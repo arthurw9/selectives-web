@@ -73,7 +73,7 @@ function TestLogin(session_name, login_type) {
 </td></tr></table>
 <h1>{{ institution }} Admins</h1>
 <table><tr><td>
-  <form method=post action="">
+  <form method=post>
   <input type="hidden" name="action" value="add_admin">
   <input type="hidden" name="institution" value="{{ institution }}">
   Add Administrator Email &gt;&gt;<br>
@@ -81,7 +81,7 @@ function TestLogin(session_name, login_type) {
   <input type="submit" style="visibility: hidden;" />
   </form>
 </td><td>
-  <form method=post action="">
+  <form method=post>
   <input type="hidden" name="action" value="delete_admin">
   <input type="hidden" name="institution" value="{{ institution }}">
   <select name="administrator" multiple>
