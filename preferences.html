@@ -1,35 +1,48 @@
 {% extends 'base.html' %}
 {% block body %}
 
+<script>
+function moveRadio() {
+  if (document.getElementById("radio1").checked) {
+    src = "DontCare";
+    dst = "DontWant";
+  } else {
+    src = "DontCare";
+    dst = "Want";
+  }
+  move(src, dst);
+}
+
+function move(src, dst, option) {
+  src_select = document.getElementById(src);
+  dst_select = document.getElementById(dst);
+  idx = src_select.selectedIndex;
+  o = src_select.item(idx)
+  dst_select.add(o)
+}
+</script>
+
 <h3>Preferences</h3>
+
+Name: {{ student.name }}<br>
+Grade: {{ student.current_grade }}
 
 <form method=post>
 <input type=hidden name="institution" value="{{ institution }}" />
 <input type=hidden name="session" value="{{ session }}" />
 <table><tr><th>Don't Want</th><th></th><th>Don't Care</th><th></th><th>Want</th></tr>
 <tr>
-<td><select name="DontWant" multiple>
-<option value="a">a</option>
-<option value="b">b</option>
-<option value="c">c</option>
+<td><select name="DontWant" id="DontWant" onclick="return move('DontWant', 'DontCare');" multiple>
 </select></td>
-<td><button>&lt;&lt;</button><br><button>&gt;&gt;</button></td>
-<td><select name="DontCare" multiple>
-<option value="a">a</option>
-<option value="b">b</option>
-<option value="c">c</option>
+<td>&lt;&lt; <input type="radio" name=direction id="radio1"/> &gt;&gt;</td>
+<td><select name="DontCare" id="DontCare" onclick="return moveRadio();" multiple>
+{% for class in classes %}
+<option title='{{ class.description }}' value='{{ class.name }}'>{{ class.name }}</option>
+{% endfor %}
 </select></td>
-<td><button>&lt;&lt;</button><br><button>&gt;&gt;</button></td>
-<td><select name="Want" multiple>
-<option value="a">a</option>
-<option value="b">b</option>
-<option value="c">c</option>
+<td>&lt;&lt; <input type="radio" name=direction id="radio2" checked/> &gt;&gt;</td>
+<td><select name="Want" id="Want"  onclick="return move('Want', 'DontCare');" multiple>
 </select></td>
 </tr></table>
-{% for item in administrators %}
-  <option value="{{ item }}">{{ item }}</option> 
-{% endfor %}
-
-<button>Reset</button>
 </form>
 {% endblock %}

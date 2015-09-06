@@ -68,7 +68,7 @@ class Classes(webapp2.RequestHandler):
     message = self.request.get('message')
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
-    classes = models.Classes.fetch(institution, session)
+    classes = models.Classes.Fetch(institution, session)
     if not classes:
       classes = '\n'.join([
           "# Sample data. Lines with leading # signs are comments.",

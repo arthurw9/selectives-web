@@ -195,7 +195,7 @@ class Classes(ndb.Model):
                    Classes, "classes")
 
   @classmethod
-  def fetch(cls, institution, session):
+  def Fetch(cls, institution, session):
     classes = Classes.classes_key(institution, session).get()
     if classes:
       return classes.data

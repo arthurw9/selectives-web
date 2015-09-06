@@ -49,10 +49,27 @@ class Preferences(webapp2.RequestHandler):
     if not session:
       logging.fatal("no session")
 
+    student_info = auth.GetStudentInfo(institution, session)
+    if not student_info:
+      student_info = {'name': 'Not found',
+                      'current_grade': 'Not found'}
     message = self.request.get('message')
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
 
+    classes = models.Classes.Fetch(institution, session)
+    classes = yaml.load(classes)
+    try:
+      _ = (c for c in classes)
+    except TypeError:
+      classes = []
+    classes_and_descriptions = []
+    for c in classes:
+      classes_and_descriptions.append(
+          {'name': c['name'],
+           'description': yaml.dump(c, default_flow_style=False) })
+    if not classes_and_descriptions:
+      classes_and_descriptions.append({'name': 'None', 'description': 'None'})
     template_values = {
       'logout_url': auth.GetLogoutUrl(self),
       'user' : auth.user,
@@ -60,6 +77,8 @@ class Preferences(webapp2.RequestHandler):
       'session' : session,
       'message': message,
       'session_query': session_query,
+      'classes': classes_and_descriptions,
+      'student': student_info,
     }
     template = JINJA_ENVIRONMENT.get_template('preferences.html')
     self.response.write(template.render(template_values))
