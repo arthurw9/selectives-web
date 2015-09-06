@@ -11,6 +11,10 @@ class Authorizer(object):
   def __init__(self, handler):
     self.user = users.get_current_user()
     self.handler = handler
+    if self.user:
+      models.RecentAccess.Store(self.user.email())
+    else:
+      models.RecentAccess.Store("anonymous")
 
   def IsGlobalAdmin(self):
     if not self.user:

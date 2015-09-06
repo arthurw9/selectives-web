@@ -68,6 +68,8 @@ class Index(webapp2.RequestHandler):
           {'name': institution.name,
            'url': self.institutionUrl(institution.name)})
 
+    recent_access = models.RecentAccess.FetchRecentEmails()
+
     message = self.request.get('message')
 
     logout_url = auth.GetLogoutUrl(self)
@@ -78,6 +80,7 @@ class Index(webapp2.RequestHandler):
       'institutions' : institutions_and_urls,
       'administrators' : administrators,
       'message': message,
+      'recent_access': recent_access,
     }
     template = JINJA_ENVIRONMENT.get_template('index.html')
     self.response.write(template.render(template_values))

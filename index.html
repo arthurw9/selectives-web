@@ -36,4 +36,11 @@
   </form>
 </td></tr></table>
 
+<h1>Recent Access</h1>
+<table>
+{% for email in recent_access %}
+  <tr><td>{{ email }}</td></tr>
+{% endfor %}
+</table>
+
 {% endblock body %}

@@ -257,3 +257,22 @@ class Requirements(ndb.Model):
     requirements = Requirements(data = requirements_data)
     requirements.key = Requirements.requirements_key(institution, session_name)
     requirements.put()
+
+
+class RecentAccess(ndb.Model):
+  date_time = ndb.DateTimeProperty(auto_now=True)
+
+  @classmethod
+  def recent_access_key(cls, email_str):
+    return ndb.Key(RecentAccess, email_str)
+
+  @classmethod
+  def Store(cls, email_str):
+    recent_access = RecentAccess()
+    recent_access.key = RecentAccess.recent_access_key(email_str)
+    recent_access.put()
+
+  @classmethod
+  def FetchRecentEmails(cls):
+    recent = RecentAccess.query().order(-RecentAccess.date_time).fetch(20)
+    return [ a.key.id() for a in recent ] 
