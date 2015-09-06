@@ -81,7 +81,7 @@ class Authorizer(object):
   def Redirect(self):
     # are they logged in?
     if not self.user:
-      self.handler.redirect(users.create_login_url(self.handler.request.uri))
+      self.handler.redirect("/welcome")
       return
     if self.IsGlobalAdmin():
       logging.info("Redirecting %s to index", self.user.email())
@@ -115,6 +115,10 @@ class Authorizer(object):
     logging.info("Redirecting %s to /welcome", self.user.email())
     self.handler.redirect("/welcome")
 
-
+  # TODO get rid of the unnecessary handler parameter
   def GetLogoutUrl(self, handler):
-    return users.create_logout_url(handler.request.uri)
+    return users.create_logout_url(self.handler.request.uri)
+
+
+  def GetLoginUrl(self):
+    return users.create_login_url("/")
