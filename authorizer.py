@@ -57,18 +57,20 @@ class Authorizer(object):
 
   def GetStudentInfo(self, institution, session):
     students = models.Students.fetch(institution, session)
-    for student in yaml.load(students):
+    students = yaml.load(students)
+    # is students iterable?
+    try:
+      _ = (e for e in students)
+    except TypeError:
+      return None
+    for student in students:
       if self.user.email() in student['email']:
         if not 'name' in student:
           student['name'] = "Not Specified"
         if not 'current_grade' in student:
           student['current_grade'] = "Not Specified"
         return student
-    not_found = {}
-    not_found['name'] = "Not Found"
-    not_found['email'] = "Not Found"
-    not_found['current_grade'] = "Not Found"
-    return not_found
+    return None
     
   def Redirect(self):
     # are they logged in?

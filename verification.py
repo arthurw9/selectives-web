@@ -29,6 +29,8 @@ class Verification(webapp2.RequestHandler):
       logging.fatal("no session")
 
     student_info = auth.GetStudentInfo(institution, session)
+    if student_info == None:
+      student_info = {'name': 'No Data', 'current_grade': 'No Data'}
 
     logout_url = auth.GetLogoutUrl(self)
     template_values = {

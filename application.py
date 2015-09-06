@@ -20,4 +20,4 @@ application = webapp2.WSGIApplication([
   ('/requirements', requirements.Requirements),
   ('/verification', verification.Verification),
   ('/preferences', preferences.Preferences)
-], debug=False)
+], debug=True)
