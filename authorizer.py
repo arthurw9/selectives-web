@@ -55,7 +55,9 @@ class Authorizer(object):
     session = self.handler.request.get("session")
     if serving_session.session_name != session:
       return False
-    if "/" + serving_session.login_type == self.handler.request.path:
+    if not "/" + serving_session.login_type == self.handler.request.path:
+      return False
+    if self.GetStudentInfo(institution, session):
       return True
     return False
 
