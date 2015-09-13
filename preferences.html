@@ -19,6 +19,7 @@ function move(src, dst, option) {
   idx = src_select.selectedIndex;
   o = src_select.item(idx)
   dst_select.add(o)
+  o.selected = false;
 }
 </script>
 
@@ -32,17 +33,18 @@ Grade: {{ student.current_grade }}
 <input type=hidden name="session" value="{{ session }}" />
 <table><tr><th>Don't Want</th><th></th><th>Don't Care</th><th></th><th>Want</th></tr>
 <tr>
-<td><select name="DontWant" id="DontWant" onclick="return move('DontWant', 'DontCare');" multiple>
+<td><select size=20 name="DontWant" id="DontWant" onclick="return move('DontWant', 'DontCare');" multiple>
 </select></td>
 <td>&lt;&lt; <input type="radio" name=direction id="radio1"/> &gt;&gt;</td>
-<td><select name="DontCare" id="DontCare" onclick="return moveRadio();" multiple>
+<td><select size=20 name="DontCare" id="DontCare" onclick="return moveRadio();" multiple>
 {% for class in classes %}
 <option title='{{ class.description }}' value='{{ class.name }}'>{{ class.name }}</option>
 {% endfor %}
 </select></td>
 <td>&lt;&lt; <input type="radio" name=direction id="radio2" checked/> &gt;&gt;</td>
-<td><select name="Want" id="Want"  onclick="return move('Want', 'DontCare');" multiple>
+<td><select size=20 name="Want" id="Want"  onclick="return move('Want', 'DontCare');" multiple>
 </select></td>
 </tr></table>
+<input type="submit" />
 </form>
 {% endblock %}
