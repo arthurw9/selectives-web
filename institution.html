@@ -58,11 +58,6 @@ function TestLogin(session_name, login_type) {
         <a href="{{ item.management_url }}">{{ item.name }}</a></td>
       <td  class="left-right-padding">
         <input type="checkbox" 
-               onchange="return EnableLogins('{{ item.name }}', 'verification', this.checked);"
-               {% if item.verification_enabled %}checked{% endif %}>
-        <a href="" onclick="return TestLogin('{{ item.name }}', 'verification');">Login Verification</a></td>
-      <td  class="left-right-padding">
-        <input type="checkbox" 
                onchange="return EnableLogins('{{ item.name }}', 'preferences', this.checked);"
                {% if item.preferences_enabled %}checked{% endif %}>
         <a href="" onclick="return TestLogin('{{ item.name }}', 'preferences');">Preferences</a></td>
