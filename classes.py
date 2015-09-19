@@ -3,7 +3,7 @@ import urllib
 import jinja2
 import webapp2
 import logging
-import yaml
+import yayv
 
 import models
 import authorizer
@@ -14,14 +14,18 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     autoescape=True)
 
 
-class Parser(object):
-
-  def __init__(self, classes):
-    self.string = classes
-    self.yaml = yaml.load(classes.lower())
-
-  def normalize(self):
-    return yaml.dump(self.yaml, default_flow_style=False)
+schema = yayv.ByExample(
+    "- name: REQUIRED\n"
+    "  id: AUTO_INC\n"
+    "  instructor: OPTIONAL\n"
+    "  max_enrollment: REQUIRED\n"
+    "  prerequisites:\n"
+    "    - current_grade: OPTIONAL\n"
+    "      email: OPTIONAL\n"
+    "      group: OPTIONAL\n"
+    "  schedule:\n"
+    "    - daypart: REQUIRED\n"
+    "      location: REQUIRED\n")
 
 
 class Classes(webapp2.RequestHandler):
@@ -47,7 +51,7 @@ class Classes(webapp2.RequestHandler):
     classes = self.request.get("classes")
     if not classes:
       logging.fatal("no classes")
-    classes = str(Parser(classes).normalize())
+    classes = schema.Update(classes)
     models.Classes.store(institution, session, classes)
     self.RedirectToSelf(institution, session, "saved classes")
 
