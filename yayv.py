@@ -22,19 +22,45 @@ class ByExample(object):
     """The schema is basically an example of valid input."""
     self.schema = yaml.load(schema)
 
+  def Update(self, yaml_str):
+    if not self.IsValid(yaml_str):
+      return "%s\n%s" % (self.ErrorMessage(), yaml_str)
+    yaml_obj = yaml.load(yaml_str)
+    self.AddCounters(self.schema, yaml_obj)
+    return yaml.dump(yaml_obj, default_flow_style=False)
+
+  def GetCounterValue(self, schema):
+    key = schema[len("AUTO_INC "):]
+    self.counters[key] = self.counters[key] + 1
+    return self.counters[key]
+
+  def AddCounters(self, schema, yaml_obj):
+    if isinstance(schema, dict):
+      for k in schema:
+        if self._isScalar(schema[k]) and schema[k].startswith("AUTO_INC"):
+          if not k in yaml_obj:
+            yaml_obj[k] = self.GetCounterValue(schema[k])
+        elif not self._isScalar(schema[k]):
+          if k in yaml_obj:
+            self.AddCounters(schema[k], yaml_obj[k])
+    elif isinstance(schema, list):
+      for o in yaml_obj:
+        self.AddCounters(schema[0], o)
+
   def ErrorMessage(self):
-    return '\n'.join(self.error_message)
+    return '# ' + '\n'.join(self.error_message).replace("\n", "\n# ")
 
   def IsValid(self, yaml_str):
     self.unique_values = {}
     self.counters = {}
+    self.counter_values = {}
     self.error_message = []
     try:
-      self.yaml_obj = yaml.load(yaml_str)
+      yaml_obj = yaml.load(yaml_str)
     except:
-      self._AddError("ROOT", traceback.print_exc())
+      self._AddError("ROOT", traceback.format_exc())
       return False
-    return self._Validate(self.schema, self.yaml_obj, "ROOT")
+    return self._Validate(self.schema, yaml_obj, "ROOT")
 
   def _AddError(self, parent, msg):
     self.error_message.append("%s in %s" % (msg, parent))
@@ -77,7 +103,7 @@ class ByExample(object):
         return False
       if not self._Validate(schema[k], yaml_obj[k], "%s.%s" % (parent, k)):
         return False
-    # after this point we just need to validate that missing keys are OPTIONAL
+    # after this point we just need to validate the missing keys are OK
     for k in schema:
       if not k in yaml_obj:
         if not self._Validate(schema[k], None, "%s.%s" % (parent, k)):
@@ -123,15 +149,18 @@ class ByExample(object):
     if schema.startswith("AUTO_INC"):
       key = schema[len("AUTO_INC "):]
       if not key in self.counters:
-        self.counters[key] = {'start': 0, 'set': set()}
+        self.counters[key] = 0
+        self.counter_values[key] = set()
+      if yaml_obj and not isinstance(yaml_obj, int):
+        self._AddError(parent,
+            "found %s but expected an AUTO_INC int" % yaml_obj)
+        return False
+      if yaml_obj in self.counter_values[key]:
+        self._AddError(parent, "duplicate AUTO_INC %s found" % yaml_obj)
+        return False
       if yaml_obj:
-        if not isinstance(yaml_obj, int):
-          self._AddError(parent,
-                         "found %s but expected an AUTO_INC int" % yaml_obj)
-          return False
-        if yaml_obj in self.counters[key]['set']:
-          self._AddError(parent, "duplicate AUTO_INC %s found" % yaml_obj)
-          return False
-        self.counters[key]['start'] = max(self.counters[key]['start'], yaml_obj + 1)
-        self.counters[key]['set'].add(yaml_obj)
+        self.counters[key] = max(self.counters[key], yaml_obj)
+        self.counter_values[key].add(yaml_obj)
+        return True;
       return True
+    return False
