@@ -37,9 +37,9 @@
 </td></tr></table>
 
 <h1>Recent Access</h1>
-<table>
-{% for email in recent_access %}
-  <tr><td>{{ email }}</td></tr>
+<table cellpadding=4>
+{% for (email, time) in recent_access %}
+  <tr><td>{{ email }}</td><td>{{ time[0:10] }}</td></tr>
 {% endfor %}
 </table>
 

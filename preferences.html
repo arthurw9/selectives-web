@@ -4,11 +4,11 @@
 <script>
 function moveRadio() {
   if (document.getElementById("radio1").checked) {
-    src = "DontCare";
-    dst = "DontWant";
+    src = "DontCareSelect";
+    dst = "DontWantSelect";
   } else {
-    src = "DontCare";
-    dst = "Want";
+    src = "DontCareSelect";
+    dst = "WantSelect";
   }
   move(src, dst);
 }
@@ -21,6 +21,27 @@ function move(src, dst, option) {
   dst_select.add(o)
   o.selected = false;
 }
+
+function CopySelectToHidden(select_id, hidden_id) {
+  select = document.getElementById(select_id);
+  str = ""
+  for(var idx = 0; idx < select.options.length; idx++) {
+    var val = select.item(idx).value;
+    str = str + val;
+    if (idx < select.length - 1) {
+      str = str + ",";
+    }
+  }
+  hidden = document.getElementById(hidden_id);
+  hidden.value = str;
+}
+
+function submit_it() {
+  CopySelectToHidden("WantSelect", "want");
+  CopySelectToHidden("DontWantSelect", "dontwant");
+  CopySelectToHidden("DontCareSelect", "dontcare");
+  return true;
+}
 </script>
 
 <h3>Preferences</h3>
@@ -31,20 +52,30 @@ Grade: {{ student.current_grade }}
 <form method=post>
 <input type=hidden name="institution" value="{{ institution }}" />
 <input type=hidden name="session" value="{{ session }}" />
+<input type=hidden id="want" name="want" value="" />
+<input type=hidden id="dontwant" name="dontwant" value="" />
+<input type=hidden id="dontcare" name="dontcare" value="" />
+
 <table><tr><th>Don't Want</th><th></th><th>Don't Care</th><th></th><th>Want</th></tr>
 <tr>
-<td><select size=20 name="DontWant" id="DontWant" onclick="return move('DontWant', 'DontCare');" multiple>
+<td><select size=20 id="DontWantSelect" onclick="return move('DontWantSelect', 'DontCareSelect');" multiple>
+{% for id in dontwant_ids %}
+<option title='{{ classes[id].description }}' value='{{ id }}'>{{ classes[id].name }}</option>
+{% endfor %}
 </select></td>
 <td>&lt;&lt; <input type="radio" name=direction id="radio1"/> &gt;&gt;</td>
-<td><select size=20 name="DontCare" id="DontCare" onclick="return moveRadio();" multiple>
-{% for class in classes %}
-<option title='{{ class.description }}' value='{{ class.name }}'>{{ class.name }}</option>
+<td><select size=20 id="DontCareSelect" onclick="return moveRadio();" multiple>
+{% for id in dontcare_ids %}
+<option title='{{ classes[id].description }}' value='{{ id }}'>{{ classes[id].name }}</option>
 {% endfor %}
 </select></td>
 <td>&lt;&lt; <input type="radio" name=direction id="radio2" checked/> &gt;&gt;</td>
-<td><select size=20 name="Want" id="Want"  onclick="return move('Want', 'DontCare');" multiple>
+<td><select size=20 id="WantSelect" onclick="return move('WantSelect', 'DontCareSelect');" multiple>
+{% for id in want_ids %}
+<option title='{{ classes[id].description }}' value='{{ id }}'>{{ classes[id].name }}</option>
+{% endfor %}
 </select></td>
 </tr></table>
-<input type="submit" />
+<input type="submit" onclick="return submit_it();"/>
 </form>
 {% endblock %}

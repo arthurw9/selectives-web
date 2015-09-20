@@ -34,7 +34,13 @@ class Preferences(webapp2.RequestHandler):
     session = self.request.get("session")
     if not session:
       logging.fatal("no session")
-    # TODO what now?
+    email = auth.user.email()
+    want = self.request.get("want").split(",")
+    dontcare = self.request.get("dontcare").split(",")
+    dontwant = self.request.get("dontwant").split(",")
+    models.Preferences.Store(email, institution, session,
+                             want, dontcare, dontwant)
+    self.RedirectToSelf(institution, session, "Saved Preferences")
 
   def get(self):
     auth = authorizer.Authorizer(self)
@@ -60,16 +66,33 @@ class Preferences(webapp2.RequestHandler):
     classes = models.Classes.Fetch(institution, session)
     classes = yaml.load(classes)
     try:
-      _ = (c for c in classes)
+      _ = [c for c in classes]
     except TypeError:
       classes = []
-    classes_and_descriptions = []
+    classes_by_id = {}
     for c in classes:
-      classes_and_descriptions.append(
-          {'name': c['name'],
-           'description': yaml.dump(c, default_flow_style=False) })
-    if not classes_and_descriptions:
-      classes_and_descriptions.append({'name': 'None', 'description': 'None'})
+      class_id = str(c['id'])
+      class_name = c['name']
+      # TODO: add proper class_desc instead of just dumping the yaml
+      class_desc = yaml.dump(c, default_flow_style=False)
+      classes_by_id[class_id] = {'name': class_name,
+                                 'description': class_desc }
+    if not classes_by_id:
+      classes_by_id['0'] = {'name': 'None', 'desc': 'None'}
+    all_classes = set([str(c_id) for c_id in classes_by_id.keys()])
+    prefs = models.Preferences.FetchEntity(
+        auth.user.email(), institution, session)
+    want_ids = list(all_classes.intersection(prefs.want.split(',')))
+    dontcare_ids = list(all_classes.intersection(prefs.dontcare.split(',')))
+    dontwant_ids = list(all_classes.intersection(prefs.dontwant.split(',')))
+    logging.error(','.join(all_classes))
+    logging.error(prefs.want)
+    logging.error(','.join(want_ids))
+    new_classes = all_classes.difference(want_ids)
+    new_classes = new_classes.difference(dontcare_ids)
+    new_classes = new_classes.difference(dontwant_ids)
+    dontcare_ids = list(new_classes) + dontcare_ids
+
     template_values = {
       'logout_url': auth.GetLogoutUrl(self),
       'user' : auth.user,
@@ -77,8 +100,11 @@ class Preferences(webapp2.RequestHandler):
       'session' : session,
       'message': message,
       'session_query': session_query,
-      'classes': classes_and_descriptions,
+      'classes': classes_by_id,
       'student': student_info,
+      'want_ids': want_ids,
+      'dontwant_ids': dontwant_ids,
+      'dontcare_ids': dontcare_ids,
     }
     template = JINJA_ENVIRONMENT.get_template('preferences.html')
     self.response.write(template.render(template_values))

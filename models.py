@@ -138,8 +138,7 @@ class ServingSession(ndb.Model):
   @classmethod
   def store(cls, institution, session_name, login_type):
     if not login_type in ['verification', 'preferences', 'schedule']:
-      logging.error("unexpected serving session login type %s" % login_type)
-      return
+      raise Exception("Unexpected login_type: %s" % login_type)
     serving_session = ServingSession()
     serving_session.session_name = session_name
     serving_session.login_type = login_type
@@ -273,6 +272,55 @@ class RecentAccess(ndb.Model):
     recent_access.put()
 
   @classmethod
-  def FetchRecentEmails(cls):
+  def FetchRecentAccess(cls):
     recent = RecentAccess.query().order(-RecentAccess.date_time).fetch(20)
-    return [ a.key.id() for a in recent ] 
+    return [ (a.key.id(), str(a.date_time)) for a in recent ] 
+
+
+class Preferences(ndb.Model):
+  email = ndb.StringProperty()
+  want = ndb.StringProperty()
+  dontcare = ndb.StringProperty()
+  dontwant = ndb.StringProperty()
+
+  @classmethod
+  def preferences_key(cls, email, institution, session):
+    return ndb.Key("InstitutionKey", institution,
+                   Session, session,
+                   Preferences, email)
+
+  @classmethod
+  def Store(cls, email, institution, session, want, dontcare, dontwant):
+    """params want, dontcare, and dontwant are lists of ints"""
+    prefs = Preferences()
+    prefs.key = Preferences.preferences_key(email, institution, session)
+    if set(want).intersection(dontcare):
+      raise Exception("some classes are in both want and dontcare." +
+                      "\nwant: " + ','.join(want) + 
+                      "\ndontcare: " + ','.join(dontcare) +
+                      "\ndontwant: " + ','.join(dontwant))
+    if set(dontcare).intersection(dontwant):
+      raise Exception("some classes are in both dontcare and dontwant" +
+                      "\nwant: " + ','.join(want) + 
+                      "\ndontcare: " + ','.join(dontcare) +
+                      "\ndontwant: " + ','.join(dontwant))
+    if set(want).intersection(dontwant):
+      raise Exception("some classes are in both want and dontwant" +
+                      "\nwant: " + ','.join(want) + 
+                      "\ndontcare: " + ','.join(dontcare) +
+                      "\ndontwant: " + ','.join(dontwant))
+    prefs.want = ','.join(want)
+    prefs.dontcare = ','.join(dontcare)
+    prefs.dontwant = ','.join(dontwant)
+    prefs.put()
+
+  @classmethod
+  def FetchEntity(cls, email, institution, session):
+    prefs = Preferences.preferences_key(email, institution, session).get()
+    if not prefs:
+      prefs = Preferences()
+      prefs.email = email
+      prefs.want = ""
+      prefs.dontcare = ""
+      prefs.dontwant = ""
+    return prefs

@@ -68,7 +68,7 @@ class Index(webapp2.RequestHandler):
           {'name': institution.name,
            'url': self.institutionUrl(institution.name)})
 
-    recent_access = models.RecentAccess.FetchRecentEmails()
+    recent_access = models.RecentAccess.FetchRecentAccess()
 
     message = self.request.get('message')
 
