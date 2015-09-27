@@ -3,7 +3,8 @@ import urllib
 import jinja2
 import webapp2
 import logging
-import yaml
+import yayv
+
 
 import models
 import authorizer
@@ -14,29 +15,8 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     autoescape=True)
 
 
-class Parser(object):
-
-  def __init__(self, dayparts):
-    self.string = dayparts
-    self.yaml = yaml.load(dayparts.lower())
-
-  def isValid(self):
-    if not isinstance(self.yaml, list):
-      err_msg = "# Dayparts should be a list not %s\n" % type(self.yaml)
-      self.string = err_msg + self.string
-      return False
-    for d in self.yaml:
-      if not isinstance(d, str):
-        err_msg = "# %s should be a string not %s\n" % (d, type(d))
-        self.string = err_msg + self.string
-        return False
-    return True
-
-  def normalize(self):
-    if self.isValid():
-      return yaml.dump(self.yaml, default_flow_style=False)
-    else:
-      return self.string
+schema = yayv.ByExample(
+    "- UNIQUE\n")
 
 
 class Dayparts(webapp2.RequestHandler):
@@ -62,7 +42,7 @@ class Dayparts(webapp2.RequestHandler):
     dayparts = self.request.get("dayparts")
     if not dayparts:
       logging.fatal("no dayparts")
-    dayparts = str(Parser(dayparts).normalize())
+    dayparts = schema.Update(dayparts)
     models.Dayparts.store(institution, session, dayparts)
     self.RedirectToSelf(institution, session, "saved dayparts")
 
@@ -88,8 +68,14 @@ class Dayparts(webapp2.RequestHandler):
       dayparts = '\n'.join([
           "# Sample data. Lines with leading # signs are comments.",
           "# Change the data below.",
-          "- monday am",
-          "- Tuesday pm",])
+          "- Mon A",
+          "- Mon B",
+          "- Tues A",
+          "- Tues B",
+          "- Thurs A",
+          "- Thurs B",
+          "- Fri A",
+          "- Fri B",])
 
     template_values = {
       'logout_url': logout_url,
