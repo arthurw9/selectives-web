@@ -21,6 +21,9 @@ class Authorizer(object):
       return False
     override=self.handler.request.get('o')
     return self.user.email() in models.GlobalAdmin.FetchAll()
+    #return True  #Toggle with previous line
+    # to create a Global Admin on the Admin page.
+    # Otherwise on a new instance, you can't get into the system!
 
   def GetAdministedInstitutionsList(self):
     if not self.user:
