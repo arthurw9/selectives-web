@@ -9,6 +9,7 @@ import students
 import requirements
 import verification
 import preferences
+import scheduler
 
 application = webapp2.WSGIApplication([
   ('/', index.Index),
@@ -19,5 +20,6 @@ application = webapp2.WSGIApplication([
   ('/students', students.Students),
   ('/requirements', requirements.Requirements),
   ('/verification', verification.Verification),
-  ('/preferences', preferences.Preferences)
+  ('/preferences', preferences.Preferences),
+  ('/scheduler', scheduler.Scheduler)
 ], debug=True)

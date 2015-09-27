@@ -1,0 +1,66 @@
+{% extends 'menu.html' %}
+{% block session_body %}
+
+<h3>Scheduler</h3>
+
+<script>
+groups = {all: [{{ num_students }}]}
+
+function UpdateCounts() {
+  group_select = document.getElementById("student_groups");
+  num_students_selected = document.getElementById("num_students_selected");
+  for (var i = 0; i < group_select.options.length; i++) {
+    o = group_select.options[i];
+    if (o.selected) {
+      num_students_selected.innerHTML = groups[o.value]
+    } else {
+      num_students_selected.innerHTML = 0
+    }
+  }
+  return true;
+}
+</script>
+
+<form method=post>
+<input type=hidden name="institution" value="{{ institution }}" />
+<input type=hidden name="session" value="{{ session }}" />
+
+<fieldset>
+<legend>Validity / Consistency</legend>
+TODO: report on the validity status of all inputs needed for scheduling:
+<ul>
+<li>dayparts?
+<li>classes?
+<li>students?
+<li>groups of classes?
+<li>groups of students?
+<li>requirements?
+</ul>
+</fieldset>
+
+Who?<br>
+<select name=student_groups id=student_groups multiple onchange="return UpdateCounts();">
+<option value=all>All</option>
+</select><br>
+Total number of students: {{ num_students }}<br>
+Num students selected: <span id=num_students_selected></span><br>
+
+<fieldset>
+<legend>Preferences</legend>
+Num with Preferences: TODO<br>
+<input type=submit name="action" value="clear_prefs" />
+<input type=submit name="action" value="random_prefs" />
+</fieldset>
+
+<fieldset>
+<legend>Schedule</legend>
+Num with full Schedule: TODO
+Num with at least one class: TODO
+Average num classes per student: TODO<br>
+<input type=submit name="action" value="Add_No_Choice_Classes" />
+<input type=submit name="action" value="Add_One_preference" />
+<input type=submit name="action" value="Add_Other_requirements" />
+<input type=submit name="action" value="clear_schedule" />
+</fieldset>
+</form>
+{% endblock %}
