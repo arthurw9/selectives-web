@@ -1,0 +1,19 @@
+{% extends 'menu.html' %}
+{% block session_body %}
+
+<h3>Groups Classes</h3>
+<table width='50%'><tr><td>
+TIP: Each class group can have the following fields:
+name, classes.
+</td></tr></table>
+
+<form method=post>
+<input type=hidden name="institution" value="{{ institution }}" />
+<input type=hidden name="session" value="{{ session }}" />
+<textarea name=groups_classes>
+{{ groups_classes }}
+</textarea>
+<br />
+<input type=submit />
+</form>
+{% endblock %}

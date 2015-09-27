@@ -259,6 +259,31 @@ class Requirements(ndb.Model):
     requirements.put()
 
 
+class GroupsClasses(ndb.Model):
+  """List of class groups in yaml format."""
+  data = ndb.TextProperty()
+
+  @classmethod
+  def groups_classes_key(cls, institution, session):
+    return ndb.Key("InstitutionKey", institution,
+                   Session, session,
+                   GroupsClasses, "groups_classes")
+
+  @classmethod
+  def fetch(cls, institution, session):
+    groups_classes = GroupsClasses.groups_classes_key(institution, session).get()
+    if groups_classes:
+      return groups_classes.data
+    else:
+      return ''
+
+  @classmethod
+  def store(cls, institution, session_name, groups_classes_data):
+    groups_classes = GroupsClasses(data = groups_classes_data)
+    groups_classes.key = GroupsClasses.groups_classes_key(institution, session_name)
+    groups_classes.put()
+
+
 class RecentAccess(ndb.Model):
   date_time = ndb.DateTimeProperty(auto_now=True)
 

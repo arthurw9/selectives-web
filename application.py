@@ -9,6 +9,7 @@ import students
 import requirements
 import verification
 import preferences
+import groups_classes
 
 application = webapp2.WSGIApplication([
   ('/', index.Index),
@@ -19,5 +20,6 @@ application = webapp2.WSGIApplication([
   ('/students', students.Students),
   ('/requirements', requirements.Requirements),
   ('/verification', verification.Verification),
-  ('/preferences', preferences.Preferences)
+  ('/preferences', preferences.Preferences),
+  ('/groups_classes', groups_classes.GroupsClasses)
 ], debug=True)
