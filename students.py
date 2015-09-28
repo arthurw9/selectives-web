@@ -3,7 +3,7 @@ import urllib
 import jinja2
 import webapp2
 import logging
-import yaml
+import yayv
 
 import models
 import authorizer
@@ -14,39 +14,12 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     autoescape=True)
 
 
-class Parser(object):
-
-  def __init__(self, students):
-    self.string = students
-    self.yaml = yaml.load(students.lower())
-    logging.info("students yaml = %s", str(self.yaml))
-
-  def isValid(self):
-    if self.yaml == None:
-      sample = '\n'.join([
-          "# Sample data:",
-          "- email: foo@gmail.com",
-          "  current_grade: 8",
-          "- email: bar@gmail.com",
-          "  current_grade: 7",])
-      self.string = sample
-      return False
-    if not isinstance(self.yaml, list):
-      err_msg = "# Students should be a list not %s\n" % type(self.yaml)
-      self.string = err_msg + self.string
-      return False
-    for d in self.yaml:
-      if not isinstance(d, dict):
-        err_msg = "# %s should contain email and current grade.\n" % d
-        self.string = err_msg + self.string
-        return False
-    return True
-
-  def normalize(self):
-    if self.isValid():
-      return yaml.dump(self.yaml, default_flow_style=False)
-    else:
-      return self.string
+schema = yayv.ByExample(
+    "- email: UNIQUE\n"
+    "  first: REQUIRED\n"
+    "  last: REQUIRED\n"
+    "  current_grade: REQUIRED\n"
+    "  current_homeroom: REQUIRED\n")
 
 
 class Students(webapp2.RequestHandler):
@@ -72,7 +45,7 @@ class Students(webapp2.RequestHandler):
     students = self.request.get("students")
     if not students:
       logging.warning("no students")
-    students = Parser(students).normalize()
+    students = schema.Update(students)
     logging.info("posted students %s", students)
     models.Students.store(institution, session, students)
     self.RedirectToSelf(institution, session, "saved students")
@@ -95,6 +68,25 @@ class Students(webapp2.RequestHandler):
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
     students = models.Students.fetch(institution, session)
+    if not students:
+      students = '\n'.join([
+          "# Sample data. Lines with leading # signs are comments.",
+          "# Change the data below.",
+          "- email: student1@mydiscoveryk8.org",
+          "  first: Stu",
+          "  last: Dent1",
+          "  current_grade: 8",
+          "  current_homeroom: 29",
+          "- email: student2@mydiscoveryk8.org",
+          "  first: Stu",
+          "  last: Dent2",
+          "  current_grade: 7",
+          "  current_homeroom: 19",
+          "- email: student3@mydiscoveryk8.org",
+          "  first: Stu",
+          "  last: Dent3",
+          "  current_grade: 6",
+          "  current_homeroom: 23",])
 
     template_values = {
       'logout_url': logout_url,

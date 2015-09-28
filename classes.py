@@ -77,16 +77,16 @@ class Classes(webapp2.RequestHandler):
       classes = '\n'.join([
           "# Sample data. Lines with leading # signs are comments.",
           "# Change the data below.",
-          "- name: basket weaving",
-          "  lead: mr. brown",
-          "  size: 25 # max number of students",
+          "- name: Basket Weaving",
+          "  instructor: Mr. Brown",
+          "  max_enrollment: 25",
           "  schedule:",
-          "    - when: monday A",
-          "      room: 13",
-          "    - when: thursday B",
-          "      room: 13",
+          "    - daypart: Mon A",
+          "      location: 13",
+          "    - daypart: Thurs A",
+          "      location: 13",
           "  prerequisites:",
-          "    - grade: 6"])
+          "    - current_grade: 6"])
 
     template_values = {
       'logout_url': logout_url,

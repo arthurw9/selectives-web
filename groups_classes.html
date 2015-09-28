@@ -1,15 +1,17 @@
 {% extends 'menu.html' %}
 {% block session_body %}
 
-<h3>Students</h3>
+<h3>Groups Classes</h3>
 <table width='50%'><tr><td>
-TIP: Each student must have: email, first, last, current_grade, current_homeroom.
+TIP: Each class group can have the following fields:
+name, classes.
 </td></tr></table>
+
 <form method=post>
 <input type=hidden name="institution" value="{{ institution }}" />
 <input type=hidden name="session" value="{{ session }}" />
-<textarea name=students>
-{{ students }}
+<textarea name=groups_classes>
+{{ groups_classes }}
 </textarea>
 <br />
 <input type=submit />

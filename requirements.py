@@ -3,7 +3,7 @@ import urllib
 import jinja2
 import webapp2
 import logging
-import yaml
+import yayv
 
 import models
 import authorizer
@@ -14,29 +14,18 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     autoescape=True)
 
 
-class Parser(object):
-
-  def __init__(self, requirements):
-    self.string = requirements
-    self.yaml = yaml.load(requirements.lower())
-
-  def isValid(self):
-    if not isinstance(self.yaml, list):
-      err_msg = "# Requirements should be a list not %s\n" % type(self.yaml)
-      self.string = err_msg + self.string
-      return False
-    for d in self.yaml:
-      if not isinstance(d, dict):
-        err_msg = "# %s should be a dict not %s\n" % (d, type(d))
-        self.string = err_msg + self.string
-        return False
-    return True
-
-  def normalize(self):
-    if self.isValid():
-      return yaml.dump(self.yaml, default_flow_style=False)
-    else:
-      return self.string
+schema = yayv.ByExample(
+    "- name: REQUIRED\n"
+    "  applies_to:\n"
+    "    - current_grade: OPTIONAL\n"
+    "      email: OPTIONAL\n"
+    "      group: OPTIONAL\n"
+    "  id: AUTO_INC\n"
+    "  exempt:\n"
+    "    - OPTIONAL\n"
+    "  class_or_group_options:\n"
+    "    - \n"
+    "      - OPTIONAL\n")
 
 
 class Requirements(webapp2.RequestHandler):
@@ -62,7 +51,7 @@ class Requirements(webapp2.RequestHandler):
     requirements = self.request.get("requirements")
     if not requirements:
       logging.fatal("no requirements")
-    requirements = str(Parser(requirements).normalize())
+    requirements = schema.Update(requirements)
     models.Requirements.store(institution, session, requirements)
     self.RedirectToSelf(institution, session, "saved requirements")
 
@@ -88,24 +77,46 @@ class Requirements(webapp2.RequestHandler):
       requirements = '\n'.join([
           "# Sample data. Lines with leading # signs are comments.",
           "# Change the data below.",
-          "- applies_to:",
-          "    current_grade: 6",
+          "- name: PE_REQUIREMENT",
+          "  applies_to: []",
           "  exempt:",
-          "    - email: sarah.moffatt@mydiscoveryk8.org",
-          "  class_options:",
-          "    - 6th Grade Core",
-          "- applies_to:",
-          "  exempt:",
-          "    - email: zoya@mydiscoveryk8.org",
-          "    - email: alyssa@mydiscoveryk8.org",
-          "  class_options:",
-          "    -",
-          "      - PE_Mon_or_Tue",
+          "    - student1@mydiscoveryk8.org",
+          "    - student2@mydiscoveryk8.org",
+          "  class_or_group_options:",
+          "    -",  # OR
+          "      - PE_Mon_or_Tue",  # AND
           "      - PE_Thu_or_Fri",
-          "    - PE_2_day_equivalent # example: dance meets twice a week",
-          "    -",
+          "    -",  # OR
+          "      - PE_2_day_equivalent",
+          "    -",  # OR
+          "      - PE_Mon_or_Tue",  # AND
           "      - PE_1_day_equivalent",
-          "      - PE_1_day_equivalent",])
+          "    -",  # OR
+          "      - PE_1_day_equivalent",  # AND
+          "      - PE_Thu_or_Fri",
+          "    -",  # OR
+          "      - PE_1_day_equivalent",  # AND
+          "      - PE_1_day_equivalent",
+          "- name: CORE_6",
+          "  applies_to:",
+          "    - current_grade: 6",
+          "  exempt:",
+          "    - student3@mydiscoveryk8.org",
+          "  class_or_group_options:",
+          "    -",
+          "      - 6th Grade Core",
+          "- name: CORE_7",
+          "  applies_to:",
+          "    - current_grade: 7",
+          "  class_or_group_options:",
+          "    -",
+          "      - 7th Grade Core",
+          "- name: CORE_8",
+          "  applies_to:",
+          "    - current_grade: 8",
+          "  class_or_group_options:",
+          "    -",
+          "      - 8th Grade Core"])
 
     template_values = {
       'logout_url': logout_url,

@@ -10,6 +10,7 @@ import requirements
 import verification
 import preferences
 import scheduler
+import groups_classes
 
 application = webapp2.WSGIApplication([
   ('/', index.Index),
@@ -21,5 +22,6 @@ application = webapp2.WSGIApplication([
   ('/requirements', requirements.Requirements),
   ('/verification', verification.Verification),
   ('/preferences', preferences.Preferences),
-  ('/scheduler', scheduler.Scheduler)
+  ('/scheduler', scheduler.Scheduler),
+  ('/groups_classes', groups_classes.GroupsClasses),
 ], debug=True)
