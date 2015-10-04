@@ -4,6 +4,7 @@ import jinja2
 import webapp2
 import logging
 import yaml
+import itertools
 
 import models
 import authorizer
@@ -79,20 +80,29 @@ class Preferences(webapp2.RequestHandler):
                                  'description': class_desc }
     if not classes_by_id:
       classes_by_id['0'] = {'name': 'None', 'desc': 'None'}
-    all_classes = set([str(c_id) for c_id in classes_by_id.keys()])
+    all_class_ids = set([str(c_id) for c_id in classes_by_id.keys()])
+    # TODO: find the list of eligible classes for this student.
+    eligible_class_ids = all_class_ids
+    all_class_ids = all_class_ids.intersection(eligible_class_ids)
+
     prefs = models.Preferences.FetchEntity(
         auth.user.email(), institution, session)
-    want_ids = list(all_classes.intersection(prefs.want.split(',')))
-    dontcare_ids = list(all_classes.intersection(prefs.dontcare.split(',')))
-    dontwant_ids = list(all_classes.intersection(prefs.dontwant.split(',')))
-    logging.error(','.join(all_classes))
-    logging.error(prefs.want)
-    logging.error(','.join(want_ids))
-    new_classes = all_classes.difference(want_ids)
-    new_classes = new_classes.difference(dontcare_ids)
-    new_classes = new_classes.difference(dontwant_ids)
-    dontcare_ids = list(new_classes) + dontcare_ids
+    want_ids = prefs.want.split(',')
+    dontcare_ids = prefs.dontcare.split(',')
+    dontwant_ids = prefs.dontwant.split(',')
 
+    new_class_ids = all_class_ids.difference(want_ids)
+    new_class_ids = new_class_ids.difference(dontcare_ids)
+    new_class_ids = new_class_ids.difference(dontwant_ids)
+    dontcare_ids = list(new_class_ids) + dontcare_ids
+
+    def RemoveDeletedClasses(class_ids):
+      for class_id in class_ids:
+        if class_id in classes_by_id:
+          yield class_id
+
+    want_ids = RemoveDeletedClasses(want_ids)
+    dontwant_ids = RemoveDeletedClasses(dontwant_ids)
     template_values = {
       'logout_url': auth.GetLogoutUrl(self),
       'user' : auth.user,

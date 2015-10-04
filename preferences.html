@@ -2,6 +2,17 @@
 {% block body %}
 
 <script>
+window.onbeforeunload = null;
+
+function confirmOnPageExit(e) {
+  e = e || window.event;
+  var msg = '*** SAVE your work first! ***';
+  if (e) {
+    e.returnValue = msg;
+  }
+  return msg;
+}
+
 function moveRadio() {
   if (document.getElementById("radio1").checked) {
     src = "DontCareSelect";
@@ -20,6 +31,7 @@ function move(src, dst, option) {
   o = src_select.item(idx)
   dst_select.add(o)
   o.selected = false;
+  window.onbeforeunload = confirmOnPageExit;
 }
 
 function CopySelectToHidden(select_id, hidden_id) {
@@ -37,6 +49,7 @@ function CopySelectToHidden(select_id, hidden_id) {
 }
 
 function submit_it() {
+  window.onbeforeunload = null;
   CopySelectToHidden("WantSelect", "want");
   CopySelectToHidden("DontWantSelect", "dontwant");
   CopySelectToHidden("DontCareSelect", "dontcare");
