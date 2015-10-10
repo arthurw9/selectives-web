@@ -17,9 +17,10 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 
 class Preferences(webapp2.RequestHandler):
 
-  def RedirectToSelf(self, institution, session, message):
+  def RedirectToSelf(self, institution, session, student, message):
     self.redirect("/preferences?%s" % urllib.urlencode(
         {'message': message, 
+         'student': student,
          'institution': institution,
          'session': session}))
 
@@ -35,13 +36,19 @@ class Preferences(webapp2.RequestHandler):
     session = self.request.get("session")
     if not session:
       logging.fatal("no session")
-    email = auth.user.email()
+    email = auth.student_email
     want = self.request.get("want").split(",")
+    if want[0] == '':
+      want.pop(0)
     dontcare = self.request.get("dontcare").split(",")
+    if dontcare[0] == '':
+      dontcare.pop(0)
     dontwant = self.request.get("dontwant").split(",")
+    if dontwant[0] == '':
+      dontwant.pop(0)
     models.Preferences.Store(email, institution, session,
                              want, dontcare, dontwant)
-    self.RedirectToSelf(institution, session, "Saved Preferences")
+    self.RedirectToSelf(institution, session, email, "Saved Preferences")
 
   def get(self):
     auth = authorizer.Authorizer(self)
@@ -56,10 +63,6 @@ class Preferences(webapp2.RequestHandler):
     if not session:
       logging.fatal("no session")
 
-    student_info = auth.GetStudentInfo(institution, session)
-    if not student_info:
-      student_info = {'name': 'Not found',
-                      'current_grade': 'Not found'}
     message = self.request.get('message')
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
@@ -86,7 +89,7 @@ class Preferences(webapp2.RequestHandler):
     all_class_ids = all_class_ids.intersection(eligible_class_ids)
 
     prefs = models.Preferences.FetchEntity(
-        auth.user.email(), institution, session)
+        auth.student_email, institution, session)
     want_ids = prefs.want.split(',')
     dontcare_ids = prefs.dontcare.split(',')
     dontwant_ids = prefs.dontwant.split(',')
@@ -95,14 +98,19 @@ class Preferences(webapp2.RequestHandler):
     new_class_ids = new_class_ids.difference(dontcare_ids)
     new_class_ids = new_class_ids.difference(dontwant_ids)
     dontcare_ids = list(new_class_ids) + dontcare_ids
+    if dontcare_ids[len(dontcare_ids)-1] == '':
+      dontcare_ids.pop()
 
     def RemoveDeletedClasses(class_ids):
       for class_id in class_ids:
         if class_id in classes_by_id:
           yield class_id
 
-    want_ids = RemoveDeletedClasses(want_ids)
-    dontwant_ids = RemoveDeletedClasses(dontwant_ids)
+    want_ids = list(RemoveDeletedClasses(want_ids))
+    dontwant_ids = list(RemoveDeletedClasses(dontwant_ids))
+    logging.info('want: ' + ','.join(want_ids));
+    logging.info('dont want: ' + ','.join(dontwant_ids));
+    logging.info('dont care: ' + ','.join(dontcare_ids));
     template_values = {
       'logout_url': auth.GetLogoutUrl(self),
       'user' : auth.user,
@@ -111,7 +119,7 @@ class Preferences(webapp2.RequestHandler):
       'message': message,
       'session_query': session_query,
       'classes': classes_by_id,
-      'student': student_info,
+      'student': auth.student_entity,
       'want_ids': want_ids,
       'dontwant_ids': dontwant_ids,
       'dontcare_ids': dontcare_ids,

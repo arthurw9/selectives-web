@@ -22,15 +22,6 @@ function EnableLogins(session_name, login_type, enabled) {
   document.getElementById("session_form").submit();
   return false;
 }
-
-function TestLogin(session_name, login_type) {
-  url = "/" + login_type + "?session=" + 
-        encodeURIComponent(session_name) +
-        "&institution=" +
-        encodeURIComponent('{{ institution }}');
-  window.location.href = url;
-  return false;
-}
 </script>
 
 <h1>Sessions</h1>
@@ -59,13 +50,11 @@ function TestLogin(session_name, login_type) {
       <td  class="left-right-padding">
         <input type="checkbox" 
                onchange="return EnableLogins('{{ item.name }}', 'preferences', this.checked);"
-               {% if item.preferences_enabled %}checked{% endif %}>
-        <a href="" onclick="return TestLogin('{{ item.name }}', 'preferences');">Preferences</a></td>
+               {% if item.preferences_enabled %}checked{% endif %}> Preferences</td>
       <td  class="left-right-padding">
         <input type="checkbox" 
                onchange="return EnableLogins('{{ item.name }}', 'schedule', this.checked);"
-               {% if item.schedule_enabled %}checked{% endif %}>
-        <a href="" onclick="return TestLogin('{{ item.name }}', 'schedule');">Schedule</a></td>
+               {% if item.schedule_enabled %}checked{% endif %}> Schedule </td>
     </tr>
   {% endfor %}
   </table>

@@ -9,6 +9,7 @@ import students
 import requirements
 import verification
 import preferences
+import preferences_admin
 import scheduler
 import groups_classes
 
@@ -22,6 +23,7 @@ application = webapp2.WSGIApplication([
   ('/requirements', requirements.Requirements),
   ('/verification', verification.Verification),
   ('/preferences', preferences.Preferences),
+  ('/preferences_admin', preferences_admin.PreferencesAdmin),
   ('/scheduler', scheduler.Scheduler),
   ('/groups_classes', groups_classes.GroupsClasses),
 ], debug=True)

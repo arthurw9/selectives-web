@@ -59,12 +59,14 @@ function submit_it() {
 
 <h3>Preferences</h3>
 
-Name: {{ student.name }}<br>
-Grade: {{ student.current_grade }}
+Name: {{ student['first'] + ' ' + student['last'] }}<br>
+Grade: {{ student['current_grade'] }}<br>
+email: {{ student['email'] }}<br><br>
 
 <form method=post>
 <input type=hidden name="institution" value="{{ institution }}" />
 <input type=hidden name="session" value="{{ session }}" />
+<input type=hidden name="student" value="{{ student['email'] }}" />
 <input type=hidden id="want" name="want" value="" />
 <input type=hidden id="dontwant" name="dontwant" value="" />
 <input type=hidden id="dontcare" name="dontcare" value="" />

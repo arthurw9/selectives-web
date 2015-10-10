@@ -1,6 +1,11 @@
-from google.appengine.api import users
-import models
 import logging
+try:
+  from google.appengine.api import users
+except:
+  logging.info("google.appengine.api.users not found. "
+                "We must be running in a unit test.")
+import logic
+import models
 import urllib
 import yaml
 
@@ -19,7 +24,6 @@ class Authorizer(object):
   def IsGlobalAdmin(self):
     if not self.user:
       return False
-    override=self.handler.request.get('o')
     return self.user.email() in models.GlobalAdmin.FetchAll()
     #return True  #Toggle with previous line
     # to create a Global Admin on the Admin page.
@@ -45,42 +49,57 @@ class Authorizer(object):
       return True
     return False
 
+  # Administrators can impersonate students by adding student email to the url:
+  # * url?student=email@domain
+  # The possibly impersonated student email is exported from this class as:
+  # * auth.student_email
   def HasStudentAccess(self):
     if not self.user:
+      logging.error("No user")
       return False
-    if self.CanAdministerInstitutionFromUrl():
-      return True
     institution = self.handler.request.get("institution")
     if not institution:
+      logging.error("No institution")
       return False
+    session = self.handler.request.get("session")
+    if not session:
+      logging.error("No session")
+      return False
+    if self.CanAdministerInstitutionFromUrl():
+      return self._VerifyStudent(institution,
+                                 session,
+                                 self.handler.request.get("student"))
+    if not self._VerifyServingSession(institution, session):
+      return False
+    return self._VerifyStudent(institution,
+                               session,
+                               self.user.email())
+
+  def _VerifyServingSession(self, institution, session):
     serving_session = models.ServingSession.FetchEntity(institution)
     logging.info("currently serving session = %s" % serving_session)
-    session = self.handler.request.get("session")
     if serving_session.session_name != session:
+      logging.error("serving session doesn't match")
       return False
     if not "/" + serving_session.login_type == self.handler.request.path:
+      logging.error("request path doesn't match")
       return False
-    if self.GetStudentInfo(institution, session):
-      return True
-    return False
+    return True
 
-  def GetStudentInfo(self, institution, session):
+  def _VerifyStudent(self, institution, session, student_email):
+    # returns true on success
     students = models.Students.fetch(institution, session)
     students = yaml.load(students)
-    # is students iterable?
-    try:
-      _ = (e for e in students)
-    except TypeError:
-      return None
-    for student in students:
-      if self.user.email() in student['email']:
-        if not 'name' in student:
-          student['name'] = "Not Specified"
-        if not 'current_grade' in student:
-          student['current_grade'] = "Not Specified"
-        return student
-    return None
-    
+    student_entity = logic.FindStudent(student_email, students)
+    if student_entity:
+      self.student_email = student_email
+      self.student_entity = student_entity
+      return True
+    logging.error("student not found '%s'" % student_email)
+    raise 'foo'
+    return False
+
+
   def Redirect(self):
     # are they logged in?
     if not self.user:
@@ -108,8 +127,10 @@ class Authorizer(object):
       institution = ss.institution_name
       session = ss.session_name
       login_type = ss.login_type
-      student_info = self.GetStudentInfo(institution, session)
-      if student_info:
+      verified = self._VerifyStudent(institution,
+                                     session,
+                                     self.user.email())
+      if verified:
         logging.info("Redirecting %s to /%s", (self.user.email(), login_type))
         self.handler.redirect("/%s?%s" % (login_type, urllib.urlencode(
             {'institution': institution,

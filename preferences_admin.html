@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block body %}
+
+<h3>Preferences Admin</h3>
+
+<form method=post>
+<fieldset>
+<legend>Preferences</legend>
+<input type=submit name="action" value="clear_prefs" />
+<input type=submit name="action" value="random_prefs" />
+</fieldset>
+</form>
+<br>
+TODO: 
+<li> any students with no preferences?
+<li> add button to start serving preferences page
+<br>
+
+{% for student in students %}
+  <a href="/preferences?{{ session_query }}&student={{ student['email'] }}"> {{ student['first'] }} {{ student['last'] }} </a><br>
+{% endfor %}
+
+{% endblock %}

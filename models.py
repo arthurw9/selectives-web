@@ -1,6 +1,15 @@
-from google.appengine.ext import ndb
+import logging
+try:
+  from google.appengine.ext import ndb
+except:
+  logging.info("google.appengine.ext not found. "
+                "We must be running in a unit test.")
+  import fake_ndb
+  ndb = fake_ndb.FakeNdb()
+
 
 GLOBAL_KEY = ndb.Key("global", "global")
+
 
 # TODO: make all methods camel case with initial caps
 # TODO: Fetch methods should come in predictable flavors:
@@ -337,6 +346,9 @@ class Preferences(ndb.Model):
     prefs.want = ','.join(want)
     prefs.dontcare = ','.join(dontcare)
     prefs.dontwant = ','.join(dontwant)
+    logging.info('saving want = %s' % prefs.want)
+    logging.info('saving dontwant = %s' % prefs.dontwant)
+    logging.info('saving dontcare = %s' % prefs.dontcare)
     prefs.put()
 
   @classmethod
