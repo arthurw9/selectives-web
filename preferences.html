@@ -2,6 +2,50 @@
 {% block body %}
 
 <script>
+
+var auto_save_timer_object;
+var last_change_timestamp;
+
+// Shim to handle Internet Explorer
+if (!Date.now) {
+  Date.now = function() { return new Date().getTime(); }
+}
+
+function ResetAutoSaveTimer(seconds) {
+  // set the timer to save in the given number of seconds
+  if (auto_save_timer_object) {
+    clearTimeout(auto_save_timer_object);
+  }
+  auto_save_timer_object = setTimeout(AutoSave, seconds * 1000);
+}
+
+function SetModified() {
+  // record the time of the last change
+  last_change_timestamp = Date.now();
+  // set the timer to save in 5 seconds
+  ResetAutoSaveTimer(5);
+  // Don't let the user leave without saving
+  window.onbeforeunload = confirmOnPageExit;
+  document.getElementById("status").innerHTML = "Modified";
+}
+
+function SetSaved() {
+  // Let the user leave without hassle
+  window.onbeforeunload = null;
+  document.getElementById("status").innerHTML = "Saved";
+}
+
+function SetSaveFail() {
+  // set the timer to try again in 5 seconds
+  ResetAutoSaveTimer(5);
+  window.onbeforeunload = confirmOnPageExit;
+  document.getElementById("status").innerHTML = "Save Failed";
+}
+
+function SetSaving() {
+  document.getElementById("status").innerHTML = "Saving...";
+}
+
 window.onbeforeunload = null;
 
 function confirmOnPageExit(e) {
@@ -31,7 +75,7 @@ function move(src, dst, option) {
   o = src_select.item(idx)
   dst_select.add(o)
   o.selected = false;
-  window.onbeforeunload = confirmOnPageExit;
+  SetModified();
 }
 
 function CopySelectToHidden(select_id, hidden_id) {
@@ -49,11 +93,34 @@ function CopySelectToHidden(select_id, hidden_id) {
 }
 
 function submit_it() {
+  // clear the unload handler so it doesn't block this submit
   window.onbeforeunload = null;
   CopySelectToHidden("WantSelect", "want");
   CopySelectToHidden("DontWantSelect", "dontwant");
   CopySelectToHidden("DontCareSelect", "dontcare");
   return true;
+}
+
+function AutoSave() {
+  var save_timestamp = Date.now();
+  SetSaving();
+  CopySelectToHidden("WantSelect", "want");
+  CopySelectToHidden("DontWantSelect", "dontwant");
+  CopySelectToHidden("DontCareSelect", "dontcare");
+  var request = new XMLHttpRequest();
+  request.onload = function() {
+    if (request.status == 200) {
+      if (save_timestamp > last_change_timestamp) {
+        SetSaved();
+      }
+    } else {
+      SetSaveFail();
+    }
+  }
+  request.open("POST", "");
+  var formElement = document.querySelector("form");
+  var formData = new FormData(formElement);
+  request.send(formData);
 }
 </script>
 
@@ -91,6 +158,7 @@ email: {{ student['email'] }}<br><br>
 {% endfor %}
 </select></td>
 </tr></table>
-<input type="submit" onclick="return submit_it();"/>
+<input type="submit" name=Save value=Save onclick="return submit_it();"/>
+<span id=status>Saved</span>
 </form>
 {% endblock %}

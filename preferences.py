@@ -48,6 +48,10 @@ class Preferences(webapp2.RequestHandler):
       dontwant.pop(0)
     models.Preferences.Store(email, institution, session,
                              want, dontcare, dontwant)
+    if self.request.get("Save") == "Save":
+      logging.info("Form Saved")
+    else:
+      logging.info("Auto Save")
     self.RedirectToSelf(institution, session, email, "Saved Preferences")
 
   def get(self):
