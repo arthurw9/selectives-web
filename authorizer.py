@@ -96,7 +96,6 @@ class Authorizer(object):
       self.student_entity = student_entity
       return True
     logging.error("student not found '%s'" % student_email)
-    raise 'foo'
     return False
 
 
