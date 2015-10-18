@@ -6,14 +6,13 @@
 <form method=post>
 <fieldset>
 <legend>Preferences</legend>
-<input type=submit name="action" value="clear_prefs" />
-<input type=submit name="action" value="random_prefs" />
+<input type=submit name="action" value="Clear Prefs" onclick="return confirm('Are you sure? This will clear all preferences.');"/>
+<input type=submit name="action" value="Random Prefs" onclick="return confirm('Are you sure? This will generate random preferences for everyone.');"/>
 </fieldset>
 </form>
 <br>
-TODO: 
-<li> any students with no preferences?
-<li> add button to start serving preferences page
+TODO: Mark any students with no saved preferences
+<br>
 <br>
 
 {% for student in students %}
