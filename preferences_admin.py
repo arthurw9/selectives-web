@@ -9,6 +9,7 @@ import random
 
 import models
 import authorizer
+import logic
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
@@ -42,11 +43,12 @@ class PreferencesAdmin(webapp2.RequestHandler):
     classes = yaml.load(classes)
     for student in students:
       email = student['email']
-      #TODO find the list of eligible classes for each student
-      want = random.sample(xrange(len(classes)), random.randint(1,5))
-      dontwant = random.sample(set(xrange(len(classes))).difference(want), random.randint(1,5))
-      want = [str(item) for item in want]
-      dontwant = [str(item) for item in dontwant]
+      eligible_class_ids = logic.EligibleClassIdsForStudent(student, classes)
+      eligible_class_ids = set(eligible_class_ids)
+      want = random.sample(eligible_class_ids, random.randint(1,5))
+      dontwant = random.sample(eligible_class_ids.difference(want), random.randint(1,5))
+      # want = [str(item) for item in want]
+      # dontwant = [str(item) for item in dontwant]
       models.Preferences.Store(email, institution, session,
                                want, [], dontwant)
 

@@ -8,6 +8,7 @@ import itertools
 
 import models
 import authorizer
+import logic
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
@@ -87,10 +88,8 @@ class Preferences(webapp2.RequestHandler):
                                  'description': class_desc }
     if not classes_by_id:
       classes_by_id['0'] = {'name': 'None', 'desc': 'None'}
-    all_class_ids = set([str(c_id) for c_id in classes_by_id.keys()])
-    # TODO: find the list of eligible classes for this student.
-    eligible_class_ids = all_class_ids
-    all_class_ids = all_class_ids.intersection(eligible_class_ids)
+    eligible_class_ids = set(logic.EligibleClassIdsForStudent(
+        auth.student_entity, classes))
 
     prefs = models.Preferences.FetchEntity(
         auth.student_email, institution, session)
@@ -98,7 +97,7 @@ class Preferences(webapp2.RequestHandler):
     dontcare_ids = prefs.dontcare.split(',')
     dontwant_ids = prefs.dontwant.split(',')
 
-    new_class_ids = all_class_ids.difference(want_ids)
+    new_class_ids = eligible_class_ids.difference(want_ids)
     new_class_ids = new_class_ids.difference(dontcare_ids)
     new_class_ids = new_class_ids.difference(dontwant_ids)
     dontcare_ids = list(new_class_ids) + dontcare_ids
@@ -107,10 +106,11 @@ class Preferences(webapp2.RequestHandler):
 
     def RemoveDeletedClasses(class_ids):
       for class_id in class_ids:
-        if class_id in classes_by_id:
+        if class_id in eligible_class_ids:
           yield class_id
 
     want_ids = list(RemoveDeletedClasses(want_ids))
+    dontcare_ids = list(RemoveDeletedClasses(dontcare_ids))
     dontwant_ids = list(RemoveDeletedClasses(dontwant_ids))
     logging.info('want: ' + ','.join(want_ids));
     logging.info('dont want: ' + ','.join(dontwant_ids));

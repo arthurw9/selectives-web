@@ -1,3 +1,6 @@
+import models
+
+
 def FindStudent(student_email, students):
   # is students iterable?
   try:
@@ -9,26 +12,22 @@ def FindStudent(student_email, students):
       return student
   return None
 
-# TODO: Fix me
-def EligibleClassesForStudent(student, classes):
-  """Return the set of class ids that the student is eligible to take."""
-  for c in classes:
-    # if c['prerequisites']:
-    pass
-    "- name: REQUIRED\n"
-    "  id: AUTO_INC\n"
-    "  instructor: OPTIONAL\n"
-    "  max_enrollment: REQUIRED\n"
-    "  prerequisites:\n"
-    "    - current_grade: OPTIONAL\n"
-    "      email: OPTIONAL\n"
-    "      group: OPTIONAL\n"
-    "  schedule:\n"
-    "    - daypart: REQUIRED\n"
-    "      location: REQUIRED\n"
 
-    "- email: UNIQUE\n"
-    "  first: REQUIRED\n"
-    "  last: REQUIRED\n"
-    "  current_grade: REQUIRED\n"
-    "  current_homeroom: REQUIRED\n"
+def EligibleClassIdsForStudent(student, classes):
+  """Return the set of class ids that the student is eligible to take."""
+  class_ids = []
+  for c in classes:
+    class_id = str(c['id'])
+    if not c['prerequisites']:
+      class_ids.append(class_id)
+    for prereq in c['prerequisites']:
+      if 'email' in prereq:
+        if student['email'] == prereq['email']:
+          class_ids.append(class_id)
+      if 'current_grade' in prereq:
+        if student['current_grade'] == prereq['current_grade']:
+          class_ids.append(class_id)
+      if 'group' in prereq:
+        #TODO: fix me!
+        class_ids.append(class_id)
+  return class_ids
