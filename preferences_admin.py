@@ -25,33 +25,6 @@ class PreferencesAdmin(webapp2.RequestHandler):
          'institution': institution,
          'session': session}))
 
-  def ClearPrefs(self, institution, session):
-    students = models.Students.fetch(institution, session)
-    students = yaml.load(students)
-    classes = models.Classes.Fetch(institution, session)
-    classes = yaml.load(classes)
-    for student in students:
-      email = student['email']
-      #TODO find the list of eligible classes for each student
-      models.Preferences.Store(email, institution, session,
-                               [], [], [])
-
-  def RandomPrefs(self, institution, session):
-    students = models.Students.fetch(institution, session)
-    students = yaml.load(students)
-    classes = models.Classes.Fetch(institution, session)
-    classes = yaml.load(classes)
-    for student in students:
-      email = student['email']
-      eligible_class_ids = logic.EligibleClassIdsForStudent(student, classes)
-      eligible_class_ids = set(eligible_class_ids)
-      want = random.sample(eligible_class_ids, random.randint(1,5))
-      dontwant = random.sample(eligible_class_ids.difference(want), random.randint(1,5))
-      # want = [str(item) for item in want]
-      # dontwant = [str(item) for item in dontwant]
-      models.Preferences.Store(email, institution, session,
-                               want, [], dontwant)
-
   def post(self):
     auth = authorizer.Authorizer(self)
     if not auth.CanAdministerInstitutionFromUrl():
@@ -66,10 +39,6 @@ class PreferencesAdmin(webapp2.RequestHandler):
       logging.fatal("no session")
     email = auth.user.email()
     action = self.request.get("action")
-    if action == "Clear Prefs":
-      self.ClearPrefs(institution, session)
-    if action == "Random Prefs":
-      self.RandomPrefs(institution, session)
     self.RedirectToSelf(institution, session, "Saved Preferences")
 
   def get(self):

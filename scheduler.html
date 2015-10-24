@@ -24,6 +24,11 @@ function UpdateCounts() {
 <form method=post>
 <input type=hidden name="institution" value="{{ institution }}" />
 <input type=hidden name="session" value="{{ session }}" />
+<fieldset>
+<legend>Preferences</legend>
+<input type=submit name="action" value="Clear Prefs" onclick="return confirm('Are you sure? This will clear all preferences.');"/>
+<input type=submit name="action" value="Random Prefs" onclick="return confirm('Are you sure? This will generate random preferences for everyone.');"/>
+</fieldset>
 
 <fieldset>
 <legend>Validity / Consistency</legend>
