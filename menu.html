@@ -2,25 +2,26 @@
 {% block body %}
 
 <table><tr><td width=15% valign='top' style="border-right: 1px solid black; padding: 5px;">
-  <h3>Inputs</h3>
+  <h3>Setup Session</h3>
   <li><a href="/dayparts?{{ session_query }}">Dayparts</a>
   <li><a href="/classes?{{ session_query }}">Classes</a>
   <li><a href="/students?{{ session_query }}">Students</a>
   <li><a href="/requirements?{{ session_query }}">Requirements</a>
   <li><a href="/groups_classes?{{ session_query }}">Groups Classes</a>
-  <li><a href="/preferences_admin?{{ session_query }}">Preferences Admin</a>
 
-  <h3><a href="/scheduler?{{ session_query }}">Scheduler</a></h3>
+  <h3>Debugging</h3>
+  <li>TODO
 
-  <h3>Students</h3>
+  <h3>Admin Session</h3>
+  <li><a href="/preferences_admin?{{ session_query }}">Student Admin</a>
+  <li><a href="/scheduler?{{ session_query }}">Scheduler</a>
+
+  <h3>Reports</h3>
   <li><a href="/open_dayparts?{{ session_query }}">Students with open dayparts</a>
   <li><a href="/student_happiness?{{ session_query }}">Student Happiness</a>
-  <li><a href="/schedule?{{ session_query }}">Student Schedule</a>
-
-  <h3>Classes</h3>
   <li><a href="/class_demand?{{ session_query }}">Class Demand</a>
-  <li><a href="/roster?{{ session_query }}">Class Roster</a>
   <li><a href="/student_happiness?{{ session_query }}">Overbooked classes</a>
+  <li><a href="/roster?{{ session_query }}">Class Roster</a>
 </td>
 <td valign='top' width=85%>
   {% block session_body %} {% endblock %}
