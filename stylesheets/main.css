@@ -1,2 +1,3 @@
 textarea { width:60%; height:300px }
 .left-right-padding { padding-left:10px; padding-right:10px; }
+.highlight:hover { background-color: #ffff99; }
