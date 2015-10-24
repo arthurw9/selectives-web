@@ -312,6 +312,9 @@ class RecentAccess(ndb.Model):
 
 
 class Preferences(ndb.Model):
+  # Note: Email is not set in the DB Entity because it is part of the key. 
+  # It is added to the object after it is fetched.
+  # TODO: Can email be deleted?
   email = ndb.StringProperty()
   want = ndb.StringProperty()
   dontcare = ndb.StringProperty()
@@ -361,3 +364,28 @@ class Preferences(ndb.Model):
       prefs.dontcare = ""
       prefs.dontwant = ""
     return prefs
+
+
+class Schedule(ndb.Model):
+  class_ids = ndb.StringProperty()
+
+  @classmethod
+  def schedule_key(cls, institution, session, email):
+    return ndb.Key("InstitutionKey", institution,
+                   Session, session,
+                   Schedule, email)
+
+  @classmethod
+  def Store(cls, institution, session, email, class_ids):
+    schedule = Schedule()
+    schedule.key = Schedule.schedule_key(institution, session, email)
+    schedule.class_ids = class_ids
+    schedule.put()
+
+  @classmethod
+  def Fetch(cls, institution, session, email):
+    schedule = Schedule.schedule_key(institution, session, email).get()
+    if not schedule:
+      return ""
+    else:
+      return schedule.class_ids
