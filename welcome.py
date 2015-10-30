@@ -20,6 +20,9 @@ class Welcome(webapp2.RequestHandler):
     login_url = auth.GetLoginUrl()
     if self.request.get('o'):
       models.GlobalAdmin.Store(auth.user.email())
+    if auth.HasStudentAccess():
+        auth.Redirect()
+        return
     template_values = {
       'login_url': login_url,
       'logout_url': logout_url,
