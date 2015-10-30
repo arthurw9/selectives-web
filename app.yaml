@@ -7,6 +7,8 @@ threadsafe: true
 handlers:
 - url: /stylesheets
   static_dir: stylesheets
+- url: /Sortable
+  static_dir: Sortable
 - url: /.*
   script: application.application 
 
