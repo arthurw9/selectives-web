@@ -8,7 +8,7 @@ if you select a multi day class that has a different daypart that conflicts with
 fix the titles on the preferences page so they stay with their classes
 Add messages on the schedule page for all problems with the schedule.
 
-add a readonly schedule button to the schedule page call it "See my schedule"
+add a "See my schedule" button to the schedule page to show a readonly schedule
 Add a print button to the readonly schedule page
 add an email button to the readonly schedule page
 On the students page add client side filters and sorts
