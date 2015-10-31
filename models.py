@@ -291,6 +291,30 @@ class GroupsClasses(ndb.Model):
     groups_classes.key = GroupsClasses.groups_classes_key(institution, session_name)
     groups_classes.put()
 
+class GroupsStudents(ndb.Model):
+    """List of student groups in yaml format."""
+    data = ndb.TextProperty()
+
+    @classmethod
+    def groups_students_key(cls, institution, session):
+        return ndb.Key("InstitutionKey", institution,
+                       Session, session,
+                       GroupsStudents, "groups_students")
+
+    @classmethod
+    def fetch(cls, institution, session):
+        groups_students = GroupsStudents.groups_students_key(institution, session).get()
+        if groups_students:
+            return groups_students.data
+        else:
+            return ''
+
+    @classmethod
+    def store(cls, institution, session_name, groups_students_data):
+        groups_students = GroupsStudents(data = groups_students_data)
+        groups_students.key = GroupsStudents.groups_students_key(institution, session_name)
+        groups_students.put()
+
 
 class RecentAccess(ndb.Model):
   date_time = ndb.DateTimeProperty(auto_now=True)

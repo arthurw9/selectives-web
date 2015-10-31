@@ -13,6 +13,7 @@ import preferences_admin
 import scheduler
 import groups_classes
 import schedule
+import groups_students
 
 application = webapp2.WSGIApplication([
   ('/', index.Index),
@@ -28,4 +29,5 @@ application = webapp2.WSGIApplication([
   ('/preferences_admin', preferences_admin.PreferencesAdmin),
   ('/scheduler', scheduler.Scheduler),
   ('/groups_classes', groups_classes.GroupsClasses),
+  ('/groups_students', groups_students.GroupsStudents),
 ], debug=True)
