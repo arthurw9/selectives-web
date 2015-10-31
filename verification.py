@@ -35,7 +35,7 @@ class Verification(webapp2.RequestHandler):
     logout_url = auth.GetLogoutUrl(self)
     template_values = {
       'logout_url': logout_url,
-      'user' : auth.user,
+      'user_email' : auth.email,
       'institution' : institution,
       'session' : session,
       'student_name': student_info['name'],
