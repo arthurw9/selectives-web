@@ -57,37 +57,14 @@ function confirmOnPageExit(e) {
   return msg;
 }
 
-function moveRadio() {
-  if (document.getElementById("radio1").checked) {
-    src = "DontCareSelect";
-    dst = "DontWantSelect";
-  } else {
-    src = "DontCareSelect";
-    dst = "WantSelect";
-  }
-  move(src, dst);
-}
-
-function move(src, dst, option) {
-  src_select = document.getElementById(src);
-  dst_select = document.getElementById(dst);
-  idx = src_select.selectedIndex;
-  o = src_select.item(idx)
-  dst_select.add(o)
-  o.selected = false;
-  SetModified();
-}
-
-function CopySelectToHidden(select_id, hidden_id) {
-  select = document.getElementById(select_id);
+function CopyListToHidden(list_id, hidden_id) {
+  olist = document.getElementById(list_id);
   str = ""
-  for(var idx = 0; idx < select.options.length; idx++) {
-    var val = select.item(idx).value;
-    str = str + val;
-    if (idx < select.length - 1) {
-      str = str + ",";
-    }
+  for(var idx=0; idx < olist.childElementCount; idx++) {
+    var val = olist.children[idx].value;
+    str = str + val + ",";
   }
+  str = str.substr(0, str.length-1);  // remove last extra comma
   hidden = document.getElementById(hidden_id);
   hidden.value = str;
 }
@@ -95,18 +72,18 @@ function CopySelectToHidden(select_id, hidden_id) {
 function submit_it() {
   // clear the unload handler so it doesn't block this submit
   window.onbeforeunload = null;
-  CopySelectToHidden("WantSelect", "want");
-  CopySelectToHidden("DontWantSelect", "dontwant");
-  CopySelectToHidden("DontCareSelect", "dontcare");
+  CopyListToHidden("WantId", "want");
+  CopyListToHidden("DontWantId", "dontwant");
+  CopyListToHidden("DontCareId", "dontcare");
   return true;
 }
 
 function AutoSave() {
   var save_timestamp = Date.now();
   SetSaving();
-  CopySelectToHidden("WantSelect", "want");
-  CopySelectToHidden("DontWantSelect", "dontwant");
-  CopySelectToHidden("DontCareSelect", "dontcare");
+  CopyListToHidden("WantId", "want");
+  CopyListToHidden("DontWantId", "dontwant");
+  CopyListToHidden("DontCareId", "dontcare");
   var request = new XMLHttpRequest();
   request.onload = function() {
     if (request.status == 200) {
@@ -124,6 +101,10 @@ function AutoSave() {
 }
 </script>
 
+
+<script src="./Sortable/Sortable.js"></script>
+
+
 <h3>Preferences</h3>
 
 Name: {{ student['first'] + ' ' + student['last'] }}<br>
@@ -138,27 +119,74 @@ email: {{ student['email'] }}<br><br>
 <input type=hidden id="dontwant" name="dontwant" value="" />
 <input type=hidden id="dontcare" name="dontcare" value="" />
 
-<table><tr><th>Don't Want</th><th></th><th>Don't Care</th><th></th><th>Want</th></tr>
-<tr>
-<td><select size=20 id="DontWantSelect" onclick="return move('DontWantSelect', 'DontCareSelect');" multiple>
-{% for id in dontwant_ids %}
-<option title='{{ classes[id].description }}' value='{{ id }}'>{{ classes[id].name }}</option>
-{% endfor %}
-</select></td>
-<td>&lt;&lt; <input type="radio" name=direction id="radio1"/> &gt;&gt;</td>
-<td><select size=20 id="DontCareSelect" onclick="return moveRadio();" multiple>
-{% for id in dontcare_ids %}
-<option title='{{ classes[id].description }}' value='{{ id }}'>{{ classes[id].name }}</option>
-{% endfor %}
-</select></td>
-<td>&lt;&lt; <input type="radio" name=direction id="radio2" checked/> &gt;&gt;</td>
-<td><select size=20 id="WantSelect" onclick="return move('WantSelect', 'DontCareSelect');" multiple>
-{% for id in want_ids %}
-<option title='{{ classes[id].description }}' value='{{ id }}'>{{ classes[id].name }}</option>
-{% endfor %}
-</select></td>
-</tr></table>
+<div class="prefGroup">
+  <div class="header">Don't Want</div>
+  <div class="header">Don't Care</div>
+  <div class="header">Want</div>
+</div>
+<div class="prefGroup">
+  <ol class="PrefOrderedListStyle" id="DontWantId">
+    {% for id in dontwant_ids %}
+      <li title='{{ classes[id].description }}' value='{{ id }}' class="PrefListItemStyle">{{ classes[id].name }}</li>
+    {% endfor %}
+  </ol>
+  <ol class="PrefOrderedListStyle" id="DontCareId">
+    {% for id in dontcare_ids %}
+      <li title='{{ classes[id].description }}' value='{{ id }}' class="PrefListItemStyle">{{ classes[id].name }}</li>
+    {% endfor %}
+  </ol>
+  <ol class="PrefOrderedListStyle" id="WantId">
+    {% for id in want_ids %}
+      <li title='{{ classes[id].description }}' value='{{ id }}' class="PrefListItemStyle">{{ classes[id].name }}</li>
+    {% endfor %}
+  </ol>
+</div>
+
 <input type="submit" name=Save value=Save onclick="return submit_it();"/>
 <span id=status>Saved</span>
 </form>
+
+<!--
+  An element needs to be in the DOM before getElementById can find it,
+  therefore this script block must be down here after the HTML above
+  is parsed.
+-->
+<script>
+var dontWantElement = document.getElementById('DontWantId');
+var dontWantSortable = Sortable.create(dontWantElement, {
+    group: {
+        name: 'dontWantGroup',
+        put: ['dontCareGroup', 'wantGroup']
+    },
+    animation: 100,
+    onMove: function() {
+        SetModified()
+    }
+});
+
+var dontCareElement = document.getElementById('DontCareId');
+var dontCareSortable = Sortable.create(dontCareElement, {
+    group: {
+        name: 'dontCareGroup',
+        put: ['dontWantGroup', 'wantGroup']
+    },
+    animation: 100,
+    onMove: function() {
+        SetModified()
+    }
+});
+
+var wantElement = document.getElementById('WantId');
+var wantSortable = Sortable.create(wantElement, {
+    group: {
+        name: 'wantGroup',
+        put: ['dontWantGroup', 'dontCareGroup']
+    },
+    animation: 100,
+    onMove: function() {
+        SetModified()
+    }
+});
+</script>
+
 {% endblock %}

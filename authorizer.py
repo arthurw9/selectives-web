@@ -17,14 +17,15 @@ class Authorizer(object):
     self.user = users.get_current_user()
     self.handler = handler
     if self.user:
-      models.RecentAccess.Store(self.user.email())
+      self.email = self.user.email().lower() # google capitalizes email addresses sometimes
+      models.RecentAccess.Store(self.email)
     else:
       models.RecentAccess.Store("anonymous")
 
   def IsGlobalAdmin(self):
     if not self.user:
       return False
-    return self.user.email() in models.GlobalAdmin.FetchAll()
+    return self.email in models.GlobalAdmin.FetchAll()
     #return True  #Toggle with previous line
     # to create a Global Admin on the Admin page.
     # Otherwise on a new instance, you can't get into the system!
@@ -35,7 +36,7 @@ class Authorizer(object):
     if self.IsGlobalAdmin():
       institution_list = models.Institution.FetchAllInstitutions()
       return [ i.name for i in institution_list ]
-    return models.Admin.GetInstitutionNames(self.user.email())
+    return models.Admin.GetInstitutionNames(self.email)
 
   def CanAdministerInstitutionFromUrl(self):
     if not self.user:
@@ -45,7 +46,7 @@ class Authorizer(object):
     institution = self.handler.request.get("institution")
     if not institution:
       return False
-    if self.user.email() in models.Admin.FetchAll(institution):
+    if self.email in models.Admin.FetchAll(institution):
       return True
     return False
 
@@ -73,7 +74,7 @@ class Authorizer(object):
       return False
     return self._VerifyStudent(institution,
                                session,
-                               self.user.email())
+                               self.email)
 
   def _VerifyServingSession(self, institution, session):
     serving_session = models.ServingSession.FetchEntity(institution)
@@ -105,18 +106,18 @@ class Authorizer(object):
       self.handler.redirect("/welcome")
       return
     if self.IsGlobalAdmin():
-      logging.info("Redirecting %s to index", self.user.email())
+      logging.info("Redirecting %s to index", self.email)
       self.handler.redirect("/")
       return
     # are they an institution admin?
-    institution_list = models.Admin.GetInstitutionNames(self.user.email())
+    institution_list = models.Admin.GetInstitutionNames(self.email)
     if len(institution_list) > 1:
-      logging.info("Redirecting %s to /pickinstitution", self.user.email())
+      logging.info("Redirecting %s to /pickinstitution", self.email)
       self.handler.redirect("/pickinstitution")
       return
     if len(institution_list) > 0:
       institution = institution_list[0]
-      logging.info("Redirecting %s to /institution", self.user.email())
+      logging.info("Redirecting %s to /institution", self.email)
       self.handler.redirect("/institution?%s" % urllib.urlencode(
           {'institution': institution}))
       return
@@ -128,14 +129,14 @@ class Authorizer(object):
       login_type = ss.login_type
       verified = self._VerifyStudent(institution,
                                      session,
-                                     self.user.email())
+                                     self.email)
       if verified:
-        logging.info("Redirecting %s to /%s", (self.user.email(), login_type))
+        logging.info("Redirecting %s to /%s", (self.email, login_type))
         self.handler.redirect("/%s?%s" % (login_type, urllib.urlencode(
             {'institution': institution,
              'session': session})))
         return
-    logging.info("Redirecting %s to /welcome", self.user.email())
+    logging.info("Redirecting %s to /welcome", self.email)
     self.handler.redirect("/welcome")
 
   # TODO get rid of the unnecessary handler parameter

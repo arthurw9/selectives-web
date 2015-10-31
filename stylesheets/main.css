@@ -1,3 +1,37 @@
 textarea { width:60%; height:300px }
 .left-right-padding { padding-left:10px; padding-right:10px; }
 .highlight:hover { background-color: #ffff99; }
+
+.prefGroup {
+  display: flex;
+}
+.header {
+  width:300px;
+  text-align: center;
+}
+.PrefOrderedListStyle {
+  width:300px;
+
+  list-style-type:none;
+
+  box-sizing: border-box;
+  border: 2px solid #666666;
+  border-radius:0.3em;
+  margin:0 0.5em 0.5em 0;
+  padding:0.5em;    
+
+  background:#eee;
+}
+.PrefListItemStyle {
+  cursor: move;
+
+  border: 1px solid #666666;
+  border-radius:0.2em;
+  margin:0 0 2px 0;
+  padding:0.2em 0.4em;
+  line-height:1.3;
+    
+  background:#ddd;
+    
+  min-width:250px;
+}
