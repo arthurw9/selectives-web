@@ -37,7 +37,7 @@ class PreferencesAdmin(webapp2.RequestHandler):
     session = self.request.get("session")
     if not session:
       logging.fatal("no session")
-    email = auth.user.email()
+    email = auth.email
     action = self.request.get("action")
     self.RedirectToSelf(institution, session, "Saved Preferences")
 
@@ -62,7 +62,7 @@ class PreferencesAdmin(webapp2.RequestHandler):
     students = yaml.load(students)
     template_values = {
       'logout_url': auth.GetLogoutUrl(self),
-      'user' : auth.user,
+      'user_email' : auth.email,
       'institution' : institution,
       'session' : session,
       'message': message,

@@ -14,16 +14,16 @@ class Authorizer(object):
   """Report the user's access level and Redirect them to their start page."""
 
   def __init__(self, handler):
-    self.user = users.get_current_user()
     self.handler = handler
-    if self.user:
-      self.email = self.user.email().lower() # google capitalizes email addresses sometimes
+    self.email = False
+    if users.get_current_user():
+      self.email = users.get_current_user().email().lower() # google capitalizes email addresses sometimes
       models.RecentAccess.Store(self.email)
     else:
-      models.RecentAccess.Store("anonymous")
+       models.RecentAccess.Store("anonymous")
 
   def IsGlobalAdmin(self):
-    if not self.user:
+    if not self.email:
       return False
     return self.email in models.GlobalAdmin.FetchAll()
     #return True  #Toggle with previous line
@@ -31,7 +31,7 @@ class Authorizer(object):
     # Otherwise on a new instance, you can't get into the system!
 
   def GetAdministedInstitutionsList(self):
-    if not self.user:
+    if not self.email:
       return []
     if self.IsGlobalAdmin():
       institution_list = models.Institution.FetchAllInstitutions()
@@ -39,7 +39,7 @@ class Authorizer(object):
     return models.Admin.GetInstitutionNames(self.email)
 
   def CanAdministerInstitutionFromUrl(self):
-    if not self.user:
+    if not self.email:
       return False
     if self.IsGlobalAdmin():
       return True
@@ -55,7 +55,7 @@ class Authorizer(object):
   # The possibly impersonated student email is exported from this class as:
   # * auth.student_email
   def HasStudentAccess(self):
-    if not self.user:
+    if not self.email:
       logging.error("No user")
       return False
     institution = self.handler.request.get("institution")
@@ -102,7 +102,7 @@ class Authorizer(object):
 
   def Redirect(self):
     # are they logged in?
-    if not self.user:
+    if not self.email:
       self.handler.redirect("/welcome")
       return
     if self.IsGlobalAdmin():

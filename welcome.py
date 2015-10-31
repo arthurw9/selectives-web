@@ -24,7 +24,7 @@ class Welcome(webapp2.RequestHandler):
     template_values = {
       'login_url': login_url,
       'logout_url': logout_url,
-      'user' : auth.user,
+      'user_email' : auth.email,
     }
     template = JINJA_ENVIRONMENT.get_template('welcome.html')
     self.response.write(template.render(template_values))
