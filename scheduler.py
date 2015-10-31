@@ -92,7 +92,7 @@ class Scheduler(webapp2.RequestHandler):
     num_students = len(yaml.load(models.Students.fetch(institution, session)))
     template_values = {
       'logout_url': logout_url,
-      'user' : auth.user,
+      'user_email' : auth.email,
       'institution' : institution,
       'session' : session,
       'message': message,

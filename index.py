@@ -76,7 +76,7 @@ class Index(webapp2.RequestHandler):
 
     template_values = {
       'logout_url': logout_url,
-      'user' : auth.user,
+      'user_email' : auth.email,
       'institutions' : institutions_and_urls,
       'administrators' : administrators,
       'message': message,

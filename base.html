@@ -19,8 +19,8 @@
         </a></h1>
       </td>
       <td align=right>
-        {% if user %}
-          {{ user.email() }} <a href="{{ logout_url }}">logout</a>
+        {% if user_email %}
+          {{ user_email }} <a href="{{ logout_url }}">logout</a>
         {% else %}
           <a href="{{ login_url }}">Log In</a>
         {% endif %}
