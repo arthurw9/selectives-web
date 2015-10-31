@@ -1,0 +1,23 @@
+make dayparts look like a calendar in the schedule page using annotations on the dayparts page
+multi day classes work in the schedule selection page
+The schedule page shows the number of seats left for each class.
+the number of classes left refreshes automatically on the schedule page.
+Make the select box multi line for each daypart in the schedule page.
+When you select a class on the schedule page, it saves your choice right away.
+if you select a multi day class that has a different daypart that conflicts with an already selected class then confirm first before making the change
+fix the titles on the preferences page so they stay with their classes
+Add messages on the schedule page for all problems with the schedule.
+
+add a readonly schedule button to the schedule page call it "See my schedule"
+Add a print button to the readonly schedule page
+add an email button to the readonly schedule page
+On the students page add client side filters and sorts
+Change the titles on the preferences page to pictures thumbs up, down, or side OR smiley frowny and neutral
+Add a way to backup and restore the whole session
+An admin can drag a student group and grade to a serving session box: either schedule or preferences.
+
+add parent emails as new role "parent"
+add new page for online pre-registration for certain classes
+Add a delete button for institutions on the global admin page
+On the admin pages show an empty list box of administrators with an add button
+Maybe hard code Schedule first then Preferences or maybe add a new serving session for that
