@@ -8,6 +8,7 @@ textarea { width:60%; height:300px }
 .header {
   width:300px;
   text-align: center;
+  min-width:300px;
 }
 .PrefOrderedListStyle {
   width:300px;
@@ -21,6 +22,8 @@ textarea { width:60%; height:300px }
   padding:0.5em;    
 
   background:#eee;
+
+  min-width:300px;
 }
 .PrefListItemStyle {
   cursor: move;
