@@ -2,78 +2,90 @@
 {% block body %}
 
 <script>
-
-var auto_save_timer_object;
-var last_change_timestamp;
+var refresh_timer_object;
+window.onbeforeunload = confirmOnPageExit;
 
 // Shim to handle Internet Explorer
 if (!Date.now) {
   Date.now = function() { return new Date().getTime(); }
 }
 
-function ResetAutoSaveTimer(seconds) {
+function RefreshTimer(seconds) {
   // set the timer to save in the given number of seconds
-  if (auto_save_timer_object) {
-    clearTimeout(auto_save_timer_object);
+  if (refresh_timer_object) {
+    clearTimeout(refresh_timer_object);
   }
-  auto_save_timer_object = setTimeout(AutoSave, seconds * 1000);
+  refresh_timer_object = setTimeout(Refresh, seconds * 1000);
 }
 
-function SetModified() {
-  // record the time of the last change
-  last_change_timestamp = Date.now();
-  // set the timer to save in 5 seconds
-  ResetAutoSaveTimer(5);
-  // Don't let the user leave without saving
+function Refresh() {
+  var request = new XMLHttpRequest();
+  request.onload = function() {
+    if (request.status == 200) {
+      // TODO pull the class availability out of the response
+    }
+  }
+  request.open("GET", "");
+  var formElement = document.querySelector("form");
+  var formData = new FormData(formElement);
+  request.send(formData);
+
+  // schedule another refresh in 5 seconds
+  RefreshTimer(5);
+}
+
+function CheckRequirements() {
+  // TODO report if we are meeting all requirements
+  // TODO set onbeforeunload to null if all requirements are met.
   window.onbeforeunload = confirmOnPageExit;
-  document.getElementById("status").innerHTML = "Modified";
-}
-
-function SetSaved() {
-  // Let the user leave without hassle
   window.onbeforeunload = null;
-  document.getElementById("status").innerHTML = "Saved";
 }
-
-function SetSaveFail() {
-  // set the timer to try again in 5 seconds
-  ResetAutoSaveTimer(5);
-  window.onbeforeunload = confirmOnPageExit;
-  document.getElementById("status").innerHTML = "Save Failed";
-}
-
-function SetSaving() {
-  document.getElementById("status").innerHTML = "Saving...";
-}
-
-window.onbeforeunload = null;
 
 function confirmOnPageExit(e) {
+  var msg = 'There are still problems with your registration.';
   e = e || window.event;
-  var msg = '*** SAVE your work first! ***';
   if (e) {
     e.returnValue = msg;
   }
   return msg;
 }
 
-function AutoSave() {
-  var save_timestamp = Date.now();
-  SetSaving();
-  var request = new XMLHttpRequest();
-  request.onload = function() {
-    if (request.status == 200) {
-      if (save_timestamp > last_change_timestamp) {
-        SetSaved();
-      }
-    } else {
-      SetSaveFail();
+classes_by_id = {
+{% for class_id in classes_by_id -%}
+{{ class_id }} : { 'name' : '{{ classes_by_id[class_id]['name'] }}', 'dayparts': [{% for s in classes_by_id[class_id]['schedule'] -%}
+'{{ s['daypart'] }}',
+{%- endfor %}]},
+{%- endfor %}}
+
+function SaveClass(select_element) {
+  // save the new class id in the hidden field
+  var class_id = select_element.value
+  select_element.form.class_id.value = class_id;
+  dayparts = classes_by_id[class_id]['dayparts'];
+  classes_to_remove = [];
+  for (var i = 0; i < dayparts.length; i++) {
+    if (dayparts[i] == select_element.name) {
+      continue;
+    }
+    other_select = select_element.form[dayparts[i]];
+    if(other_select.value!="") {
+      classes_to_remove.push(classes_by_id[other_select.value]['name']);
     }
   }
-  request.open("POST", "");
-  var formElement = document.querySelector("form");
-  var formData = new FormData(formElement);
-  request.send(formData);
+  if (classes_to_remove.length > 0) {
+    var ok = confirm(classes_by_id[class_id]['name'] + " meets on " +
+                     dayparts.join(", ") + 
+                     "\nThis will replace the following classes:\n" +
+                     classes_to_remove.join(", ") +
+                     "\nDo you want to continue?");
+    if (!ok) {
+      return;
+    }
+  }
+  // allow the page to submit without prompting the user
+  window.onbeforeunload = null;
+  // submit the form
+  select_element.form.submit();
 }
 </script>
 
@@ -87,12 +99,15 @@ email: {{ student['email'] }}<br><br>
 <input type=hidden name="institution" value="{{ institution }}" />
 <input type=hidden name="session" value="{{ session }}" />
 <input type=hidden name="student" value="{{ student['email'] }}" />
+<input type=hidden name="class_id" />
 {% for daypart in dayparts %}
 <h4>{{ daypart }}</h4>
-<select name={{ daypart }}>
+<select name='{{ daypart }}' size={{ 1 + classes_by_daypart[daypart]|length }} onchange="SaveClass(this);">>
 <option></option>
 {% for c in classes_by_daypart[daypart] %}
-  <option value={{ c['id'] }}>{{ c['name'] }}</option>
+  <option value={{ c['id'] }}
+  {% for s in schedule %}{% if s|string == c['id']|string %}selected{% endif %}{% endfor %}>{{ c['name'] }}
+  seats remaining: XXX</option>
 {% endfor %}
 </select>
 {% endfor %}

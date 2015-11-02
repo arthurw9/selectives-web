@@ -37,12 +37,34 @@ class Schedule(webapp2.RequestHandler):
     if not session:
       logging.fatal("no session")
     email = auth.student_email
-    # TODO: what are we saving? Let's save it here.
-    if self.request.get("Save") == "Save":
-      logging.info("Form Saved")
-    else:
-      logging.info("Auto Save")
-    self.RedirectToSelf(institution, session, email, "Saved Preferences")
+
+    classes = models.Classes.Fetch(institution, session)
+    classes = yaml.load(classes)
+    dayparts_by_class_id = {}
+    for c in classes:
+      class_id = str(c['id'])
+      dayparts_by_class_id[class_id] = [s['daypart'] for s in c['schedule']]
+    new_class_id = self.request.get("class_id")
+    new_dayparts = dayparts_by_class_id[new_class_id]
+    logging.info("new class id: " + new_class_id)
+    logging.info("new dayparts: " + ','.join(new_dayparts))
+
+    class_ids = models.Schedule.Fetch(institution, session, email)
+    class_ids = class_ids.split(",")
+    new_class_ids = [new_class_id]
+    for c_id in class_ids:
+      if c_id == '':
+        continue
+      remove = False
+      for daypart in dayparts_by_class_id[c_id]:
+        if daypart in new_dayparts:
+          remove = True
+      if not remove:
+        new_class_ids.append(c_id)
+    new_class_ids = ",".join(new_class_ids)
+    logging.info("saving new class ids: " + ",".join(new_class_ids))
+    models.Schedule.Store(institution, session, email, new_class_ids)
+    self.RedirectToSelf(institution, session, email, "Saved Class")
 
   def get(self):
     auth = authorizer.Authorizer(self)
@@ -76,14 +98,16 @@ class Schedule(webapp2.RequestHandler):
         auth.student_entity, classes)
     for daypart in dayparts:
       classes_by_daypart[daypart] = []
+    classes_by_id = {}
     for c in classes:
       class_id = str(c['id'])
       if class_id not in eligible_classes:
         continue
+      classes_by_id[class_id] = c
       for daypart in [s['daypart'] for s in c['schedule']]:
         classes_by_daypart[daypart].append(c)
-    
     schedule = models.Schedule.Fetch(institution, session, email)
+    schedule = schedule.split(",")
 
     template_values = {
       'logout_url': auth.GetLogoutUrl(self),
@@ -96,6 +120,7 @@ class Schedule(webapp2.RequestHandler):
       'dayparts': dayparts,
       'classes_by_daypart': classes_by_daypart,
       'schedule': schedule,
+      'classes_by_id': classes_by_id,
     }
     template = JINJA_ENVIRONMENT.get_template('schedule.html')
     self.response.write(template.render(template_values))
