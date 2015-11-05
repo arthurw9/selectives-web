@@ -5,12 +5,12 @@ textarea { width:60%; height:300px }
 .prefGroup {
   display: flex;
 }
-.header {
+.prefHeader {
   width:300px;
   text-align: center;
   min-width:300px;
 }
-.PrefOrderedListStyle {
+.prefOrderedList {
   width:300px;
 
   list-style-type:none;
@@ -25,7 +25,7 @@ textarea { width:60%; height:300px }
 
   min-width:300px;
 }
-.PrefListItemStyle {
+.prefListItem {
   cursor: move;
 
   border: 1px solid #666666;
