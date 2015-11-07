@@ -75,6 +75,56 @@ function AutoSave() {
   var formData = new FormData(formElement);
   request.send(formData);
 }
+    
+    
+
+var noSelectionColor = '#eeeeff'; // light-grey
+var hoverColor = '#bbbbbb'; // grey
+var selectionColor = '#8888ff'; // blue
+
+var selected = {};
+
+function setClickedBackground(indx, ctrl) {
+    console.log("Click: " + indx);
+    console.log("Click: " + selected[indx]);
+
+    // Turn off old selection
+    if (selected[indx]) {
+        selected[indx].style.background = noSelectionColor;
+    }
+
+    // If clicking on same selection again, toggle off
+    if (ctrl == selected[indx]) {
+        selected[indx] = null;
+    }
+    else {
+        ctrl.style.background = selectionColor;
+        selected[indx] = ctrl;
+    }
+}
+
+function setMouseOverBackground(indx, ctrl) {
+    // console.log("MouseOver: " + hoveredOver[indx]);
+
+    if (selected[indx] && (ctrl == selected[indx])) {
+        // If mousing over a clicked-on item, don't do anything.
+    }
+    else {
+        ctrl.style.background = hoverColor;
+    }
+}
+
+function setMouseOutBackground(indx, ctrl) {
+    // console.log("MouseOver: " + hoveredOver[indx]);
+
+    if (selected[indx] && (ctrl == selected[indx])) {
+        // If mousing over a clicked-on item, don't do anything.
+    }
+    else {
+        ctrl.style.background = noSelectionColor;
+    }
+}
+
 </script>
 
 <h3>Schedule</h3>
@@ -87,14 +137,50 @@ email: {{ student['email'] }}<br><br>
 <input type=hidden name="institution" value="{{ institution }}" />
 <input type=hidden name="session" value="{{ session }}" />
 <input type=hidden name="student" value="{{ student['email'] }}" />
-{% for daypart in dayparts %}
-<h4>{{ daypart }}</h4>
-<select name={{ daypart }}>
-<option></option>
-{% for c in classes_by_daypart[daypart] %}
-  <option value={{ c['id'] }}>{{ c['name'] }}</option>
-{% endfor %}
-</select>
-{% endfor %}
+<table>
+  <tr>
+    {% for daypart in dayparts_blockA %}
+      <td class="schedHeader">{{ daypart }}</td>
+    {% endfor %}
+  </tr>
+  <tr>
+    {% for daypart in dayparts_blockA %}
+      <td class="schedTableData">
+        <ol id="{{daypart}}" class="schedOrderedList">
+        {% for c in classes_blockA[daypart] %}
+          <li class="schedListItem"
+              onclick="setClickedBackground('{{daypart}}', this);"
+              onmouseover="setMouseOverBackground('{{daypart}}', this);"
+              onmouseout="setMouseOutBackground('{{daypart}}', this);">
+              {{ c['name'] }}
+          </li>
+        {% endfor %}
+        </ol>
+      </td>
+    {% endfor %}
+  </tr>
+  <tr>
+    {% for daypart in dayparts_blockB %}
+      <td class="schedHeader">{{ daypart }}</td>
+    {% endfor %}
+  </tr>
+  <tr>
+    {% for daypart in dayparts_blockB %}
+      <td class="schedTableData">
+        <ol id="{{daypart}}" class="schedOrderedList">
+        {% for c in classes_blockB[daypart] %}
+          <li class="schedListItem"
+              onclick="setClickedBackground('{{daypart}}', this);"
+              onmouseover="setMouseOverBackground('{{daypart}}', this);"
+              onmouseout="setMouseOutBackground('{{daypart}}', this);">
+              {{ c['name'] }}
+          </li>
+        {% endfor %}
+        </ol>
+      </td>
+    {% endfor %}
+  </tr>
+</table>
+
 </form>
 {% endblock %}

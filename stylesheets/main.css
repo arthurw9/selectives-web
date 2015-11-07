@@ -38,3 +38,36 @@ textarea { width:60%; height:300px }
     
   min-width:250px;
 }
+
+.schedHeader {
+  text-align: center;
+  min-width:200px;
+  font-size:120%;
+  font-weight:bold;
+}
+.schedOrderedList {
+  list-style-type:none; 
+  box-sizing: border-box;
+  border: 2px solid #666666;
+  border-radius:0.3em;
+  margin:0 0.4em 0.4em 0;
+  padding:0.4em;
+}    
+.schedListItem {
+  cursor: move;
+  background:#eeeeff;
+
+  border: 1px solid #666666;
+  border-radius:0.2em;
+  margin:0 0 1px 0;
+  padding:0.15em 0.3em;
+  line-height:1.0;
+}
+.schedBlockLabel {
+  vertical-align:middle;
+  font-size:200%;
+  font-weight:bold;
+}
+.schedTableData {
+  vertical-align:top;
+}
