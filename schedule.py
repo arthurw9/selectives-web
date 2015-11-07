@@ -72,8 +72,21 @@ class Schedule(webapp2.RequestHandler):
     except TypeError:
       classes = []
     classes_by_daypart = {}
+    dayparts_blockA = []
+    dayparts_blockB = []
+    classes_blockA = {}
+    classes_blockB = {}
+    
     eligible_classes = logic.EligibleClassIdsForStudent(
         auth.student_entity, classes)
+    for daypart in dayparts:
+      if 'A' in daypart:
+        dayparts_blockA.append(daypart)
+        classes_blockA[daypart] = []
+      else:
+        dayparts_blockB.append(daypart)
+        classes_blockB[daypart] = []
+    
     for daypart in dayparts:
       classes_by_daypart[daypart] = []
     for c in classes:
@@ -82,6 +95,10 @@ class Schedule(webapp2.RequestHandler):
         continue
       for daypart in [s['daypart'] for s in c['schedule']]:
         classes_by_daypart[daypart].append(c)
+        if 'A' in daypart:
+          classes_blockA[daypart].append(c)
+        if 'B' in daypart:
+          classes_blockB[daypart].append(c)
     
     schedule = models.Schedule.Fetch(institution, session, email)
 
@@ -95,6 +112,11 @@ class Schedule(webapp2.RequestHandler):
       'student': auth.student_entity,
       'dayparts': dayparts,
       'classes_by_daypart': classes_by_daypart,
+      'dayparts_blockA': dayparts_blockA,
+      'dayparts_blockB': dayparts_blockB,
+      'classes_by_daypart': classes_by_daypart,
+      'classes_blockA': classes_blockA,
+      'classes_blockB': classes_blockB,
       'schedule': schedule,
     }
     template = JINJA_ENVIRONMENT.get_template('schedule.html')
