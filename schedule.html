@@ -3,6 +3,7 @@
 
 <script>
 var refresh_timer_object;
+// TODO: Detect if all requirements are satisfied
 window.onbeforeunload = confirmOnPageExit;
 
 // Shim to handle Internet Explorer
@@ -18,6 +19,7 @@ function RefreshTimer(seconds) {
   refresh_timer_object = setTimeout(Refresh, seconds * 1000);
 }
 
+// TODO: periodically check class availability
 function Refresh() {
   var request = new XMLHttpRequest();
   request.onload = function() {
@@ -55,37 +57,97 @@ classes_by_id = {
 {{ class_id }} : { 'name' : '{{ classes_by_id[class_id]['name'] }}', 'dayparts': [{% for s in classes_by_id[class_id]['schedule'] -%}
 '{{ s['daypart'] }}',
 {%- endfor %}]},
-{%- endfor %}}
+{%- endfor %}
+};
 
-function SaveClass(select_element) {
-  // save the new class id in the hidden field
-  var class_id = select_element.value
-  select_element.form.class_id.value = class_id;
+selected_class_name_by_daypart = {};
+
+function ConfirmConflictingClasses(class_id, daypart) {
+  // return true if there are no conflicting classes
+  // or if the user is OK with removing the conficts.
+  // return false otherwise.
   dayparts = classes_by_id[class_id]['dayparts'];
-  classes_to_remove = [];
+  conflicting_classes = [];
   for (var i = 0; i < dayparts.length; i++) {
-    if (dayparts[i] == select_element.name) {
+    if (dayparts[i] == daypart) {
+      // presumably the user knows and is ok if (s)he is removing 
+      // a class in the current daypart.
       continue;
     }
-    other_select = select_element.form[dayparts[i]];
-    if(other_select.value!="") {
-      classes_to_remove.push(classes_by_id[other_select.value]['name']);
+    class_name = selected_class_name_by_daypart[dayparts[i]];
+    if (class_name) {
+      conflicting_classes.push(class_name);
     }
   }
-  if (classes_to_remove.length > 0) {
-    var ok = confirm(classes_by_id[class_id]['name'] + " meets on " +
-                     dayparts.join(", ") + 
-                     "\nThis will replace the following classes:\n" +
-                     classes_to_remove.join(", ") +
-                     "\nDo you want to continue?");
-    if (!ok) {
-      return;
-    }
+  if (conflicting_classes.length == 0) {
+    return true;
+  }
+  return confirm(classes_by_id[class_id]['name'] + " meets on " +
+                 dayparts.join(", ") + 
+                 "\nThis will replace the following classes:\n" +
+                 conflicting_classes.join(", ") +
+                 "\nDo you want to continue?");
+}
+
+function AddClass(class_id, daypart) {
+  // save the new class id in the form's hidden field
+  form_element = document.forms[0];
+  form_element.class_id.value = class_id;
+  if (!ConfirmConflictingClasses(class_id, daypart)) {
+    return;
   }
   // allow the page to submit without prompting the user
   window.onbeforeunload = null;
   // submit the form
-  select_element.form.submit();
+  form_element.submit();
+}
+
+// TODO: move these color choices into the style sheet
+var noSelectionColor = '#eeeeff'; // light-grey
+var hoverColor = '#bbbbbb'; // grey
+var selectionColor = '#8888ff'; // blue
+
+// TODO: support removing a class after the backend supports this.
+function setClickedBackground(daypart, class_id, element) {
+  if (element.selected) {
+    // TODO: support removing a class after the backend supports this.
+    return;
+  }
+  element.selected = true;
+  element.style.background = selectionColor;
+  AddClass(class_id, daypart)
+}
+
+function setMouseOverBackground(element) {
+  if (element.selected) {
+    // If mousing over a clicked-on item, don't do anything.
+    return;
+  }
+  element.style.background = hoverColor;
+}
+
+function setMouseOutBackground(element) {
+  if (element.selected) {
+    // If mousing over a clicked-on item, don't do anything.
+    return;
+  }
+  element.style.background = noSelectionColor;
+}
+
+function setInitialSchedule() {
+  {% if schedule %}
+    {% for class_id in schedule %}
+      {% if class_id %}
+        {% for s in classes_by_id[class_id]['schedule'] %}
+  e = document.getElementById("{{ s['daypart'] }}_{{ class_id }}");
+  e.style.background = selectionColor;
+  e.class_name = classes_by_id[{{ class_id }}]['name']
+  e.selected = true;
+  selected_class_name_by_daypart["{{ s['daypart'] }}"] = e.class_name;
+        {% endfor %}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
 }
 </script>
 
@@ -100,16 +162,54 @@ email: {{ student['email'] }}<br><br>
 <input type=hidden name="session" value="{{ session }}" />
 <input type=hidden name="student" value="{{ student['email'] }}" />
 <input type=hidden name="class_id" />
-{% for daypart in dayparts %}
-<h4>{{ daypart }}</h4>
-<select name='{{ daypart }}' size={{ 1 + classes_by_daypart[daypart]|length }} onchange="SaveClass(this);">>
-<option></option>
-{% for c in classes_by_daypart[daypart] %}
-  <option value={{ c['id'] }}
-  {% for s in schedule %}{% if s|string == c['id']|string %}selected{% endif %}{% endfor %}>{{ c['name'] }}
-  seats remaining: XXX</option>
-{% endfor %}
-</select>
-{% endfor %}
+<table>
+  <tr>
+    {% for daypart in dayparts_blockA %}
+      <td class="schedHeader">{{ daypart }}</td>
+    {% endfor %}
+  </tr>
+  <tr>
+    {% for daypart in dayparts_blockA %}
+      <td class="schedTableData">
+        <ol id="{{daypart}}" class="schedOrderedList">
+        {% for c in classes_blockA[daypart] %}
+          <li class="schedListItem" id="{{daypart}}_{{c['id']}}"
+              onclick="setClickedBackground('{{daypart}}', {{c['id']}}, this);"
+              onmouseover="setMouseOverBackground(this);"
+              onmouseout="setMouseOutBackground(this);"
+>
+              {{ c['name'] }}
+          </li>
+        {% endfor %}
+        </ol>
+      </td>
+    {% endfor %}
+  </tr>
+  <tr>
+    {% for daypart in dayparts_blockB %}
+      <td class="schedHeader">{{ daypart }}</td>
+    {% endfor %}
+  </tr>
+  <tr>
+    {% for daypart in dayparts_blockB %}
+      <td class="schedTableData">
+        <ol id="{{daypart}}" class="schedOrderedList">
+        {% for c in classes_blockB[daypart] %}
+          <li class="schedListItem" id="{{daypart}}_{{c['id']}}"
+              onclick="setClickedBackground('{{daypart}}', {{c['id']}}, this);"
+              onmouseover="setMouseOverBackground(this);"
+              onmouseout="setMouseOutBackground(this);">
+              {{ c['name'] }}
+          </li>
+        {% endfor %}
+        </ol>
+      </td>
+    {% endfor %}
+  </tr>
+</table>
 </form>
+<script>
+setInitialSchedule();
+</script>
+
 {% endblock %}

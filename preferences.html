@@ -120,24 +120,30 @@ email: {{ student['email'] }}<br><br>
 <input type=hidden id="dontcare" name="dontcare" value="" />
 
 <div class="prefGroup">
-  <div class="header">Don't Want</div>
-  <div class="header">Don't Care</div>
-  <div class="header">Want</div>
+  <div class="prefHeader">Don't Want</div>
+  <div class="prefHeader">Don't Care</div>
+  <div class="prefHeader">Want</div>
 </div>
 <div class="prefGroup">
-  <ol class="PrefOrderedListStyle" id="DontWantSortableList">
+  <ol class="prefOrderedList" id="DontWantSortableList">
     {% for id in dontwant_ids %}
-      <li title='{{ classes[id].description }}' value='{{ id }}' class="PrefListItemStyle">{{ classes[id].name }}</li>
+      <li title='{{ classes[id].description }}' value='{{ id }}' class="prefListItem">
+          {{ classes[id].name }}
+      </li>
     {% endfor %}
   </ol>
-  <ol class="PrefOrderedListStyle" id="DontCareSortableList">
+  <ol class="prefOrderedList" id="DontCareSortableList">
     {% for id in dontcare_ids %}
-      <li title='{{ classes[id].description }}' value='{{ id }}' class="PrefListItemStyle">{{ classes[id].name }}</li>
+      <li title='{{ classes[id].description }}' value='{{ id }}' class="prefListItem">
+          {{ classes[id].name }}
+      </li>
     {% endfor %}
   </ol>
-  <ol class="PrefOrderedListStyle" id="WantSortableList">
+  <ol class="prefOrderedList" id="WantSortableList">
     {% for id in want_ids %}
-      <li title='{{ classes[id].description }}' value='{{ id }}' class="PrefListItemStyle">{{ classes[id].name }}</li>
+      <li title='{{ classes[id].description }}' value='{{ id }}' class="prefListItem">
+          {{ classes[id].name }}
+      </li>
     {% endfor %}
   </ol>
 </div>

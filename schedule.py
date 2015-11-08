@@ -25,6 +25,7 @@ class Schedule(webapp2.RequestHandler):
          'session': session}))
 
   def post(self):
+    # TODO: support removing a class
     auth = authorizer.Authorizer(self)
     if not auth.HasStudentAccess():
       auth.Redirect()
@@ -37,6 +38,7 @@ class Schedule(webapp2.RequestHandler):
     if not session:
       logging.fatal("no session")
     email = auth.student_email
+    new_class_id = self.request.get("class_id")
 
     classes = models.Classes.Fetch(institution, session)
     classes = yaml.load(classes)
@@ -44,8 +46,10 @@ class Schedule(webapp2.RequestHandler):
     for c in classes:
       class_id = str(c['id'])
       dayparts_by_class_id[class_id] = [s['daypart'] for s in c['schedule']]
-    new_class_id = self.request.get("class_id")
-    new_dayparts = dayparts_by_class_id[new_class_id]
+    if new_class_id in dayparts_by_class_id:
+      new_dayparts = dayparts_by_class_id[new_class_id]
+    else:
+      new_dayparts = []
     logging.info("new class id: " + new_class_id)
     logging.info("new dayparts: " + ','.join(new_dayparts))
 
@@ -94,10 +98,22 @@ class Schedule(webapp2.RequestHandler):
     except TypeError:
       classes = []
     classes_by_daypart = {}
+    # TODO: Control the shape of the calendar with info from the daypart
+    dayparts_blockA = []
+    dayparts_blockB = []
+    classes_blockA = {}
+    classes_blockB = {}
+    
     eligible_classes = logic.EligibleClassIdsForStudent(
         auth.student_entity, classes)
     for daypart in dayparts:
       classes_by_daypart[daypart] = []
+      if 'A' in daypart:
+        dayparts_blockA.append(daypart)
+        classes_blockA[daypart] = []
+      else:
+        dayparts_blockB.append(daypart)
+        classes_blockB[daypart] = []
     classes_by_id = {}
     for c in classes:
       class_id = str(c['id'])
@@ -106,6 +122,11 @@ class Schedule(webapp2.RequestHandler):
       classes_by_id[class_id] = c
       for daypart in [s['daypart'] for s in c['schedule']]:
         classes_by_daypart[daypart].append(c)
+        if 'A' in daypart:
+          classes_blockA[daypart].append(c)
+        if 'B' in daypart:
+          classes_blockB[daypart].append(c)
+    
     schedule = models.Schedule.Fetch(institution, session, email)
     schedule = schedule.split(",")
 
@@ -119,6 +140,10 @@ class Schedule(webapp2.RequestHandler):
       'student': auth.student_entity,
       'dayparts': dayparts,
       'classes_by_daypart': classes_by_daypart,
+      'dayparts_blockA': dayparts_blockA,
+      'dayparts_blockB': dayparts_blockB,
+      'classes_blockA': classes_blockA,
+      'classes_blockB': classes_blockB,
       'schedule': schedule,
       'classes_by_id': classes_by_id,
     }
