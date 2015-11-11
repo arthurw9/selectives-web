@@ -54,7 +54,7 @@ textarea { width:60%; height:300px }
   padding:0.4em;
 }    
 .schedListItem {
-  cursor: move;
+  cursor: pointer; cursor: hand;
   background:#eeeeff;
 
   border: 1px solid #666666;
