@@ -1,15 +1,26 @@
+Add the class roster. @arthur
+find a small spinning animated gif to indicate we are saving this class. @olga
+add the gif inline with the class and make visible when saving @olga
+Make eligibility logic use student groups. @arthur
+Add column, row, colspan, and rowspan to dayparts @sarah
+Make schedule page use annotations from dayparts @sarah
+Make the schedule page not look like a sortable with 4 arrows @sarah
+Fix the cancel button behavior on the schedule page. The class should not remain selected. @olga
+Fix the hover text for classes in student schedule page. @sarah
+
+Make schedule page save asynchronous with spin wait animation
+change the order of the keys to see if it speeds things up. This idea is based on what we read about keys last Saturday.
 The schedule page shows the number of seats left for each class.
 the number of classes left refreshes automatically on the schedule page.
-Add messages on the schedule page for all problems with the schedule.
+Add messages on the schedule page for all problems with the schedule. (requirements)
 Automatically select no choice classes (need to interpret requirements)
-add error checking pages example: classes where no student is eligible
-Add column, row, colspan, and rowspan to dayparts
-Make schedule page use annotations from dayparts
-Make schedule page save to student schedule and class roster in a transaction.
-Make schedule page save asynchronous with spin wait animation
-Make eligibility logic use student groups.
-make student groups and store in website.
 
+add error checking pages example: classes where no student is eligible
+test how long things take to save when multiple kids are working at the same time.
+rename "groups class" to "class groups"
+Add an icon to each item in the preferences page so it looks like it is sortable.
+On the student impersonation list page show grade, homeroom, group memberships. 
+reports of all sorts
 add a "See my schedule" button to the schedule page to show a readonly schedule
 Add a print button to the readonly schedule page
 add an email button to the readonly schedule page
@@ -17,16 +28,17 @@ On the students page add client side filters and sorts
 Change the titles on the preferences page to pictures thumbs up, down, or side OR smiley frowny and neutral
 Add a way to backup and restore the whole session
 An admin can drag a student group and grade to a serving session box: either schedule or preferences.
-
 add parent emails as new role "parent"
 add new page for online pre-registration for certain classes
 Add a delete button for institutions on the global admin page
 On the admin pages show an empty list box of administrators with an add button
 Maybe hard code Schedule first then Preferences or maybe add a new serving session for that
 
+x make student groups and store in website.
 x Make the select box multi line for each daypart in the schedule page.
 x When you select a class on the schedule page, it saves your choice right away.
 x if you select a multi day class that has a different daypart that conflicts with an already selected class then confirm first before making the change
 x multi day classes work in the schedule selection page
 x make dayparts look like a calendar
 x fix the titles on the preferences page so they stay with their classes
+x Make schedule page save to student schedule.
