@@ -1,0 +1,23 @@
+{% extends 'menu.html' %}
+{% block session_body %}
+
+<h3>{{ class_roster['class_name'] }} Class Roster</h3>
+{{ class_roster['class_details'] }}
+<br>
+<br>
+Students:
+<table>
+  {% for e in class_roster['emails'] %}
+    <tr class=highlight>
+      <td><a href="/class_roster?{{ session_query }}&class_id={{ class_roster['class_id'] }}&email={{ e }}&action=remove }}">remove</a></td>
+      <td>{{ e }}</td>
+    </tr>
+  {% endfor %}
+</table>
+<br>
+<a href="/class_roster?{{ session_query }}&class_id={{ class_roster['class_id'] }}&action=add }}">Add</a>
+<br>
+TODO: Make a list of eligible students (available at the right dayparts)
+TODO: Make the "add" link work
+
+{% endblock %}

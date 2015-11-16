@@ -40,34 +40,7 @@ class Schedule(webapp2.RequestHandler):
     email = auth.student_email
     new_class_id = self.request.get("class_id")
 
-    classes = models.Classes.Fetch(institution, session)
-    classes = yaml.load(classes)
-    dayparts_by_class_id = {}
-    for c in classes:
-      class_id = str(c['id'])
-      dayparts_by_class_id[class_id] = [s['daypart'] for s in c['schedule']]
-    if new_class_id in dayparts_by_class_id:
-      new_dayparts = dayparts_by_class_id[new_class_id]
-    else:
-      new_dayparts = []
-    logging.info("new class id: " + new_class_id)
-    logging.info("new dayparts: " + ','.join(new_dayparts))
-
-    class_ids = models.Schedule.Fetch(institution, session, email)
-    class_ids = class_ids.split(",")
-    new_class_ids = [new_class_id]
-    for c_id in class_ids:
-      if c_id == '':
-        continue
-      remove = False
-      for daypart in dayparts_by_class_id[c_id]:
-        if daypart in new_dayparts:
-          remove = True
-      if not remove:
-        new_class_ids.append(c_id)
-    new_class_ids = ",".join(new_class_ids)
-    logging.info("saving new class ids: " + ",".join(new_class_ids))
-    models.Schedule.Store(institution, session, email, new_class_ids)
+    logic.AddStudentToClass(institution, session, email, new_class_id)
     self.RedirectToSelf(institution, session, email, "Saved Class")
 
   def get(self):
