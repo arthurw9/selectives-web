@@ -1,0 +1,24 @@
+{% extends 'menu.html' %}
+{% block session_body %}
+
+<h3>Class List</h3>
+<br>
+<br>
+
+{% if classes %}
+<table>
+  {% for c in classes %}
+    <tr class=highlight>
+      <td><a href="/class_roster?{{ session_query }}&class_id={{ c['id'] }}">roster</a></td>
+      <td>{{ c['name'] }}</td>
+      <td>{{ c['instructor'] }}</td>
+    </tr>
+  {% endfor %}
+</table>
+
+{% else %}
+There are no classes to display.<br>
+Go to Setup >> Classes and add some classes.
+{% endif %}
+
+{% endblock %}
