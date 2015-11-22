@@ -9,6 +9,7 @@ textarea { width:60%; height:300px }
   width:300px;
   text-align: center;
   min-width:300px;
+  margin:0 0.5em 0.5em 0;
 }
 .prefOrderedList {
   width:300px;
