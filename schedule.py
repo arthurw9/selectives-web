@@ -71,22 +71,27 @@ class Schedule(webapp2.RequestHandler):
     except TypeError:
       classes = []
     classes_by_daypart = {}
-    # TODO: Control the shape of the calendar with info from the daypart
-    dayparts_blockA = []
-    dayparts_blockB = []
-    classes_blockA = {}
-    classes_blockB = {}
+    dayparts_ordered = []
     
+    max_row = max([daypart['row'] for daypart in dayparts])
+    max_col = max([daypart['col'] for daypart in dayparts])
+    
+    # order the dayparts by row and col specified in yaml
+    for row in range(max_row):
+      dayparts_ordered.append([])
+      for col in range(max_col):
+        found_daypart = False
+        for dp in dayparts:
+          if dp['row'] == row+1 and dp['col'] == col+1:
+            dayparts_ordered[row].append(dp['name'])
+            found_daypart = True
+        if found_daypart == False:
+          dayparts_ordered[row].append('')
+
     eligible_classes = logic.EligibleClassIdsForStudent(
         auth.student_entity, classes)
     for daypart in dayparts:
-      classes_by_daypart[daypart] = []
-      if 'A' in daypart:
-        dayparts_blockA.append(daypart)
-        classes_blockA[daypart] = []
-      else:
-        dayparts_blockB.append(daypart)
-        classes_blockB[daypart] = []
+      classes_by_daypart[daypart['name']] = []
     classes_by_id = {}
     for c in classes:
       class_id = str(c['id'])
@@ -95,10 +100,6 @@ class Schedule(webapp2.RequestHandler):
       classes_by_id[class_id] = c
       for daypart in [s['daypart'] for s in c['schedule']]:
         classes_by_daypart[daypart].append(c)
-        if 'A' in daypart:
-          classes_blockA[daypart].append(c)
-        if 'B' in daypart:
-          classes_blockB[daypart].append(c)
     
     schedule = models.Schedule.Fetch(institution, session, email)
     schedule = schedule.split(",")
@@ -113,12 +114,10 @@ class Schedule(webapp2.RequestHandler):
       'student': auth.student_entity,
       'dayparts': dayparts,
       'classes_by_daypart': classes_by_daypart,
-      'dayparts_blockA': dayparts_blockA,
-      'dayparts_blockB': dayparts_blockB,
-      'classes_blockA': classes_blockA,
-      'classes_blockB': classes_blockB,
+      'dayparts_ordered': dayparts_ordered,
       'schedule': schedule,
       'classes_by_id': classes_by_id,
     }
     template = JINJA_ENVIRONMENT.get_template('schedule.html')
+#    template = JINJA_ENVIRONMENT.get_template('foo.html')
     self.response.write(template.render(template_values))

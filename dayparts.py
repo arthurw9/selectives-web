@@ -16,7 +16,11 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 
 
 schema = yayv.ByExample(
-    "- UNIQUE\n")
+    "- name: UNIQUE\n"
+    "  row: OPTIONAL\n"
+    "  col: OPTIONAL\n"
+    "  rowspan: OPTIONAL\n"
+    "  colspan: OPTIONAL\n")
 
 
 class Dayparts(webapp2.RequestHandler):
@@ -68,14 +72,32 @@ class Dayparts(webapp2.RequestHandler):
       dayparts = '\n'.join([
           "# Sample data. Lines with leading # signs are comments.",
           "# Change the data below.",
-          "- Mon A",
-          "- Mon B",
-          "- Tues A",
-          "- Tues B",
-          "- Thurs A",
-          "- Thurs B",
-          "- Fri A",
-          "- Fri B",])
+          "- name: Mon A",
+          "  row: 1",
+          "  col: 1",
+          "  rowspan: 1",
+          "  colspan: 1",
+          "- name: Tues A",
+          "  row: 1",
+          "  col: 2",
+          "- name: Thurs A",
+          "  row: 1",
+          "  col: 3",
+          "- name: Fri A",
+          "  row: 1",
+          "  col: 4",
+          "- name: Mon B",
+          "  row: 2",
+          "  col: 1",
+          "- name: Tues B",
+          "  row: 2",
+          "  col: 2",
+          "- name: Thurs B",
+          "  row: 2",
+          "  col: 3",
+          "- name: Fri B",
+          "  row: 2",
+          "  col: 4",])
 
     template_values = {
       'logout_url': logout_url,
