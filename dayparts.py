@@ -17,8 +17,8 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 
 schema = yayv.ByExample(
     "- name: UNIQUE\n"
-    "  row: OPTIONAL\n"
-    "  col: OPTIONAL\n"
+    "  row: REQUIRED\n"
+    "  col: REQUIRED\n"
     "  rowspan: OPTIONAL\n"
     "  colspan: OPTIONAL\n")
 
