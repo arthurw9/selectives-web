@@ -1,0 +1,52 @@
+Schedule
+* Hover mouse over a class.
+  Expect: see tooltip containing info about class.
+
+* Select/click a class.
+  Expect: Class is highlighted. Navigate away or close the window and the class
+  is still selected upon return.
+
+* Select/click a class in same block.
+  Expect: Unselects old class and selects new class.
+
+* Select/click a two-day class which conflicts with a current selection.
+  Expect: Warning message
+  Click Cancel
+  Expect: Current class remains selected, new class remains unselected.
+
+  Click OK
+  Expect: Unselects old class and selects both blocks of new class.
+
+* Select/click a one-day class which conflicts with a two-day class.
+  Expect: Both two-day blocks are unselected, new one-day class is selected.
+          Hole is created in schedule and warning message appears at top of schedule.
+
+* Entire schedule is not filled in.
+  Expect: Warning message at top of schedule.
+
+* Two PE's in wrong place.
+  Expect: Warning, one PE must be on Mon/Tue and the other PE must be on Thurs/Fri.
+
+* Less than two PE or PE substitutes.
+  Expect: Warning, PE requirement not satisfied. You must take at least two PE's or PE substitutes.
+
+* More than three PE or PE substitutes.
+  Expect: Warning, you are taking too many PE or PE substitutes. Please drop one.
+
+* Navigate away from the page when a schedule has outstanding requirements not met.
+  Expect: Warning message.
+
+* Navigate away from the page immediately after selecting it
+  (before the selection has committed)
+  Expect: Warning message.
+
+* Close the window or tab when a schedule has outstanding requirements not met.
+  Expect: Warning message.
+
+* Navigate away from page by clicking Back button
+  after class is committed but schedule is not complete.
+  Expect: Warning message, and navigates to page.
+
+Preference
+* Hover mouse over a class.
+  Expect: see tooltip containing info about class.
