@@ -83,7 +83,8 @@ class Preferences(webapp2.RequestHandler):
       class_id = str(c['id'])
       class_name = c['name']
       # TODO: add proper class_desc instead of just dumping the yaml
-      class_desc = yaml.dump(c, default_flow_style=False)
+      #class_desc = yaml.dump(c, default_flow_style=False)
+      class_desc = logic.GetHoverText(auth, c)
       classes_by_id[class_id] = {'name': class_name,
                                  'description': class_desc }
     if not classes_by_id:
