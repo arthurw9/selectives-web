@@ -163,38 +163,17 @@ email: {{ student['email'] }}<br><br>
 <input type=hidden name="student" value="{{ student['email'] }}" />
 <input type=hidden name="class_id" />
 <table>
+  {% for row in dayparts_ordered %}
   <tr>
-    {% for daypart in dayparts_blockA %}
+    {% for daypart in row %}
       <td class="schedHeader">{{ daypart }}</td>
     {% endfor %}
   </tr>
   <tr>
-    {% for daypart in dayparts_blockA %}
+    {% for daypart in row %}
       <td class="schedTableData">
         <ol id="{{daypart}}" class="schedOrderedList">
-        {% for c in classes_blockA[daypart] %}
-          <li class="schedListItem" id="{{daypart}}_{{c['id']}}"
-              onclick="setClickedBackground('{{daypart}}', {{c['id']}}, this);"
-              onmouseover="setMouseOverBackground(this);"
-              onmouseout="setMouseOutBackground(this);"
->
-              {{ c['name'] }}
-          </li>
-        {% endfor %}
-        </ol>
-      </td>
-    {% endfor %}
-  </tr>
-  <tr>
-    {% for daypart in dayparts_blockB %}
-      <td class="schedHeader">{{ daypart }}</td>
-    {% endfor %}
-  </tr>
-  <tr>
-    {% for daypart in dayparts_blockB %}
-      <td class="schedTableData">
-        <ol id="{{daypart}}" class="schedOrderedList">
-        {% for c in classes_blockB[daypart] %}
+        {% for c in classes_by_daypart[daypart] %}
           <li class="schedListItem" id="{{daypart}}_{{c['id']}}"
               onclick="setClickedBackground('{{daypart}}', {{c['id']}}, this);"
               onmouseover="setMouseOverBackground(this);"
@@ -206,6 +185,7 @@ email: {{ student['email'] }}<br><br>
       </td>
     {% endfor %}
   </tr>
+  {% endfor %}
 </table>
 </form>
 <script>
