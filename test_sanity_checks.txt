@@ -50,3 +50,11 @@ Schedule
 Preference
 * Hover mouse over a class.
   Expect: see tooltip containing info about class.
+
+
+Run Automated tests:
+  Make sure it says X of X tests passed on the bottom after running each test.
+
+* python authorizer_test.py
+* python logic_test.py
+* python yayv_test.py
