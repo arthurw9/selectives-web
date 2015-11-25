@@ -40,34 +40,7 @@ class Schedule(webapp2.RequestHandler):
     email = auth.student_email
     new_class_id = self.request.get("class_id")
 
-    classes = models.Classes.Fetch(institution, session)
-    classes = yaml.load(classes)
-    dayparts_by_class_id = {}
-    for c in classes:
-      class_id = str(c['id'])
-      dayparts_by_class_id[class_id] = [s['daypart'] for s in c['schedule']]
-    if new_class_id in dayparts_by_class_id:
-      new_dayparts = dayparts_by_class_id[new_class_id]
-    else:
-      new_dayparts = []
-    logging.info("new class id: " + new_class_id)
-    logging.info("new dayparts: " + ','.join(new_dayparts))
-
-    class_ids = models.Schedule.Fetch(institution, session, email)
-    class_ids = class_ids.split(",")
-    new_class_ids = [new_class_id]
-    for c_id in class_ids:
-      if c_id == '':
-        continue
-      remove = False
-      for daypart in dayparts_by_class_id[c_id]:
-        if daypart in new_dayparts:
-          remove = True
-      if not remove:
-        new_class_ids.append(c_id)
-    new_class_ids = ",".join(new_class_ids)
-    logging.info("saving new class ids: " + ",".join(new_class_ids))
-    models.Schedule.Store(institution, session, email, new_class_ids)
+    logic.AddStudentToClass(institution, session, email, new_class_id)
     self.RedirectToSelf(institution, session, email, "Saved Class")
 
   def get(self):
@@ -98,22 +71,27 @@ class Schedule(webapp2.RequestHandler):
     except TypeError:
       classes = []
     classes_by_daypart = {}
-    # TODO: Control the shape of the calendar with info from the daypart
-    dayparts_blockA = []
-    dayparts_blockB = []
-    classes_blockA = {}
-    classes_blockB = {}
+    dayparts_ordered = []
     
+    max_row = max([daypart['row'] for daypart in dayparts])
+    max_col = max([daypart['col'] for daypart in dayparts])
+    
+    # order the dayparts by row and col specified in yaml
+    for row in range(max_row):
+      dayparts_ordered.append([])
+      for col in range(max_col):
+        found_daypart = False
+        for dp in dayparts:
+          if dp['row'] == row+1 and dp['col'] == col+1:
+            dayparts_ordered[row].append(dp['name'])
+            found_daypart = True
+        if found_daypart == False:
+          dayparts_ordered[row].append('')
+
     eligible_classes = logic.EligibleClassIdsForStudent(
         auth.student_entity, classes)
     for daypart in dayparts:
-      classes_by_daypart[daypart] = []
-      if 'A' in daypart:
-        dayparts_blockA.append(daypart)
-        classes_blockA[daypart] = []
-      else:
-        dayparts_blockB.append(daypart)
-        classes_blockB[daypart] = []
+      classes_by_daypart[daypart['name']] = []
     classes_by_id = {}
     for c in classes:
       class_id = str(c['id'])
@@ -122,10 +100,6 @@ class Schedule(webapp2.RequestHandler):
       classes_by_id[class_id] = c
       for daypart in [s['daypart'] for s in c['schedule']]:
         classes_by_daypart[daypart].append(c)
-        if 'A' in daypart:
-          classes_blockA[daypart].append(c)
-        if 'B' in daypart:
-          classes_blockB[daypart].append(c)
     
     schedule = models.Schedule.Fetch(institution, session, email)
     schedule = schedule.split(",")
@@ -140,12 +114,10 @@ class Schedule(webapp2.RequestHandler):
       'student': auth.student_entity,
       'dayparts': dayparts,
       'classes_by_daypart': classes_by_daypart,
-      'dayparts_blockA': dayparts_blockA,
-      'dayparts_blockB': dayparts_blockB,
-      'classes_blockA': classes_blockA,
-      'classes_blockB': classes_blockB,
+      'dayparts_ordered': dayparts_ordered,
       'schedule': schedule,
       'classes_by_id': classes_by_id,
     }
     template = JINJA_ENVIRONMENT.get_template('schedule.html')
+#    template = JINJA_ENVIRONMENT.get_template('foo.html')
     self.response.write(template.render(template_values))
