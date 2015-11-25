@@ -1,4 +1,4 @@
-Add the class roster. @arthur
+Add a button to clear out everyone's schedule @arthur
 find a small spinning animated gif to indicate we are saving this class. @olga
 add the gif inline with the class and make visible when saving @olga
 Make eligibility logic use student groups. @arthur
@@ -15,6 +15,8 @@ the number of classes left refreshes automatically on the schedule page.
 Add messages on the schedule page for all problems with the schedule. (requirements)
 Automatically select no choice classes (need to interpret requirements)
 
+waitlist classes
+select an available class while still waitlisted for an unavailable one
 add error checking pages example: classes where no student is eligible
 test how long things take to save when multiple kids are working at the same time.
 rename "groups class" to "class groups"
@@ -42,3 +44,5 @@ x multi day classes work in the schedule selection page
 x make dayparts look like a calendar
 x fix the titles on the preferences page so they stay with their classes
 x Make schedule page save to student schedule.
+x Add the class roster. @arthur
+x Make sure student is removed from class roster for all conflicting classes. @arthur

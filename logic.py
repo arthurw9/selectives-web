@@ -43,6 +43,8 @@ def EligibleClassIdsForStudent(student, classes):
 
 
 class _ClassRoster(object):
+  """Handles adding and removing emails from a class roster.
+  Doesn't update the student schedule."""
 
   def __init__(self, institution, session, class_obj):
     self.institution = institution
@@ -69,6 +71,7 @@ class _ClassRoster(object):
 
 
 class _ClassInfo(object):
+  """Reports on conflicting classes and other class info."""
 
   def __init__(self, institution, session):
     classes = models.Classes.Fetch(institution, session)
@@ -95,6 +98,7 @@ class _ClassInfo(object):
     else:
       new_dayparts = []
     new_class_ids =  [new_class_id]
+    removed_class_ids = []
     for c_id in class_ids:
       if c_id == '':
         continue
@@ -104,10 +108,15 @@ class _ClassInfo(object):
           remove = True
       if not remove:
         new_class_ids.append(c_id)
+      else:
+        removed_class_ids.append(c_id)
+    self.removed_class_ids = removed_class_ids
     return new_class_ids
 
 
 class _StudentSchedule(object):
+  """Add and remove classes from student schedule.
+  Does not affect class roster."""
 
   def __init__(self, institution, session, student_email, class_info):
     """Args:
@@ -146,6 +155,10 @@ def AddStudentToClass(institution, session, student_email, new_class_id):
   class_obj = class_info.getClassObj(new_class_id)
   r = _ClassRoster(institution, session, class_obj)
   r.add(student_email)
+  for old_class_id in class_info.removed_class_ids:
+    class_obj = class_info.getClassObj(old_class_id)
+    r = _ClassRoster(institution, session, class_obj)
+    r.remove(student_email)
 
 
 @ndb.transactional(retries=3, xg=True)
