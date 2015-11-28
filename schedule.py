@@ -98,6 +98,7 @@ class Schedule(webapp2.RequestHandler):
       if class_id not in eligible_classes:
         continue
       classes_by_id[class_id] = c
+      c['description'] = logic.GetHoverText(auth, c)
       for daypart in [s['daypart'] for s in c['schedule']]:
         classes_by_daypart[daypart].append(c)
     

@@ -175,6 +175,7 @@ email: {{ student['email'] }}<br><br>
         <ol id="{{daypart}}" class="schedOrderedList">
         {% for c in classes_by_daypart[daypart] %}
           <li class="schedListItem" id="{{daypart}}_{{c['id']}}"
+              title="{{c['description']}}"
               onclick="setClickedBackground('{{daypart}}', {{c['id']}}, this);"
               onmouseover="setMouseOverBackground(this);"
               onmouseout="setMouseOutBackground(this);">

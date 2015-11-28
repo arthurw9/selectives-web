@@ -9,6 +9,42 @@ except:
   import fake_ndb
   ndb = fake_ndb.FakeNdb()
 
+# Students do not need to see class ID, eligibility, locations.
+# Students should not see individual emails which may be on the eligibility list.
+# Room numbers may change during registration as we finalize the schedule.
+def GetHoverText(auth, c):
+  class_desc = c['name']
+
+  if auth.CanAdministerInstitutionFromUrl():
+    class_desc += '\nId: ' + str(c['id'])
+
+  if c['instructor']:
+    class_desc += '\nInstructor: ' + c['instructor']
+
+  class_desc += '\nMax Enrollment: ' + str(c['max_enrollment'])
+
+  class_desc += '\nMeets: '
+  for s in c['schedule']:
+    class_desc += '\n - ' + s['daypart']
+    if auth.CanAdministerInstitutionFromUrl():
+      if isinstance(s['location'], int):
+        class_desc += ', Rm ' + str(s['location'])
+      else:
+        class_desc += ', ' + s['location']
+
+  if auth.CanAdministerInstitutionFromUrl():
+    class_desc += '\nEligible: '
+    if c['prerequisites']:
+      for p in c['prerequisites']:
+        for k in p.keys():
+          class_desc += '\n - ' + k + ': '
+          if isinstance(p[k], int):
+            class_desc += str(p[k])
+          else:
+            class_desc += p[k]
+    else:
+      class_desc += 'All'
+  return class_desc
 
 def FindStudent(student_email, students):
   # is students iterable?
