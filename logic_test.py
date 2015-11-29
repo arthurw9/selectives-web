@@ -33,6 +33,7 @@ class TestLogic(testbase.TestBase):
     return {"name": class_name,
             "id": str(class_id),
             "max_enrollment": 20,
+            "prerequisites": [],
             "schedule":
                 [ { "daypart": d } for d in dayparts ]}
  
@@ -84,6 +85,94 @@ class TestLogic(testbase.TestBase):
                            "dent@school.edu")
     self.AssertClassRoster(institution, session, "4",
                            "stew@school.edu", "dent@school.edu")
+
+  def SetupClassesAndStudentGroups(self):
+    classes = []
+
+    classes.append(self.MakeClass("class open to all", 1, "monday"))
+
+    classes.append(self.MakeClass("class open to email", 2, "monday"))
+    classes[-1]['prerequisites'].append({"email": "special1@school.edu"})
+    classes[-1]['prerequisites'].append({"email": "special2@school.edu"})
+    classes[-1]['prerequisites'].append({"email": "special3@school.edu"})
+
+    classes.append(self.MakeClass("class open to grade", 3, "monday"))
+    classes[-1]['prerequisites'].append({"current_grade": 7})
+    classes[-1]['prerequisites'].append({"current_grade": 8})
+
+    classes.append(self.MakeClass("class open to group", 4, "monday"))
+    classes[-1]['prerequisites'].append({"group": "cyclic"})
+    classes[-1]['prerequisites'].append({"group": "the_in_crowd"})
+
+    classes.append(self.MakeClass("open to group with grade", 5, "monday"))
+    classes[-1]['prerequisites'].append({"group": "the_in_crowd",
+                                         "current_grade": 8})
+    logic.models.GroupsStudents = fake_ndb.FakeGroupsStudents([
+        {"group_name": "the_in_crowd",
+         "emails": ["foo@bar.com",
+                    "member@the_in_crowd.org"]}])
+    return classes
+
+
+  def testEligibleClassIdsForStudentByDefault(self):
+    classes = self.SetupClassesAndStudentGroups()
+    institution = "foo"
+    session = "bar"
+
+    student = {"email": "stud@school.com", 
+               "current_grade": 6}
+    # call the unit under test
+    class_ids = logic.EligibleClassIdsForStudent(
+        institution, session, student, classes)
+    self.AssertEqual(['1'], class_ids)
+
+  def testEligibleClassIdsForStudentByEmail(self):
+    classes = self.SetupClassesAndStudentGroups()
+    institution = "foo"
+    session = "bar"
+
+    student = {"email": "special2@school.edu", 
+               "current_grade": 6}
+    # call the unit under test
+    class_ids = logic.EligibleClassIdsForStudent(
+        institution, session, student, classes)
+    self.AssertEqual(['1', '2'], class_ids)
+
+  def testEligibleClassIdsForStudentByGrade(self):
+    classes = self.SetupClassesAndStudentGroups()
+    institution = "foo"
+    session = "bar"
+
+    student = {"email": "foo1@bar.edu", 
+               "current_grade": 8}
+    # call the unit under test
+    class_ids = logic.EligibleClassIdsForStudent(
+        institution, session, student, classes)
+    self.AssertEqual(['1', '3'], class_ids)
+
+  def testEligibleClassIdsForStudentByGroup(self):
+    classes = self.SetupClassesAndStudentGroups()
+    institution = "foo"
+    session = "bar"
+
+    student = {"email": "member@the_in_crowd.org", 
+               "current_grade": 6}
+    # call the unit under test
+    class_ids = logic.EligibleClassIdsForStudent(
+        institution, session, student, classes)
+    self.AssertEqual(['1', '4'], class_ids)
+
+  def testEligibleClassIdsForStudentByGradeAndGroup(self):
+    classes = self.SetupClassesAndStudentGroups()
+    institution = "foo"
+    session = "bar"
+
+    student = {"email": "member@the_in_crowd.org", 
+               "current_grade": 8}
+    # call the unit under test
+    class_ids = logic.EligibleClassIdsForStudent(
+        institution, session, student, classes)
+    self.AssertEqual(['1', '3', '4', '5'], class_ids)
 
 
 if __name__ == "__main__":

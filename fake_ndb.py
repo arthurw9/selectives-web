@@ -158,3 +158,11 @@ class FakeClassRoster(object):
     r['max_enrollment'] = 0
     r['remaining_space'] = 0
     return r
+
+class FakeGroupsStudents(object):
+
+  def __init__(self, student_group_data):
+    self.data = yaml.dump(student_group_data)
+
+  def fetch(self, institution, session):
+    return self.data

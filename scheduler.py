@@ -42,7 +42,8 @@ class Scheduler(webapp2.RequestHandler):
     classes = yaml.load(classes)
     for student in students:
       email = student['email']
-      eligible_class_ids = logic.EligibleClassIdsForStudent(student, classes)
+      eligible_class_ids = logic.EligibleClassIdsForStudent(
+          institution, session, student, classes)
       eligible_class_ids = set(eligible_class_ids)
       want = random.sample(eligible_class_ids, random.randint(1,5))
       dontwant = random.sample(eligible_class_ids.difference(want), random.randint(1,5))

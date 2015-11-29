@@ -22,23 +22,49 @@ def FindStudent(student_email, students):
   return None
 
 
-def EligibleClassIdsForStudent(student, classes):
+def StudentIsEligibleForClass(institution, session, student, c):
+  """returns True is student is eligible for class c."""
+  if not c['prerequisites']:
+    return True
+  for prereq in c['prerequisites']:
+    # email match takes highest priority
+    if 'email' in prereq:
+      if student['email'] == prereq['email']:
+        return True
+      continue
+    # current grade can disqualify students but if used with a student group
+    # then the student group must match too.
+    if 'current_grade' in prereq:
+      if not student['current_grade'] == prereq['current_grade']:
+        continue
+    if not 'group' in prereq:
+      # if we got here then only the grade was specified and it matched.
+      return True
+    # this prerequisite uses a student group. Let's look up the group.
+    eligible_group_name = prereq['group']
+    student_groups = models.GroupsStudents.fetch(institution, session)
+    student_groups = yaml.load(student_groups)
+    for group in student_groups:
+      if group['group_name'] == eligible_group_name:
+        # We found the group. Let's see if the student is in the group.
+        for email in group['emails']:
+          if student['email'] == email:
+            return True
+        continue
+    # we didn't find the student group. This is an error.
+    # TODO: figure out how to tell the user about this error.
+    continue
+  # none of the prerequisites were met. Return false.
+  return False
+
+
+def EligibleClassIdsForStudent(institution, session, student, classes):
   """Return the set of class ids that the student is eligible to take."""
   class_ids = []
   for c in classes:
-    class_id = str(c['id'])
-    if not c['prerequisites']:
+    if StudentIsEligibleForClass(institution, session, student, c):
+      class_id = str(c['id'])
       class_ids.append(class_id)
-    for prereq in c['prerequisites']:
-      if 'email' in prereq:
-        if student['email'] == prereq['email']:
-          class_ids.append(class_id)
-      if 'current_grade' in prereq:
-        if student['current_grade'] == prereq['current_grade']:
-          class_ids.append(class_id)
-      if 'group' in prereq:
-        #TODO: fix me so student groups work
-        class_ids.append(class_id)
   return class_ids
 
 

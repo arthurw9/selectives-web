@@ -89,7 +89,7 @@ class Schedule(webapp2.RequestHandler):
           dayparts_ordered[row].append('')
 
     eligible_classes = logic.EligibleClassIdsForStudent(
-        auth.student_entity, classes)
+        institution, session, auth.student_entity, classes)
     for daypart in dayparts:
       classes_by_daypart[daypart['name']] = []
     classes_by_id = {}

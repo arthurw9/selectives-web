@@ -89,7 +89,7 @@ class Preferences(webapp2.RequestHandler):
     if not classes_by_id:
       classes_by_id['0'] = {'name': 'None', 'desc': 'None'}
     eligible_class_ids = set(logic.EligibleClassIdsForStudent(
-        auth.student_entity, classes))
+        institution, session, auth.student_entity, classes))
 
     prefs = models.Preferences.FetchEntity(
         auth.student_email, institution, session)

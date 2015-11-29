@@ -34,6 +34,7 @@ class TestBase(object):
 
   def Fail(self, msg):
     print msg
+    traceback.print_stack()
     self.status = self.FAIL
 
   def AssertEqual(self, expected, actual, msg=""):
