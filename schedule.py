@@ -93,12 +93,14 @@ class Schedule(webapp2.RequestHandler):
     for daypart in dayparts:
       classes_by_daypart[daypart['name']] = []
     classes_by_id = {}
+    use_full_description = auth.CanAdministerInstitutionFromUrl()
     for c in classes:
       class_id = str(c['id'])
       if class_id not in eligible_classes:
         continue
       classes_by_id[class_id] = c
-      c['description'] = logic.GetHoverText(auth, c)
+      class_desc = logic.GetHoverText(use_full_description, c)
+      c['description'] = class_desc
       for daypart in [s['daypart'] for s in c['schedule']]:
         classes_by_daypart[daypart].append(c)
     
