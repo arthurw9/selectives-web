@@ -69,7 +69,7 @@ class Authorizer(object):
     if self.CanAdministerInstitutionFromUrl():
       return self._VerifyStudent(institution,
                                  session,
-                                 self.handler.request.get("student"))
+                                 self.handler.request.get("student").lower())
     if not self._VerifyServingSession(institution, session):
       return False
     return self._VerifyStudent(institution,

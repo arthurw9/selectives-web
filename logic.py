@@ -62,7 +62,7 @@ def FindStudent(student_email, students):
   except TypeError:
     return None
   for student in students:
-    if student_email == student['email']:
+    if student_email == student['email'].lower():
       return student
   return None
 
