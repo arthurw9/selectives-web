@@ -25,7 +25,9 @@ schema = yayv.ByExample(
     "      group: OPTIONAL\n"
     "  schedule:\n"
     "    - daypart: REQUIRED\n"
-    "      location: REQUIRED\n")
+    "      location: REQUIRED\n"
+    "  description: OPTIONAL\n"
+    "  donation: OPTIONAL\n")
 
 
 class Classes(webapp2.RequestHandler):
@@ -86,7 +88,9 @@ class Classes(webapp2.RequestHandler):
           "    - daypart: Thurs A",
           "      location: 13",
           "  prerequisites:",
-          "    - current_grade: 6"])
+          "    - current_grade: 6",
+          "  description: Learn the satisfying and peaceful craft of basket weaving. You will learn under-and-over-weaving, double weaving, and the triple twist. If you like working with your hands, basket weaving can provide you with beautiful objects for your home, to give as gifts, or to sell.",
+          "  donation: $10 for materials"])
 
     template_values = {
       'logout_url': logout_url,
