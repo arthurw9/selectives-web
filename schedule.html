@@ -155,7 +155,8 @@ function setInitialSchedule() {
 
 Name: {{ student['first'] + ' ' + student['last'] }}<br>
 Grade: {{ student['current_grade'] }}<br>
-email: {{ student['email'] }}<br><br>
+email: {{ student['email'] }}<br>
+<a href="#mycatalog">View My Course Catalog</a><br><br>
 
 <form method=post>
 <input type=hidden name="institution" value="{{ institution }}" />
@@ -175,7 +176,7 @@ email: {{ student['email'] }}<br><br>
         <ol id="{{daypart}}" class="schedOrderedList">
         {% for c in classes_by_daypart[daypart] %}
           <li class="schedListItem" id="{{daypart}}_{{c['id']}}"
-              title="{{c['description']}}"
+              title="{{c['hover_text']}}"
               onclick="setClickedBackground('{{daypart}}', {{c['id']}}, this);"
               onmouseover="setMouseOverBackground(this);"
               onmouseout="setMouseOutBackground(this);">
@@ -192,5 +193,29 @@ email: {{ student['email'] }}<br><br>
 <script>
 setInitialSchedule();
 </script>
+
+<a name="mycatalog"></a>
+<h2>Course Catalog for {{ student['first'] + ' ' + student['last'] }}</h2>
+
+{% for c in classes_for_catalog %}
+  <h3>{{c['name']}}</h3>
+  <b>Teacher: </b>{{c['instructor']}}<br>
+  <b>Maximum Enrollment: </b>{{c['max_enrollment']}}<br>
+  <b>Schedule: </b>
+  {{c['schedule'][0]['daypart']}}
+  {% if c['schedule']|length > 1 %}
+    {% for s in c['schedule'][1:] %}
+      / {{s['daypart']}}
+    {% endfor %}
+  {% endif %}<br>
+  {% if c['donation'] %}
+    <b>Suggested Donation: </b>{{c['donation']}}<br>
+  {% endif %}
+  <br>
+  {% if c['description'] %}
+    {{c['description']|safe}}<br><br>
+  {% endif %}
+  <hr width="80%" align="left">
+{% endfor %}
 
 {% endblock %}

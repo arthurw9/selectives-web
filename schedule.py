@@ -93,16 +93,23 @@ class Schedule(webapp2.RequestHandler):
     for daypart in dayparts:
       classes_by_daypart[daypart['name']] = []
     classes_by_id = {}
+    classes_for_catalog = []
     use_full_description = auth.CanAdministerInstitutionFromUrl()
     for c in classes:
       class_id = str(c['id'])
       if class_id not in eligible_classes:
         continue
       classes_by_id[class_id] = c
-      class_desc = logic.GetHoverText(use_full_description, c)
-      c['description'] = class_desc
+      hover_text = logic.GetHoverText(use_full_description, c)
+      c['hover_text'] = hover_text
       for daypart in [s['daypart'] for s in c['schedule']]:
         classes_by_daypart[daypart].append(c)
+      if not 'Core' in c['name'] and not 'Study Skills' in c['name']:
+        classes_for_catalog.append(c)
+    classes_for_catalog.sort(key=lambda c:c['name'])
+    for c in classes_for_catalog:
+      if c['description']:
+        c['description'] = c['description'].replace('\n', '<br>')
     
     schedule = models.Schedule.Fetch(institution, session, email)
     schedule = schedule.split(",")
@@ -120,7 +127,7 @@ class Schedule(webapp2.RequestHandler):
       'dayparts_ordered': dayparts_ordered,
       'schedule': schedule,
       'classes_by_id': classes_by_id,
+      'classes_for_catalog': classes_for_catalog,
     }
     template = JINJA_ENVIRONMENT.get_template('schedule.html')
-#    template = JINJA_ENVIRONMENT.get_template('foo.html')
     self.response.write(template.render(template_values))
