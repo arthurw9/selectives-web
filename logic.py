@@ -23,7 +23,7 @@ def GetHoverText(full_text, c):
   if full_text:
     class_desc += 'Id: ' + str(c['id']) + ' '*12
   class_desc += c['name']
-  if c['instructor']:
+  if 'instructor' in c and c['instructor']:
     class_desc += '\nInstructor: ' + c['instructor']
   class_desc += ' '*12 + 'Max Enrollment: ' + str(c['max_enrollment'])
   class_desc += '\nMeets: '
@@ -48,9 +48,9 @@ def GetHoverText(full_text, c):
             class_desc += p[k]
     else:
       class_desc += 'All'
-  if c['donation']:
+  if 'donation' in c and c['donation']:
     class_desc += '\nSuggested donation: ' + c['donation']
-  if c['description']:
+  if 'description' in c and c['description']:
     class_desc += '\n\n' + c['description']
   return class_desc
 
