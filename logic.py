@@ -21,11 +21,11 @@ def GetHoverText(full_text, c):
   
   class_desc = ''
   if full_text:
-    class_desc += 'Id: ' + str(c['id']) + '\t'
+    class_desc += 'Id: ' + str(c['id']) + ' '*12
   class_desc += c['name']
   if c['instructor']:
     class_desc += '\nInstructor: ' + c['instructor']
-  class_desc += '\tMax Enrollment: '.expandtabs(12) + str(c['max_enrollment'])
+  class_desc += ' '*12 + 'Max Enrollment: ' + str(c['max_enrollment'])
   class_desc += '\nMeets: '
   for s in c['schedule']:
     class_desc += s['daypart']
