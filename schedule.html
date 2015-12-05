@@ -113,6 +113,8 @@ function setClickedBackground(daypart, class_id, element) {
     // TODO: support removing a class after the backend supports this.
     return;
   }
+  var loading_gif = document.getElementById(daypart + "_" + class_id + "_loading_gif");
+  loading_gif.style.visibility = "visible";
   element.selected = true;
   element.style.background = selectionColor;
   AddClass(class_id, daypart)
@@ -179,7 +181,7 @@ email: {{ student['email'] }}<br><br>
               onmouseover="setMouseOverBackground(this);"
               onmouseout="setMouseOutBackground(this);">
               {{ c['name'] }}
-             <img src="/images/379.gif" id="loadingImage" alt="loading gif" align="right" style="width:1    5%"/>
+              <img src="/images/379.gif" id="{{daypart}}_{{c['id']}}_loading_gif" alt="loading gif" align="right" style="width:15%;visibility:hidden"/>
           </li>
         {% endfor %}
         </ol>
