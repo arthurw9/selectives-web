@@ -213,7 +213,10 @@ setInitialSchedule();
   {% endif %}
   <br>
   {% if c['description'] %}
-    {{c['description']|safe}}<br><br>
+    {% for line in c['description'].splitlines() %}
+      {{ line }}<br>
+    {% endfor %}
+   <br>
   {% endif %}
   <hr width="80%" align="left">
 {% endfor %}

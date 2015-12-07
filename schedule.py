@@ -107,9 +107,6 @@ class Schedule(webapp2.RequestHandler):
       if 'exclude_from_catalog' not in c or not c['exclude_from_catalog']:
         classes_for_catalog.append(c)
     classes_for_catalog.sort(key=lambda c:c['name'])
-    for c in classes_for_catalog:
-      if 'description' in c and c['description']:
-        c['description'] = c['description'].replace('\n', '<br>')
     
     schedule = models.Schedule.Fetch(institution, session, email)
     schedule = schedule.split(",")
