@@ -18,25 +18,24 @@ def GetHoverText(full_text, c):
   """args:
        full_text: boolean false if we should censor some details.
        c: dict class object to get description of."""
-  class_desc = c['name']
-
+  
+  class_desc = ''
   if full_text:
-    class_desc += '\nId: ' + str(c['id'])
-
+    class_desc += 'Id: ' + str(c['id']) + '\t'
+  class_desc += c['name']
   if c['instructor']:
     class_desc += '\nInstructor: ' + c['instructor']
-
-  class_desc += '\nMax Enrollment: ' + str(c['max_enrollment'])
-
+  class_desc += '\tMax Enrollment: '.expandtabs(12) + str(c['max_enrollment'])
   class_desc += '\nMeets: '
   for s in c['schedule']:
-    class_desc += '\n - ' + s['daypart']
+    class_desc += s['daypart']
     if full_text:
       if isinstance(s['location'], int):
-        class_desc += ', Rm ' + str(s['location'])
+        class_desc += ' (Rm ' + str(s['location']) + ')'
       else:
-        class_desc += ', ' + s['location']
-
+        class_desc += ' (' + s['location'] + ')'
+    class_desc += ', '
+  class_desc = class_desc[:-2] # Remove last comma
   if full_text:
     class_desc += '\nEligible: '
     if c['prerequisites']:
@@ -49,6 +48,10 @@ def GetHoverText(full_text, c):
             class_desc += p[k]
     else:
       class_desc += 'All'
+  if c['donation']:
+    class_desc += '\nSuggested donation: ' + c['donation']
+  if c['description']:
+    class_desc += '\n\n' + c['description']
   return class_desc
 
 
@@ -59,7 +62,7 @@ def FindStudent(student_email, students):
   except TypeError:
     return None
   for student in students:
-    if student_email == student['email']:
+    if student_email == student['email'].lower():
       return student
   return None
 
