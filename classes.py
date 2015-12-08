@@ -27,7 +27,8 @@ schema = yayv.ByExample(
     "    - daypart: REQUIRED\n"
     "      location: REQUIRED\n"
     "  description: OPTIONAL\n"
-    "  donation: OPTIONAL\n")
+    "  donation: OPTIONAL\n"
+    "  exclude_from_catalog: OPTIONAL\n")
 
 
 class Classes(webapp2.RequestHandler):
