@@ -104,7 +104,7 @@ class Schedule(webapp2.RequestHandler):
       c['hover_text'] = hover_text
       for daypart in [s['daypart'] for s in c['schedule']]:
         classes_by_daypart[daypart].append(c)
-      if 'exclude_from_catalog' not in c or not c['exclude_from_catalog']:
+      if not('exclude_from_catalog' in c and c['exclude_from_catalog']):
         classes_for_catalog.append(c)
     classes_for_catalog.sort(key=lambda c:c['name'])
     
