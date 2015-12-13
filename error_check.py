@@ -10,6 +10,9 @@ import random
 import models
 import authorizer
 import logic
+import error_check_logic
+import yayv
+import schemas
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
@@ -17,14 +20,13 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     autoescape=True)
 
 
-class ClassRoster(webapp2.RequestHandler):
+class ErrorCheck(webapp2.RequestHandler):
 
-  def RedirectToSelf(self, institution, session, class_id):
-    self.redirect("/class_list?%s" % urllib.urlencode(
-        {'message': message,
+  def RedirectToSelf(self, institution, session, message):
+    self.redirect("/error_check?%s" % urllib.urlencode(
+        {'message': message, 
          'institution': institution,
-         'session': session,
-         'class_id': class_id}))
+         'session': session}))
 
   def get(self):
     auth = authorizer.Authorizer(self)
@@ -38,25 +40,21 @@ class ClassRoster(webapp2.RequestHandler):
     session = self.request.get("session")
     if not session:
       logging.fatal("no session")
-    class_id = self.request.get("class_id")
-    if not session:
-      logging.fatal("no class id")
 
     message = self.request.get('message')
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
+    setup_msg, error_chk = error_check_logic.CheckAll(institution, session)
 
-    class_roster = models.ClassRoster.FetchEntity(institution, session, class_id)
-    students = models.Students.Fetch(institution, session)
     template_values = {
       'logout_url': auth.GetLogoutUrl(self),
       'user_email' : auth.email,
       'institution' : institution,
       'session' : session,
       'message': message,
+      'setup_msg': setup_msg,
+      'error_chk': error_chk,
       'session_query': session_query,
-      'class_roster': class_roster,
-      'students': students
     }
-    template = JINJA_ENVIRONMENT.get_template('class_roster.html')
+    template = JINJA_ENVIRONMENT.get_template('error_check.html')
     self.response.write(template.render(template_values))

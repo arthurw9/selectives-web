@@ -4,7 +4,8 @@ import jinja2
 import webapp2
 import logging
 import yayv
-
+import schemas
+import error_check_logic
 import models
 import authorizer
 
@@ -16,13 +17,6 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 # TODO: To reduce potential for human error,
 # this is a great page to use a GUI selector
 # to pick classes that belong in each group.
-schema = yayv.ByExample(
-    "- name: REQUIRED\n"
-    "  id: AUTO_INC\n"
-    "  classes:\n"
-    "    - name: OPTIONAL\n" # for human use
-    "      id: REQUIRED\n")
-
 class GroupsClasses(webapp2.RequestHandler):
 
   def RedirectToSelf(self, institution, session, message):
@@ -46,7 +40,7 @@ class GroupsClasses(webapp2.RequestHandler):
     groups_classes = self.request.get("groups_classes")
     if not groups_classes:
       logging.fatal("no groups classes")
-    groups_classes = schema.Update(groups_classes)
+    groups_classes = schemas.class_groups.Update(groups_classes)
     models.GroupsClasses.store(institution, session, groups_classes)
     self.RedirectToSelf(institution, session, "saved groups classes")
 
@@ -67,7 +61,8 @@ class GroupsClasses(webapp2.RequestHandler):
     message = self.request.get('message')
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
-    groups_classes = models.GroupsClasses.fetch(institution, session)
+    setup_msg = error_check_logic.CheckAll(institution, session)
+    groups_classes = models.GroupsClasses.Fetch(institution, session)
     if not groups_classes:
       groups_classes = '\n'.join([
           "# Sample data. Lines with leading # signs are comments.",
@@ -120,6 +115,7 @@ class GroupsClasses(webapp2.RequestHandler):
       'institution' : institution,
       'session' : session,
       'message': message,
+      'setup_msg': setup_msg,
       'session_query': session_query,
       'groups_classes': groups_classes,
       'self': self.request.uri,

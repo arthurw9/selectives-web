@@ -4,7 +4,8 @@ import jinja2
 import webapp2
 import logging
 import yayv
-
+import schemas
+import error_check_logic
 import models
 import authorizer
 
@@ -12,23 +13,6 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
-
-
-schema = yayv.ByExample(
-    "- name: REQUIRED\n"
-    "  id: AUTO_INC\n"
-    "  instructor: OPTIONAL\n"
-    "  max_enrollment: REQUIRED\n"
-    "  prerequisites:\n"
-    "    - current_grade: OPTIONAL\n"
-    "      email: OPTIONAL\n"
-    "      group: OPTIONAL\n"
-    "  schedule:\n"
-    "    - daypart: REQUIRED\n"
-    "      location: REQUIRED\n"
-    "  description: OPTIONAL\n"
-    "  donation: OPTIONAL\n"
-    "  exclude_from_catalog: OPTIONAL\n")
 
 
 class Classes(webapp2.RequestHandler):
@@ -54,7 +38,7 @@ class Classes(webapp2.RequestHandler):
     classes = self.request.get("classes")
     if not classes:
       logging.fatal("no classes")
-    classes = schema.Update(classes)
+    classes = schemas.classes.Update(classes)
     models.Classes.store(institution, session, classes)
     self.RedirectToSelf(institution, session, "saved classes")
 
@@ -75,6 +59,7 @@ class Classes(webapp2.RequestHandler):
     message = self.request.get('message')
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
+    setup_msg = error_check_logic.CheckAll(institution, session)
     classes = models.Classes.Fetch(institution, session)
     if not classes:
       classes = '\n'.join([
@@ -99,6 +84,7 @@ class Classes(webapp2.RequestHandler):
       'institution' : institution,
       'session' : session,
       'message': message,
+      'setup_msg': setup_msg,
       'session_query': session_query,
       'classes': classes,
       'self': self.request.uri,

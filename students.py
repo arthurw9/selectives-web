@@ -4,7 +4,8 @@ import jinja2
 import webapp2
 import logging
 import yayv
-
+import schemas
+import error_check_logic
 import models
 import authorizer
 
@@ -12,14 +13,6 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
-
-
-schema = yayv.ByExample(
-    "- email: UNIQUE\n"
-    "  first: REQUIRED\n"
-    "  last: REQUIRED\n"
-    "  current_grade: REQUIRED\n"
-    "  current_homeroom: REQUIRED\n")
 
 
 class Students(webapp2.RequestHandler):
@@ -45,7 +38,7 @@ class Students(webapp2.RequestHandler):
     students = self.request.get("students")
     if not students:
       logging.warning("no students")
-    students = schema.Update(students)
+    students = schemas.students.Update(students)
     logging.info("posted students %s", students)
     models.Students.store(institution, session, students)
     self.RedirectToSelf(institution, session, "saved students")
@@ -67,7 +60,8 @@ class Students(webapp2.RequestHandler):
     message = self.request.get('message')
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
-    students = models.Students.fetch(institution, session)
+    setup_msg = error_check_logic.CheckAll(institution, session)
+    students = models.Students.Fetch(institution, session)
     if not students:
       students = '\n'.join([
           "# Sample data. Lines with leading # signs are comments.",
@@ -94,6 +88,7 @@ class Students(webapp2.RequestHandler):
       'institution' : institution,
       'session' : session,
       'message': message,
+      'setup_msg': setup_msg,
       'session_query': session_query,
       'students': students,
       'self': self.request.uri,

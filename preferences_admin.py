@@ -6,7 +6,7 @@ import logging
 import yaml
 import itertools
 import random
-
+import error_check_logic
 import models
 import authorizer
 import logic
@@ -58,7 +58,8 @@ class PreferencesAdmin(webapp2.RequestHandler):
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
 
-    students = models.Students.fetch(institution, session)
+    setup_msg = error_check_logic.CheckAll(institution, session)
+    students = models.Students.Fetch(institution, session)
     students = yaml.load(students)
     template_values = {
       'logout_url': auth.GetLogoutUrl(self),
@@ -66,6 +67,7 @@ class PreferencesAdmin(webapp2.RequestHandler):
       'institution' : institution,
       'session' : session,
       'message': message,
+      'setup_msg': setup_msg,
       'session_query': session_query,
       'students': students,
     }
