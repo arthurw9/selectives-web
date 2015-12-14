@@ -18,6 +18,12 @@
         {{ institution }} {{ session }} Selectives Web
         </a></h1>
       </td>
+      <td style="color:red">
+        <!--This message will only display on certain admin pages that pass setup_msg.-->
+        {% if setup_msg and (setup_msg != 'OK') %}
+        Your data may be inconsistent. See Error Check for details.
+        {% endif %}
+      </td>
       <td align=right>
         {% if user_email %}
           {{ user_email }} <a href="{{ logout_url }}">logout</a>

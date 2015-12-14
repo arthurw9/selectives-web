@@ -1,0 +1,9 @@
+{% extends 'menu.html' %}
+{% block session_body %}
+
+<h3>Error Check</h3>
+{% for line in error_chk.splitlines() %}
+  {{ line }}<br>
+{% endfor %}
+
+{% endblock %}

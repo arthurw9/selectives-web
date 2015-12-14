@@ -87,7 +87,7 @@ def StudentIsEligibleForClass(institution, session, student, c):
       return True
     # this prerequisite uses a student group. Let's look up the group.
     eligible_group_name = prereq['group']
-    student_groups = models.GroupsStudents.fetch(institution, session)
+    student_groups = models.GroupsStudents.Fetch(institution, session)
     student_groups = yaml.load(student_groups)
     for group in student_groups:
       if group['group_name'] == eligible_group_name:

@@ -61,7 +61,7 @@ class Schedule(webapp2.RequestHandler):
                                       'session': session})
     email = auth.student_email
 
-    dayparts = yaml.load(models.Dayparts.fetch(institution, session))
+    dayparts = yaml.load(models.Dayparts.Fetch(institution, session))
     if not dayparts:
       dayparts = []
     classes = models.Classes.Fetch(institution, session)

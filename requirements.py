@@ -4,7 +4,8 @@ import jinja2
 import webapp2
 import logging
 import yayv
-
+import schemas
+import error_check_logic
 import models
 import authorizer
 
@@ -12,20 +13,6 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
-
-
-schema = yayv.ByExample(
-    "- name: REQUIRED\n"
-    "  applies_to:\n"
-    "    - current_grade: OPTIONAL\n"
-    "      email: OPTIONAL\n"
-    "      group: OPTIONAL\n"
-    "  id: AUTO_INC\n"
-    "  exempt:\n"
-    "    - OPTIONAL\n"
-    "  class_or_group_options:\n"
-    "    - \n"
-    "      - OPTIONAL\n")
 
 
 class Requirements(webapp2.RequestHandler):
@@ -51,7 +38,7 @@ class Requirements(webapp2.RequestHandler):
     requirements = self.request.get("requirements")
     if not requirements:
       logging.fatal("no requirements")
-    requirements = schema.Update(requirements)
+    requirements = schemas.requirements.Update(requirements)
     models.Requirements.store(institution, session, requirements)
     self.RedirectToSelf(institution, session, "saved requirements")
 
@@ -72,7 +59,8 @@ class Requirements(webapp2.RequestHandler):
     message = self.request.get('message')
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
-    requirements = models.Requirements.fetch(institution, session)
+    setup_msg = error_check_logic.CheckAll(institution, session)
+    requirements = models.Requirements.Fetch(institution, session)
     if not requirements:
       requirements = '\n'.join([
           "# Sample data. Lines with leading # signs are comments.",
@@ -124,6 +112,7 @@ class Requirements(webapp2.RequestHandler):
       'institution' : institution,
       'session' : session,
       'message': message,
+      'setup_msg': setup_msg,
       'session_query': session_query,
       'requirements': requirements,
       'self': self.request.uri,
