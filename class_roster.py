@@ -73,7 +73,7 @@ class ClassRoster(webapp2.RequestHandler):
                                       'session': session})
 
     class_roster = models.ClassRoster.FetchEntity(institution, session, class_id)
-    students = models.Students.fetch(institution, session)
+    students = models.Students.Fetch(institution, session)
     template_values = {
       'logout_url': auth.GetLogoutUrl(self),
       'user_email' : auth.email,

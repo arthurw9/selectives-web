@@ -25,7 +25,7 @@ class Scheduler(webapp2.RequestHandler):
          'session': session}))
 
   def ClearPrefs(self, institution, session):
-    students = models.Students.fetch(institution, session)
+    students = models.Students.Fetch(institution, session)
     students = yaml.load(students)
     classes = models.Classes.Fetch(institution, session)
     classes = yaml.load(classes)
@@ -36,7 +36,7 @@ class Scheduler(webapp2.RequestHandler):
                                [], [], [])
 
   def RandomPrefs(self, institution, session):
-    students = models.Students.fetch(institution, session)
+    students = models.Students.Fetch(institution, session)
     students = yaml.load(students)
     classes = models.Classes.Fetch(institution, session)
     classes = yaml.load(classes)
@@ -107,7 +107,7 @@ class Scheduler(webapp2.RequestHandler):
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
 
-    num_students = len(yaml.load(models.Students.fetch(institution, session)))
+    num_students = len(yaml.load(models.Students.Fetch(institution, session)))
     template_values = {
       'logout_url': logout_url,
       'user_email' : auth.email,

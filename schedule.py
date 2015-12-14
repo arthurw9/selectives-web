@@ -61,7 +61,7 @@ class Schedule(webapp2.RequestHandler):
                                       'session': session})
     email = auth.student_email
 
-    dayparts = yaml.load(models.Dayparts.fetch(institution, session))
+    dayparts = yaml.load(models.Dayparts.Fetch(institution, session))
     if not dayparts:
       dayparts = []
     classes = models.Classes.Fetch(institution, session)
@@ -104,12 +104,9 @@ class Schedule(webapp2.RequestHandler):
       c['hover_text'] = hover_text
       for daypart in [s['daypart'] for s in c['schedule']]:
         classes_by_daypart[daypart].append(c)
-      if not 'Core' in c['name'] and not 'Study Skills' in c['name']:
+      if not('exclude_from_catalog' in c and c['exclude_from_catalog']):
         classes_for_catalog.append(c)
     classes_for_catalog.sort(key=lambda c:c['name'])
-    for c in classes_for_catalog:
-      if c['description']:
-        c['description'] = c['description'].replace('\n', '<br>')
     
     schedule = models.Schedule.Fetch(institution, session, email)
     schedule = schedule.split(",")

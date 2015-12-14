@@ -179,7 +179,7 @@ class Dayparts(ndb.Model):
                    Dayparts, "dayparts")
 
   @classmethod
-  def fetch(cls, institution, session):
+  def Fetch(cls, institution, session):
     dayparts = Dayparts.dayparts_key(institution, session).get()
     if dayparts:
       return dayparts.data
@@ -229,7 +229,7 @@ class Students(ndb.Model):
                    Students, "students")
 
   @classmethod
-  def fetch(cls, institution, session):
+  def Fetch(cls, institution, session):
     students = Students.students_key(institution, session).get()
     if students:
       return students.data
@@ -254,7 +254,7 @@ class Requirements(ndb.Model):
                    Requirements, "requirements")
 
   @classmethod
-  def fetch(cls, institution, session):
+  def Fetch(cls, institution, session):
     requirements = Requirements.requirements_key(institution, session).get()
     if requirements:
       return requirements.data
@@ -279,7 +279,7 @@ class GroupsClasses(ndb.Model):
                    GroupsClasses, "groups_classes")
 
   @classmethod
-  def fetch(cls, institution, session):
+  def Fetch(cls, institution, session):
     groups_classes = GroupsClasses.groups_classes_key(institution, session).get()
     if groups_classes:
       return groups_classes.data
@@ -303,7 +303,7 @@ class GroupsStudents(ndb.Model):
                        GroupsStudents, "groups_students")
 
     @classmethod
-    def fetch(cls, institution, session):
+    def Fetch(cls, institution, session):
         groups_students = GroupsStudents.groups_students_key(institution, session).get()
         if groups_students:
             return groups_students.data

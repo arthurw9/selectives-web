@@ -21,11 +21,11 @@ def GetHoverText(full_text, c):
   
   class_desc = ''
   if full_text:
-    class_desc += 'Id: ' + str(c['id']) + '\t'
+    class_desc += 'Id: ' + str(c['id']) + ' '*12
   class_desc += c['name']
-  if c['instructor']:
+  if 'instructor' in c and c['instructor']:
     class_desc += '\nInstructor: ' + c['instructor']
-  class_desc += '\tMax Enrollment: '.expandtabs(12) + str(c['max_enrollment'])
+  class_desc += ' '*12 + 'Max Enrollment: ' + str(c['max_enrollment'])
   class_desc += '\nMeets: '
   for s in c['schedule']:
     class_desc += s['daypart']
@@ -48,9 +48,9 @@ def GetHoverText(full_text, c):
             class_desc += p[k]
     else:
       class_desc += 'All'
-  if c['donation']:
+  if 'donation' in c and c['donation']:
     class_desc += '\nSuggested donation: ' + c['donation']
-  if c['description']:
+  if 'description' in c and c['description']:
     class_desc += '\n\n' + c['description']
   return class_desc
 
@@ -87,7 +87,7 @@ def StudentIsEligibleForClass(institution, session, student, c):
       return True
     # this prerequisite uses a student group. Let's look up the group.
     eligible_group_name = prereq['group']
-    student_groups = models.GroupsStudents.fetch(institution, session)
+    student_groups = models.GroupsStudents.Fetch(institution, session)
     student_groups = yaml.load(student_groups)
     for group in student_groups:
       if group['group_name'] == eligible_group_name:
