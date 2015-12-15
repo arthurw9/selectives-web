@@ -52,6 +52,22 @@ class Scheduler(webapp2.RequestHandler):
       models.Preferences.Store(email, institution, session,
                                want, [], dontwant)
 
+  def ClearAllSchedules(self, institution, session):
+    students = models.Students.fetch(institution, session)
+    students = yaml.load(students)
+    for student in students:
+      empty_class_ids = ''
+      models.Schedule.Store(institution, session,
+                            student['email'],
+                            empty_class_ids)
+    classes = models.Classes.Fetch(institution, session)
+    classes = yaml.load(classes)
+    for class_obj in classes:
+      no_student_emails = ""
+      models.ClassRoster.Store(institution, session,
+                               class_obj,
+                               no_student_emails)
+
   def post(self):
     auth = authorizer.Authorizer(self)
     if not auth.CanAdministerInstitutionFromUrl():
@@ -69,7 +85,8 @@ class Scheduler(webapp2.RequestHandler):
       self.ClearPrefs(institution, session)
     if action == "Random Prefs":
       self.RandomPrefs(institution, session)
-    #TODO is there anything to do here?
+    if action == "Clear Schedules":
+      self.ClearAllSchedules(institution, session)
     self.RedirectToSelf(institution, session, "saved classes")
 
   def get(self):

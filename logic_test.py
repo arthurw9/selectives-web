@@ -21,6 +21,8 @@ class TestLogic(testbase.TestBase):
   def AssertClassRoster(self, institution, session, class_id, *expected_emails):
     actual_emails = logic.models.ClassRoster.FetchEntity(
         institution, session, class_id)['emails']
+    if actual_emails == ['']:
+      actual_emails = []
     self.AssertEqual(len(expected_emails), len(actual_emails), "number of students in class")
     for email in expected_emails:
       self.AssertTrue(email in actual_emails, "expected email %s in actual emails %s" %
@@ -84,6 +86,68 @@ class TestLogic(testbase.TestBase):
     self.AssertClassRoster(institution, session, "3",
                            "dent@school.edu")
     self.AssertClassRoster(institution, session, "4",
+                           "stew@school.edu", "dent@school.edu")
+
+  def testRemoveOneStudentFromOneClass(self):
+    # setup selective classes
+    class_a = self.MakeClass("Class A", 1, "Mon")
+
+    # setup the fake model objects
+    logic.models.Classes = fake_ndb.FakeClasses(
+        [class_a])
+    logic.models.ClassRoster = fake_ndb.FakeClassRoster()
+    logic.models.Schedule = fake_ndb.FakeSchedule()
+    # add a student to a class
+    institution = 'abc'
+    session = 'fall 2015'
+    student_email = 'stew@school.edu'
+    logic.AddStudentToClass(institution, session, student_email, class_a['id'])
+
+    # call the unit under test to remove the student from the class
+    logic.RemoveStudentFromClass(
+        institution, session, 'stew@school.edu', "1")
+
+    # verify the new class roster and student schedule  
+    self.AssertSchedule(institution, session, 'stew@school.edu')
+    self.AssertClassRoster(institution, session, "1")
+
+  def testRemoveStudentFromClass(self):
+    # setup selective classes
+    class_a = self.MakeClass("Class A", 1, "Mon")
+    class_b = self.MakeClass("Class B", 2, "Tue", "Fri")
+    class_c = self.MakeClass("Class C", 3, "Wed")
+
+    # setup the fake model objects
+    logic.models.Classes = fake_ndb.FakeClasses(
+        [class_a, class_b, class_c])
+    logic.models.ClassRoster = fake_ndb.FakeClassRoster()
+    logic.models.Schedule = fake_ndb.FakeSchedule()
+    # add a schedule to a couple of students
+    institution = 'abc'
+    session = 'fall 2015'
+
+    student_email = 'stew@school.edu'
+    logic.AddStudentToClass(institution, session, student_email, class_a['id'])
+    logic.AddStudentToClass(institution, session, student_email, class_b['id'])
+    logic.AddStudentToClass(institution, session, student_email, class_c['id'])
+
+    student_email = 'dent@school.edu'
+    logic.AddStudentToClass(institution, session, student_email, class_a['id'])
+    logic.AddStudentToClass(institution, session, student_email, class_b['id'])
+    logic.AddStudentToClass(institution, session, student_email, class_c['id'])
+
+    # call the unit under test to remove some students from classes
+    logic.RemoveStudentFromClass(
+        institution, session, 'stew@school.edu', "1")
+
+    # verify the new class roster and student schedule  
+    self.AssertSchedule(institution, session, 'stew@school.edu', 2, 3)
+    self.AssertSchedule(institution, session, 'dent@school.edu', 1, 2, 3)
+    self.AssertClassRoster(institution, session, "1",
+                           "dent@school.edu")
+    self.AssertClassRoster(institution, session, "2",
+                           "stew@school.edu", "dent@school.edu")
+    self.AssertClassRoster(institution, session, "3",
                            "stew@school.edu", "dent@school.edu")
 
   def SetupClassesAndStudentGroups(self):

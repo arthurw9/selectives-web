@@ -80,6 +80,7 @@ class TestYayvByExample(testbase.TestBase):
     self.Assert(s, "[{id: Hello, xyz: There}, {id: There, xyz: Blue}]", True)
     self.Assert(s, "[{id: Hello, xyz: Hello}, {id: There, xyz: Blue}]", True)
     self.Assert(s, "[{id: Hello, xyz: There}, {id: Hello, xyz: Blue}]", False)
+    self.Assert(s, "[{id: Hello, xyz: There}, {xyz: Blue}]", False)
 
   def testUniqList(self):
     s = yayv.ByExample("[ UNIQUE ]")
@@ -126,6 +127,9 @@ class TestYayvByExample(testbase.TestBase):
     s = yayv.ByExample("- {name: OPTIONAL, schedule: [ {daypart: UNIQUE 1, room: OPTIONAL} ]}")
     s.IsValid("[ {name: foo, schedule: [ {daypart: monday a, room: 200}, {daypart: monday a, room: 300}]}]")
     self.AssertEqual("# Duplicate Value monday a in UNIQUE 1 in ROOT[0].schedule[1].daypart", s.ErrorMessage())
+    s = yayv.ByExample("{daypart: UNIQUE 1, room: OPTIONAL}")
+    s.IsValid("{room: 200}")
+    self.AssertEqual("# UNIQUE field missing in ROOT.daypart", s.ErrorMessage())
 
   def testRealisticIsValidFails(self):
     s = yayv.ByExample(

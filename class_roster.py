@@ -19,12 +19,38 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 
 class ClassRoster(webapp2.RequestHandler):
 
-  def RedirectToSelf(self, institution, session, class_id):
-    self.redirect("/class_list?%s" % urllib.urlencode(
+  def RedirectToSelf(self, institution, session, class_id, message):
+    self.redirect("/class_roster?%s" % urllib.urlencode(
         {'message': message,
          'institution': institution,
          'session': session,
          'class_id': class_id}))
+
+  def post(self):
+    auth = authorizer.Authorizer(self)
+    if not auth.CanAdministerInstitutionFromUrl():
+      auth.Redirect()
+      return
+
+    institution = self.request.get("institution")
+    if not institution:
+      logging.fatal("no institution")
+    session = self.request.get("session")
+    if not session:
+      logging.fatal("no session")
+    class_id = self.request.get("class_id")
+    if not class_id:
+      logging.fatal("no class_id")
+    action = self.request.get("action")
+    if not action:
+      logging.fatal("no action")
+
+    if action == "remove student":
+      email = self.request.get("email")
+      logic.RemoveStudentFromClass(institution, session, email, class_id)
+      self.RedirectToSelf(institution, session, class_id, "removed %s" % email)
+
+    self.RedirectToSelf(institution, session, class_id, "Unknown action")
 
   def get(self):
     auth = authorizer.Authorizer(self)

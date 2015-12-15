@@ -238,5 +238,5 @@ def RemoveStudentFromClass(institution, session, student_email, old_class_id):
   class_obj = class_info.getClassObj(old_class_id)
   r = _ClassRoster(institution, session, class_obj)
   r.remove(student_email)
-  s = _StudentSchedule(institution, session, student_email)
-  s.remove(class_obj['id'])
+  s = _StudentSchedule(institution, session, student_email, class_info)
+  s.remove(old_class_id)

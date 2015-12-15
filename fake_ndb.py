@@ -68,7 +68,7 @@ class FakeStudents(object):
   def __init__(self, students):
     self.students = students
 
-  def fetch(self, institution, session):
+  def Fetch(self, institution, session):
     return self.students
 
 
@@ -164,5 +164,5 @@ class FakeGroupsStudents(object):
   def __init__(self, student_group_data):
     self.data = yaml.dump(student_group_data)
 
-  def fetch(self, institution, session):
+  def Fetch(self, institution, session):
     return self.data

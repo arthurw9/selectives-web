@@ -431,6 +431,9 @@ class ClassRoster(ndb.Model):
 
   @classmethod
   def Store(cls, institution, session, class_obj, student_emails):
+    student_emails = student_emails.strip()
+    if len(student_emails) and student_emails[-1] == ',':
+      student_emails = student_emails[:-1]
     class_id = str(class_obj['id'])
     roster = ClassRoster()
     roster.key = ClassRoster.class_roster_key(institution, session, class_id)
