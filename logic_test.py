@@ -39,6 +39,40 @@ class TestLogic(testbase.TestBase):
             "schedule":
                 [ { "daypart": d } for d in dayparts ]}
  
+  def testShouldNotAddStudentToFullClass(self):
+    class_id = "1"
+    class_a = self.MakeClass("Class A", class_id, "Mon")
+    # setup the fake model objects
+    logic.models.Classes = fake_ndb.FakeClasses([class_a])
+    logic.models.ClassRoster = fake_ndb.FakeClassRoster()
+    logic.models.Schedule = fake_ndb.FakeSchedule()
+    # call the unit under test and fill up the class with students
+    institution = 'abc'
+    session = 'fall 2015'
+    for student_number in range(1,21):
+      student_email = "stew_%d@school.edu" % student_number
+      logic.AddStudentToClass(institution, session, student_email, class_id)
+      actual_emails = logic.models.ClassRoster.FetchEntity(
+          institution, session, class_id)['emails']
+      self.AssertEqual(student_number, len(actual_emails))
+    # verify all the students are there and the class is full
+    actual_emails = logic.models.ClassRoster.FetchEntity(
+        institution, session, class_id)['emails']
+    self.AssertEqual(20, len(actual_emails))
+    self.AssertTrue("stew_1@school.edu" in actual_emails)
+    self.AssertTrue("stew_20@school.edu" in actual_emails)
+    self.AssertSchedule(institution, session, 'stew_1@school.edu', class_id)
+    self.AssertSchedule(institution, session, 'stew_20@school.edu', class_id)
+    # Now that the class is full try adding another student
+    student_email = "too_late@school.edu"
+    logic.AddStudentToClass(institution, session, student_email, class_id)
+    # verify they didn't get added
+    actual_emails = logic.models.ClassRoster.FetchEntity(
+        institution, session, class_id)['emails']
+    self.AssertEqual(20, len(actual_emails))
+    self.AssertTrue("too_late@school.edu" not in actual_emails)
+    self.AssertSchedule(institution, session, "too_late@school.edu")
+
   def testAddStudentToClass(self):
     # setup selective classes
     class_a = self.MakeClass("Class A", 1, "Mon")

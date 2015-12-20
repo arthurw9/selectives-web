@@ -125,6 +125,9 @@ class _ClassRoster(object):
     roster = models.ClassRoster.FetchEntity(institution, session, new_class_id)
     self.emails = roster['emails']
 
+  def SpotsAvailable(self):
+    return self.class_obj['max_enrollment'] - len(self.emails)
+
   def add(self, student_email):
     self.emails.append(student_email)
     self.emails = list(set(self.emails))
@@ -221,11 +224,13 @@ class _StudentSchedule(object):
 @ndb.transactional(retries=3, xg=True)
 def AddStudentToClass(institution, session, student_email, new_class_id):
   class_info = _ClassInfo(institution, session)
-  s = _StudentSchedule(institution, session, student_email, class_info)
-  s.add(new_class_id)
   class_obj = class_info.getClassObj(new_class_id)
   r = _ClassRoster(institution, session, class_obj)
+  if r.SpotsAvailable() <= 0:
+    return
   r.add(student_email)
+  s = _StudentSchedule(institution, session, student_email, class_info)
+  s.add(new_class_id)
   for old_class_id in class_info.removed_class_ids:
     class_obj = class_info.getClassObj(old_class_id)
     r = _ClassRoster(institution, session, class_obj)
