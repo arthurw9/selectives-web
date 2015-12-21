@@ -17,6 +17,7 @@ import groups_students
 import class_list
 import class_roster
 import error_check
+import spots_available
 
 application = webapp2.WSGIApplication([
   ('/', index.Index),
@@ -36,4 +37,5 @@ application = webapp2.WSGIApplication([
   ('/class_list', class_list.ClassList),
   ('/class_roster', class_roster.ClassRoster),
   ('/error_check', error_check.ErrorCheck),
+  ('/spots_available', spots_available.SpotsAvailable),
 ], debug=True)
