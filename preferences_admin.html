@@ -1,24 +1,29 @@
 {% extends 'menu.html' %}
 {% block session_body %}
 
-<h3>Preferences Admin</h3>
-TODO: Mark any students with no saved preferences
+{# TODO: rename this page student_impersonation #}
+<div style="min-width: 2000; white-space: nowrap;">
+<span style="float:left">
+<h3>Student Impersonation</h3>
+{# TODO: Mark any students with no saved preferences #}
 <br>
 <br>
 
 {% if students %}
-<table>
+<table id="students">
   {% for student in students %}
     <tr class=highlight><td>{{ student['first'] }} {{ student['last'] }}</td>
-        <td><a href="/preferences?{{ session_query }}&student={{ student['email'] }}">preferences</a></td>
-        <td><a href="/schedule?{{ session_query }}&student={{ student['email'] }}">schedule</a></td>
+        <td><a href="/preferences?{{ session_query }}&student={{ student['email'] }}" target="iframe">prefs</a></td>
+        <td><a href="/schedule?{{ session_query }}&student={{ student['email'] }}" target="iframe">schedule</a></td>
     </tr>
   {% endfor %}
 </table>
-
 {% else %}
 There are no students to display.<br>
 Go to Setup, Students to create students.
 {% endif %}
+</span>
+<iframe name="iframe" style="position:absolute;" onload="this.width=1000;this.height=document.body.scrollHeight;this.style.left=10+document.getElementById('students').style.width" scrolling="no"></iframe>
+</div>
 
 {% endblock %}
