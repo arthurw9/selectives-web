@@ -72,7 +72,7 @@ class Schedule(webapp2.RequestHandler):
       classes = []
     classes_by_daypart = {}
     dayparts_ordered = []
-    
+
     max_row = max([daypart['row'] for daypart in dayparts])
     max_col = max([daypart['col'] for daypart in dayparts])
     
