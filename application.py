@@ -9,7 +9,7 @@ import students
 import requirements
 import verification
 import preferences
-import preferences_admin
+import impersonation
 import scheduler
 import groups_classes
 import schedule
@@ -30,7 +30,7 @@ application = webapp2.WSGIApplication([
   ('/verification', verification.Verification),
   ('/preferences', preferences.Preferences),
   ('/schedule', schedule.Schedule),
-  ('/preferences_admin', preferences_admin.PreferencesAdmin),
+  ('/impersonation', impersonation.Impersonation),
   ('/scheduler', scheduler.Scheduler),
   ('/groups_classes', groups_classes.GroupsClasses),
   ('/groups_students', groups_students.GroupsStudents),
