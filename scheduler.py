@@ -53,7 +53,7 @@ class Scheduler(webapp2.RequestHandler):
                                want, [], dontwant)
 
   def ClearAllSchedules(self, institution, session):
-    students = models.Students.fetch(institution, session)
+    students = models.Students.Fetch(institution, session)
     students = yaml.load(students)
     for student in students:
       empty_class_ids = ''
