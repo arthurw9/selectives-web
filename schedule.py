@@ -4,6 +4,7 @@ import jinja2
 import webapp2
 import logging
 import yaml
+import json
 
 import models
 import authorizer
@@ -28,6 +29,8 @@ class Schedule(webapp2.RequestHandler):
     # TODO: support removing a class
     auth = authorizer.Authorizer(self)
     if not auth.HasStudentAccess():
+      # TODO: This is now an API so we should return an error
+      # instead of redirecting. 
       auth.Redirect()
       return
 
@@ -41,7 +44,12 @@ class Schedule(webapp2.RequestHandler):
     new_class_id = self.request.get("class_id")
 
     logic.AddStudentToClass(institution, session, email, new_class_id)
-    self.RedirectToSelf(institution, session, email, "Saved Class")
+    schedule = models.Schedule.Fetch(institution, session, email)
+    schedule = schedule.split(",")
+    if schedule and schedule[0] == "":
+      schedule = schedule[1:]
+    self.response.write(json.dumps(schedule))
+
 
   def get(self):
     auth = authorizer.Authorizer(self)
@@ -60,8 +68,8 @@ class Schedule(webapp2.RequestHandler):
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
     email = auth.student_email
-
-    dayparts = yaml.load(models.Dayparts.Fetch(institution, session))
+    dayparts = models.Dayparts.Fetch(institution, session)
+    dayparts = yaml.load(dayparts)
     if not dayparts:
       dayparts = []
     classes = models.Classes.Fetch(institution, session)
@@ -110,6 +118,8 @@ class Schedule(webapp2.RequestHandler):
     
     schedule = models.Schedule.Fetch(institution, session, email)
     schedule = schedule.split(",")
+    if schedule and schedule[0] == "":
+      schedule = schedule[1:]
 
     template_values = {
       'logout_url': auth.GetLogoutUrl(self),
@@ -122,7 +132,7 @@ class Schedule(webapp2.RequestHandler):
       'dayparts': dayparts,
       'classes_by_daypart': classes_by_daypart,
       'dayparts_ordered': dayparts_ordered,
-      'schedule': schedule,
+      'schedule': json.dumps(schedule),
       'classes_by_id': classes_by_id,
       'classes_for_catalog': classes_for_catalog,
     }
