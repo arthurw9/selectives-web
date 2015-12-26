@@ -69,7 +69,7 @@ class Authorizer(object):
     if self.CanAdministerInstitutionFromUrl():
       return self._VerifyStudent(institution,
                                  session,
-                                 self.handler.request.get("student"))
+                                 self.handler.request.get("student").lower())
     if not self._VerifyServingSession(institution, session):
       return False
     return self._VerifyStudent(institution,
@@ -89,7 +89,7 @@ class Authorizer(object):
 
   def _VerifyStudent(self, institution, session, student_email):
     # returns true on success
-    students = models.Students.fetch(institution, session)
+    students = models.Students.Fetch(institution, session)
     students = yaml.load(students)
     student_entity = logic.FindStudent(student_email, students)
     if student_entity:

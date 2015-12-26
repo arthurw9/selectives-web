@@ -6,7 +6,7 @@ import logging
 import yaml
 import itertools
 import random
-
+import error_check_logic
 import models
 import authorizer
 import logic
@@ -17,29 +17,13 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     autoescape=True)
 
 
-class PreferencesAdmin(webapp2.RequestHandler):
+class Impersonation(webapp2.RequestHandler):
 
   def RedirectToSelf(self, institution, session, message):
-    self.redirect("/preferences_admin?%s" % urllib.urlencode(
+    self.redirect("/impersonation?%s" % urllib.urlencode(
         {'message': message, 
          'institution': institution,
          'session': session}))
-
-  def post(self):
-    auth = authorizer.Authorizer(self)
-    if not auth.CanAdministerInstitutionFromUrl():
-      auth.Redirect()
-      return
-
-    institution = self.request.get("institution")
-    if not institution:
-      logging.fatal("no institution")
-    session = self.request.get("session")
-    if not session:
-      logging.fatal("no session")
-    email = auth.email
-    action = self.request.get("action")
-    self.RedirectToSelf(institution, session, "Saved Preferences")
 
   def get(self):
     auth = authorizer.Authorizer(self)
@@ -58,7 +42,8 @@ class PreferencesAdmin(webapp2.RequestHandler):
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
 
-    students = models.Students.fetch(institution, session)
+    setup_msg = error_check_logic.CheckAll(institution, session)
+    students = models.Students.Fetch(institution, session)
     students = yaml.load(students)
     template_values = {
       'logout_url': auth.GetLogoutUrl(self),
@@ -66,8 +51,9 @@ class PreferencesAdmin(webapp2.RequestHandler):
       'institution' : institution,
       'session' : session,
       'message': message,
+      'setup_msg': setup_msg,
       'session_query': session_query,
       'students': students,
     }
-    template = JINJA_ENVIRONMENT.get_template('preferences_admin.html')
+    template = JINJA_ENVIRONMENT.get_template('impersonation.html')
     self.response.write(template.render(template_values))

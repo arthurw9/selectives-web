@@ -25,7 +25,7 @@ class Scheduler(webapp2.RequestHandler):
          'session': session}))
 
   def ClearPrefs(self, institution, session):
-    students = models.Students.fetch(institution, session)
+    students = models.Students.Fetch(institution, session)
     students = yaml.load(students)
     classes = models.Classes.Fetch(institution, session)
     classes = yaml.load(classes)
@@ -36,13 +36,14 @@ class Scheduler(webapp2.RequestHandler):
                                [], [], [])
 
   def RandomPrefs(self, institution, session):
-    students = models.Students.fetch(institution, session)
+    students = models.Students.Fetch(institution, session)
     students = yaml.load(students)
     classes = models.Classes.Fetch(institution, session)
     classes = yaml.load(classes)
     for student in students:
       email = student['email']
-      eligible_class_ids = logic.EligibleClassIdsForStudent(student, classes)
+      eligible_class_ids = logic.EligibleClassIdsForStudent(
+          institution, session, student, classes)
       eligible_class_ids = set(eligible_class_ids)
       want = random.sample(eligible_class_ids, random.randint(1,5))
       dontwant = random.sample(eligible_class_ids.difference(want), random.randint(1,5))
@@ -50,6 +51,22 @@ class Scheduler(webapp2.RequestHandler):
       # dontwant = [str(item) for item in dontwant]
       models.Preferences.Store(email, institution, session,
                                want, [], dontwant)
+
+  def ClearAllSchedules(self, institution, session):
+    students = models.Students.Fetch(institution, session)
+    students = yaml.load(students)
+    for student in students:
+      empty_class_ids = ''
+      models.Schedule.Store(institution, session,
+                            student['email'],
+                            empty_class_ids)
+    classes = models.Classes.Fetch(institution, session)
+    classes = yaml.load(classes)
+    for class_obj in classes:
+      no_student_emails = ""
+      models.ClassRoster.Store(institution, session,
+                               class_obj,
+                               no_student_emails)
 
   def post(self):
     auth = authorizer.Authorizer(self)
@@ -68,7 +85,8 @@ class Scheduler(webapp2.RequestHandler):
       self.ClearPrefs(institution, session)
     if action == "Random Prefs":
       self.RandomPrefs(institution, session)
-    #TODO is there anything to do here?
+    if action == "Clear Schedules":
+      self.ClearAllSchedules(institution, session)
     self.RedirectToSelf(institution, session, "saved classes")
 
   def get(self):
@@ -89,7 +107,7 @@ class Scheduler(webapp2.RequestHandler):
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
 
-    num_students = len(yaml.load(models.Students.fetch(institution, session)))
+    num_students = len(yaml.load(models.Students.Fetch(institution, session)))
     template_values = {
       'logout_url': logout_url,
       'user_email' : auth.email,

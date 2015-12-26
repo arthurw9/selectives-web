@@ -1,23 +1,46 @@
 {% extends 'menu.html' %}
 {% block session_body %}
 
+<script>
+function RemoveStudent(email) {
+  // save the new class id in the form's hidden field
+  form_element = document.forms[0];
+  form_element.action.value = "remove student";
+  form_element.email.value = email;
+  console.log(form_element);
+  // submit the form
+  form_element.submit();
+  return false;
+}
+</script>
 <h3>{{ class_roster['class_name'] }} Class Roster</h3>
 {{ class_roster['class_details'] }}
 <br>
 <br>
 Students:
+<form method=post>
+<input type=hidden name="institution" value="{{ institution }}" />
+<input type=hidden name="session" value="{{ session }}" />
+<input type=hidden name="class_id" value = "{{ class_roster['class_id'] }}" />
+<input type=hidden name="action" />
+<input type=hidden name="email" />
 <table>
   {% for e in class_roster['emails'] %}
+    {% if e|length > 1 %}
     <tr class=highlight>
-      <td><a href="/class_roster?{{ session_query }}&class_id={{ class_roster['class_id'] }}&email={{ e }}&action=remove }}">remove</a></td>
+      <td><button onclick="return RemoveStudent('{{ e }}');">remove</button></td>
       <td>{{ e }}</td>
     </tr>
+    {% endif %}
   {% endfor %}
 </table>
 <br>
-<a href="/class_roster?{{ session_query }}&class_id={{ class_roster['class_id'] }}&action=add }}">Add</a>
+TODO: Make the Add button work.
+<button>Add</button>
+</form>
 <br>
-TODO: Make a list of eligible students (available at the right dayparts)
-TODO: Make the "add" link work
+TODO:
+Make a list of students that are eligible and
+available at the right daypart(s) to take this class.
 
 {% endblock %}

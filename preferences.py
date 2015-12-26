@@ -79,17 +79,17 @@ class Preferences(webapp2.RequestHandler):
     except TypeError:
       classes = []
     classes_by_id = {}
+    use_full_description = auth.CanAdministerInstitutionFromUrl()
     for c in classes:
       class_id = str(c['id'])
       class_name = c['name']
-      # TODO: add proper class_desc instead of just dumping the yaml
-      class_desc = yaml.dump(c, default_flow_style=False)
+      class_desc = logic.GetHoverText(use_full_description, c)
       classes_by_id[class_id] = {'name': class_name,
                                  'description': class_desc }
     if not classes_by_id:
       classes_by_id['0'] = {'name': 'None', 'desc': 'None'}
     eligible_class_ids = set(logic.EligibleClassIdsForStudent(
-        auth.student_entity, classes))
+        institution, session, auth.student_entity, classes))
 
     prefs = models.Preferences.FetchEntity(
         auth.student_email, institution, session)

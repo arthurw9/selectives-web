@@ -2,38 +2,48 @@
 {% block body %}
 
 <script>
-var refresh_timer_object;
-// TODO: Detect if all requirements are satisfied
-window.onbeforeunload = confirmOnPageExit;
+var spots_available_timer_object;
 
-// Shim to handle Internet Explorer
-if (!Date.now) {
-  Date.now = function() { return new Date().getTime(); }
-}
-
-function RefreshTimer(seconds) {
-  // set the timer to save in the given number of seconds
-  if (refresh_timer_object) {
-    clearTimeout(refresh_timer_object);
+function ResetSpotsAvailableTimer(seconds) {
+  if (spots_available_timer_object) {
+    clearTimeout(spots_available_timer_object);
   }
-  refresh_timer_object = setTimeout(Refresh, seconds * 1000);
+  spots_available_timer_object = setTimeout(RefreshSpotsAvailable,
+                                            seconds * 1000);
 }
 
-// TODO: periodically check class availability
-function Refresh() {
+function RefreshSpotsAvailable() {
   var request = new XMLHttpRequest();
-  request.onload = function() {
-    if (request.status == 200) {
-      // TODO pull the class availability out of the response
+  request.open("POST", "/spots_available");
+  request.onreadystatechange = function() {
+    if(request.readyState == 4 && request.status == 200) {
+      result = JSON.parse(request.responseText)
+      WriteSpotsAvailableToGui(result);
+      // TODO: How fast can we refresh before Google imposes
+      // limits and starts demanding money?
+      ResetSpotsAvailableTimer(7);
     }
   }
-  request.open("GET", "");
-  var formElement = document.querySelector("form");
-  var formData = new FormData(formElement);
-  request.send(formData);
+  var params = new FormData();
+  params.append("institution", "{{ institution }}");
+  params.append("session", "{{ session }}");
+  params.append("student", "{{ student['email'] }}");
+  var class_ids = Object.keys(classes_by_id);
+  class_ids = JSON.stringify(class_ids);
+  params.append("class_ids", class_ids);
+  request.send(params);
+}
 
-  // schedule another refresh in 5 seconds
-  RefreshTimer(5);
+function WriteSpotsAvailableToGui(class_availability) {
+  for(c_id in class_availability) {
+    dayparts = classes_by_id[c_id]['dayparts'];
+    for(idx in dayparts) {
+      var daypart = dayparts[idx];
+      var dom_element_id = "spots_left_" + daypart + "_" + c_id;
+      e = document.getElementById(dom_element_id);
+      e.innerHTML = class_availability[c_id];
+    }
+  }
 }
 
 function CheckRequirements() {
@@ -60,21 +70,66 @@ classes_by_id = {
 {%- endfor %}
 };
 
-selected_class_name_by_daypart = {};
+// TODO: move these color choices into the style sheet
+var NOT_SELECTED_COLOR = '#eeeeff'; // light-grey
+var HOVER_COLOR = '#bbbbbb'; // grey
+var SELECTED_COLOR = '#8888ff'; // blue
+
+selected_class_id_by_daypart = {};
+
+function ClearClassInGui(class_id) {
+  var dayparts = classes_by_id[class_id]['dayparts'];
+  if (!dayparts) {
+    return;
+  }
+  for (var i = 0; i < dayparts.length; i++) {
+    var daypart = dayparts[i];
+    // Clear any older selected class in this daypart
+    e = document.getElementById(daypart + "_" + class_id);
+    e.style.background = NOT_SELECTED_COLOR;
+    e.selected = false;
+    selected_class_id_by_daypart[daypart] =  null;
+  }
+}
+
+function MarkClassInGui(class_id) {
+  if (!class_id) {
+    return;
+  }
+  var dayparts = classes_by_id[class_id]['dayparts'];
+  for (var i = 0; i < dayparts.length; i++) {
+    var daypart = dayparts[i];
+    // Clear any old selected class in this daypart
+    if (daypart in selected_class_id_by_daypart) {
+      var old_class_id = selected_class_id_by_daypart[daypart];
+      if (old_class_id) {
+        ClearClassInGui(old_class_id);
+      }
+    }
+    var e = document.getElementById(daypart + "_" + class_id);
+    selected_class_id_by_daypart[daypart] = class_id;
+    e.style.background = SELECTED_COLOR;
+    e.selected = true;
+  }
+}
 
 function ConfirmConflictingClasses(class_id, daypart) {
   // return true if there are no conflicting classes
   // or if the user is OK with removing the conficts.
   // return false otherwise.
-  dayparts = classes_by_id[class_id]['dayparts'];
-  conflicting_classes = [];
+  var dayparts = classes_by_id[class_id]['dayparts'];
+  var conflicting_classes = [];
   for (var i = 0; i < dayparts.length; i++) {
     if (dayparts[i] == daypart) {
-      // presumably the user knows and is ok if (s)he is removing 
+      // presumably the user knows and is OK with removing 
       // a class in the current daypart.
       continue;
     }
-    class_name = selected_class_name_by_daypart[dayparts[i]];
+    var conflicting_class_id = selected_class_id_by_daypart[dayparts[i]];
+    if (!conflicting_class_id) {
+      continue;
+    }
+    class_name = classes_by_id[conflicting_class_id]['name'];
     if (class_name) {
       conflicting_classes.push(class_name);
     }
@@ -82,40 +137,47 @@ function ConfirmConflictingClasses(class_id, daypart) {
   if (conflicting_classes.length == 0) {
     return true;
   }
-  return confirm(classes_by_id[class_id]['name'] + " meets on " +
-                 dayparts.join(", ") + 
-                 "\nThis will replace the following classes:\n" +
+  return confirm("Replace: " +
                  conflicting_classes.join(", ") +
-                 "\nDo you want to continue?");
+                 "?");
 }
 
-function AddClass(class_id, daypart) {
-  // save the new class id in the form's hidden field
-  form_element = document.forms[0];
-  form_element.class_id.value = class_id;
+function AddClassToBackend(class_id, daypart, loading_gif) {
   if (!ConfirmConflictingClasses(class_id, daypart)) {
     return;
   }
-  // allow the page to submit without prompting the user
-  window.onbeforeunload = null;
-  // submit the form
-  form_element.submit();
+  var request = new XMLHttpRequest();
+  request.open("POST", "/schedule");
+  request.onreadystatechange = function() {
+    if(request.readyState != 4) {
+      // if the request is not finished then keep waiting.
+      return;
+    }
+    if (request.status == 200) {
+      result = JSON.parse(request.responseText)
+      SetScheduleInGui(result);
+    }
+    loading_gif.style.visibility = "hidden";
+    ResetSpotsAvailableTimer(1);
+  }
+  var params = new FormData();
+  params.append("institution", "{{ institution }}");
+  params.append("session", "{{ session }}");
+  params.append("student", "{{ student['email'] }}");
+  params.append("class_id", class_id);
+  request.send(params);
 }
 
-// TODO: move these color choices into the style sheet
-var noSelectionColor = '#eeeeff'; // light-grey
-var hoverColor = '#bbbbbb'; // grey
-var selectionColor = '#8888ff'; // blue
-
-// TODO: support removing a class after the backend supports this.
-function setClickedBackground(daypart, class_id, element) {
-  if (element.selected) {
-    // TODO: support removing a class after the backend supports this.
+function OnClickHandler(daypart, class_id) {
+  if (class_id == selected_class_id_by_daypart[daypart]) {
+    // The class is already selected.
+    // TODO: Support removing classes.
     return;
   }
-  element.selected = true;
-  element.style.background = selectionColor;
-  AddClass(class_id, daypart)
+  var loading_gif = document.getElementById(daypart + "_" + class_id + "_loading_gif");
+  loading_gif.style.visibility = "visible";
+  MarkClassInGui(class_id);
+  AddClassToBackend(class_id, daypart, loading_gif)
 }
 
 function setMouseOverBackground(element) {
@@ -123,7 +185,7 @@ function setMouseOverBackground(element) {
     // If mousing over a clicked-on item, don't do anything.
     return;
   }
-  element.style.background = hoverColor;
+  element.style.background = HOVER_COLOR;
 }
 
 function setMouseOutBackground(element) {
@@ -131,23 +193,33 @@ function setMouseOutBackground(element) {
     // If mousing over a clicked-on item, don't do anything.
     return;
   }
-  element.style.background = noSelectionColor;
+  element.style.background = NOT_SELECTED_COLOR;
 }
 
-function setInitialSchedule() {
-  {% if schedule %}
-    {% for class_id in schedule %}
-      {% if class_id %}
-        {% for s in classes_by_id[class_id]['schedule'] %}
-  e = document.getElementById("{{ s['daypart'] }}_{{ class_id }}");
-  e.style.background = selectionColor;
-  e.class_name = classes_by_id[{{ class_id }}]['name']
-  e.selected = true;
-  selected_class_name_by_daypart["{{ s['daypart'] }}"] = e.class_name;
-        {% endfor %}
-      {% endif %}
-    {% endfor %}
-  {% endif %}
+function SetScheduleInGui(schedule) {
+  // Mark the schedule of selected classes in the GUI.
+  for (var idx in schedule) {
+    class_id = schedule[idx];
+    MarkClassInGui(class_id);
+  }
+  // Clear any classes that are selected in the GUI
+  // but are not in the schedule parameter.
+  for (var daypart in selected_class_id_by_daypart) {
+    var class_id = selected_class_id_by_daypart[daypart];
+    if (!class_id) {
+      // There is already no selected class for this daypart in the GUI.
+      continue;
+    }
+    var found = false;
+    for (var idx in schedule) {
+      if (schedule[idx] == class_id) {
+        found = true;
+      }
+    }
+    if (!found) {
+      ClearClassInGui(class_id);
+    }
+  }
 }
 </script>
 
@@ -155,7 +227,8 @@ function setInitialSchedule() {
 
 Name: {{ student['first'] + ' ' + student['last'] }}<br>
 Grade: {{ student['current_grade'] }}<br>
-email: {{ student['email'] }}<br><br>
+email: {{ student['email'] }}<br>
+<a href="#mycatalog">View My Course Catalog</a><br><br>
 
 <form method=post>
 <input type=hidden name="institution" value="{{ institution }}" />
@@ -175,10 +248,13 @@ email: {{ student['email'] }}<br><br>
         <ol id="{{daypart}}" class="schedOrderedList">
         {% for c in classes_by_daypart[daypart] %}
           <li class="schedListItem" id="{{daypart}}_{{c['id']}}"
-              onclick="setClickedBackground('{{daypart}}', {{c['id']}}, this);"
+              title="{{c['hover_text']}}"
+              onclick="OnClickHandler('{{daypart}}', {{c['id']}});"
               onmouseover="setMouseOverBackground(this);"
               onmouseout="setMouseOutBackground(this);">
+              <span id='spots_left_{{daypart}}_{{c['id']}}' style="background-color:lightgreen;"></span>
               {{ c['name'] }}
+              <img src="/images/379.gif" id="{{daypart}}_{{c['id']}}_loading_gif" alt="loading gif" align="right" height="14" width="30" style="visibility:hidden"/>
           </li>
         {% endfor %}
         </ol>
@@ -189,7 +265,35 @@ email: {{ student['email'] }}<br><br>
 </table>
 </form>
 <script>
-setInitialSchedule();
+SetScheduleInGui({{ schedule|safe }});
+RefreshSpotsAvailable();
 </script>
+
+<a name="mycatalog"></a>
+<h2>Course Catalog for {{ student['first'] + ' ' + student['last'] }}</h2>
+
+{% for c in classes_for_catalog %}
+  <h3>{{c['name']}}</h3>
+  <b>Teacher: </b>{{c['instructor']}}<br>
+  <b>Maximum Enrollment: </b>{{c['max_enrollment']}}<br>
+  <b>Schedule: </b>
+  {{c['schedule'][0]['daypart']}}
+  {% if c['schedule']|length > 1 %}
+    {% for s in c['schedule'][1:] %}
+      / {{s['daypart']}}
+    {% endfor %}
+  {% endif %}<br>
+  {% if c['donation'] %}
+    <b>Suggested Donation: </b>{{c['donation']}}<br>
+  {% endif %}
+  <br>
+  {% if c['description'] %}
+    {% for line in c['description'].splitlines() %}
+      {{ line }}<br>
+    {% endfor %}
+   <br>
+  {% endif %}
+  <hr width="80%" align="left">
+{% endfor %}
 
 {% endblock %}

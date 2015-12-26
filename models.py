@@ -179,7 +179,7 @@ class Dayparts(ndb.Model):
                    Dayparts, "dayparts")
 
   @classmethod
-  def fetch(cls, institution, session):
+  def Fetch(cls, institution, session):
     dayparts = Dayparts.dayparts_key(institution, session).get()
     if dayparts:
       return dayparts.data
@@ -229,7 +229,7 @@ class Students(ndb.Model):
                    Students, "students")
 
   @classmethod
-  def fetch(cls, institution, session):
+  def Fetch(cls, institution, session):
     students = Students.students_key(institution, session).get()
     if students:
       return students.data
@@ -254,7 +254,7 @@ class Requirements(ndb.Model):
                    Requirements, "requirements")
 
   @classmethod
-  def fetch(cls, institution, session):
+  def Fetch(cls, institution, session):
     requirements = Requirements.requirements_key(institution, session).get()
     if requirements:
       return requirements.data
@@ -279,7 +279,7 @@ class GroupsClasses(ndb.Model):
                    GroupsClasses, "groups_classes")
 
   @classmethod
-  def fetch(cls, institution, session):
+  def Fetch(cls, institution, session):
     groups_classes = GroupsClasses.groups_classes_key(institution, session).get()
     if groups_classes:
       return groups_classes.data
@@ -303,7 +303,7 @@ class GroupsStudents(ndb.Model):
                        GroupsStudents, "groups_students")
 
     @classmethod
-    def fetch(cls, institution, session):
+    def Fetch(cls, institution, session):
         groups_students = GroupsStudents.groups_students_key(institution, session).get()
         if groups_students:
             return groups_students.data
@@ -431,6 +431,9 @@ class ClassRoster(ndb.Model):
 
   @classmethod
   def Store(cls, institution, session, class_obj, student_emails):
+    student_emails = student_emails.strip()
+    if len(student_emails) and student_emails[-1] == ',':
+      student_emails = student_emails[:-1]
     class_id = str(class_obj['id'])
     roster = ClassRoster()
     roster.key = ClassRoster.class_roster_key(institution, session, class_id)
@@ -446,15 +449,13 @@ class ClassRoster(ndb.Model):
       c = yaml.load(roster.class_obj)
       r = {}
       r['emails'] = roster.student_emails.split(",")
+      if r['emails'][0] == "":
+        r['emails'] = r['emails'][1:]
       r['class_name'] = c['name']
       r['class_id'] = c['id']
       r['class_details'] = roster.class_obj
       r['max_enrollment'] = c['max_enrollment']
       r['remaining_space'] = c['max_enrollment'] - len(r['emails'])
-      logging.info("Class Roster found: [%s] [%s] [%s]" % (
-          institution, session, class_id))
-      logging.info("class [%s] emails: %s" % (
-          c['id'], roster.student_emails))
       return r
     logging.info("Class Roster NOT found: [%s] [%s] [%s]" % (
           institution, session, class_id))

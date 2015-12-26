@@ -4,6 +4,7 @@ import jinja2
 import webapp2
 import logging
 import yaml
+import json
 
 import models
 import authorizer
@@ -28,6 +29,8 @@ class Schedule(webapp2.RequestHandler):
     # TODO: support removing a class
     auth = authorizer.Authorizer(self)
     if not auth.HasStudentAccess():
+      # TODO: This is now an API so we should return an error
+      # instead of redirecting. 
       auth.Redirect()
       return
 
@@ -41,7 +44,12 @@ class Schedule(webapp2.RequestHandler):
     new_class_id = self.request.get("class_id")
 
     logic.AddStudentToClass(institution, session, email, new_class_id)
-    self.RedirectToSelf(institution, session, email, "Saved Class")
+    schedule = models.Schedule.Fetch(institution, session, email)
+    schedule = schedule.split(",")
+    if schedule and schedule[0] == "":
+      schedule = schedule[1:]
+    self.response.write(json.dumps(schedule))
+
 
   def get(self):
     auth = authorizer.Authorizer(self)
@@ -60,8 +68,8 @@ class Schedule(webapp2.RequestHandler):
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
     email = auth.student_email
-
-    dayparts = yaml.load(models.Dayparts.fetch(institution, session))
+    dayparts = models.Dayparts.Fetch(institution, session)
+    dayparts = yaml.load(dayparts)
     if not dayparts:
       dayparts = []
     classes = models.Classes.Fetch(institution, session)
@@ -72,7 +80,7 @@ class Schedule(webapp2.RequestHandler):
       classes = []
     classes_by_daypart = {}
     dayparts_ordered = []
-    
+
     max_row = max([daypart['row'] for daypart in dayparts])
     max_col = max([daypart['col'] for daypart in dayparts])
     
@@ -89,20 +97,29 @@ class Schedule(webapp2.RequestHandler):
           dayparts_ordered[row].append('')
 
     eligible_classes = logic.EligibleClassIdsForStudent(
-        auth.student_entity, classes)
+        institution, session, auth.student_entity, classes)
     for daypart in dayparts:
       classes_by_daypart[daypart['name']] = []
     classes_by_id = {}
+    classes_for_catalog = []
+    use_full_description = auth.CanAdministerInstitutionFromUrl()
     for c in classes:
       class_id = str(c['id'])
       if class_id not in eligible_classes:
         continue
       classes_by_id[class_id] = c
+      hover_text = logic.GetHoverText(use_full_description, c)
+      c['hover_text'] = hover_text
       for daypart in [s['daypart'] for s in c['schedule']]:
         classes_by_daypart[daypart].append(c)
+      if not('exclude_from_catalog' in c and c['exclude_from_catalog']):
+        classes_for_catalog.append(c)
+    classes_for_catalog.sort(key=lambda c:c['name'])
     
     schedule = models.Schedule.Fetch(institution, session, email)
     schedule = schedule.split(",")
+    if schedule and schedule[0] == "":
+      schedule = schedule[1:]
 
     template_values = {
       'logout_url': auth.GetLogoutUrl(self),
@@ -115,9 +132,9 @@ class Schedule(webapp2.RequestHandler):
       'dayparts': dayparts,
       'classes_by_daypart': classes_by_daypart,
       'dayparts_ordered': dayparts_ordered,
-      'schedule': schedule,
+      'schedule': json.dumps(schedule),
       'classes_by_id': classes_by_id,
+      'classes_for_catalog': classes_for_catalog,
     }
     template = JINJA_ENVIRONMENT.get_template('schedule.html')
-#    template = JINJA_ENVIRONMENT.get_template('foo.html')
     self.response.write(template.render(template_values))

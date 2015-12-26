@@ -4,8 +4,8 @@ import jinja2
 import webapp2
 import logging
 import yayv
-
-
+import schemas
+import error_check_logic
 import models
 import authorizer
 
@@ -13,14 +13,6 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
-
-
-schema = yayv.ByExample(
-    "- name: UNIQUE\n"
-    "  row: REQUIRED\n"
-    "  col: REQUIRED\n"
-    "  rowspan: OPTIONAL\n"
-    "  colspan: OPTIONAL\n")
 
 
 class Dayparts(webapp2.RequestHandler):
@@ -46,7 +38,7 @@ class Dayparts(webapp2.RequestHandler):
     dayparts = self.request.get("dayparts")
     if not dayparts:
       logging.fatal("no dayparts")
-    dayparts = schema.Update(dayparts)
+    dayparts = schemas.dayparts.Update(dayparts)
     models.Dayparts.store(institution, session, dayparts)
     self.RedirectToSelf(institution, session, "saved dayparts")
 
@@ -67,7 +59,8 @@ class Dayparts(webapp2.RequestHandler):
     message = self.request.get('message')
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
-    dayparts = models.Dayparts.fetch(institution, session)
+    setup_msg = error_check_logic.CheckAll(institution, session)
+    dayparts = models.Dayparts.Fetch(institution, session)
     if not dayparts:
       dayparts = '\n'.join([
           "# Sample data. Lines with leading # signs are comments.",
@@ -105,6 +98,7 @@ class Dayparts(webapp2.RequestHandler):
       'institution' : institution,
       'session' : session,
       'message': message,
+      'setup_msg': setup_msg,
       'session_query': session_query,
       'dayparts': dayparts,
       'self': self.request.uri,

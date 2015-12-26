@@ -54,3 +54,7 @@ git stash pop
   a change but not committed. The merge conflicts are listed separately.
   They have change markers around conflicts. Edit these manually and
   add or remove the files to the pending change then commit the change.
+
+# todo list document:
+https://docs.google.com/spreadsheets/d/1ebzoMtvEjRhe1synFCaN5hBTPrl2w5hUtuE_IXzXJKA/edit#gid=0&vpid=A1
+

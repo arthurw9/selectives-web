@@ -9,6 +9,8 @@ handlers:
   static_dir: stylesheets
 - url: /Sortable
   static_dir: Sortable
+- url: /images
+  static_dir: images
 - url: /.*
   script: application.application 
 

@@ -144,6 +144,9 @@ class ByExample(object):
         self._AddError(parent,
                        "Duplicate Value %s in UNIQUE %s" % (yaml_obj, key))
         return False
+      if not yaml_obj:
+        self._AddError(parent, "UNIQUE field missing")
+        return False
       self.unique_values[key].add(yaml_obj)
       return True
     if schema.startswith("AUTO_INC"):
