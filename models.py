@@ -456,10 +456,6 @@ class ClassRoster(ndb.Model):
       r['class_details'] = roster.class_obj
       r['max_enrollment'] = c['max_enrollment']
       r['remaining_space'] = c['max_enrollment'] - len(r['emails'])
-      logging.info("Class Roster found: [%s] [%s] [%s]" % (
-          institution, session, class_id))
-      logging.info("class [%s] emails: %s" % (
-          c['id'], roster.student_emails))
       return r
     logging.info("Class Roster NOT found: [%s] [%s] [%s]" % (
           institution, session, class_id))

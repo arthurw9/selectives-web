@@ -132,14 +132,12 @@ class _ClassRoster(object):
     self.emails.append(student_email)
     self.emails = list(set(self.emails))
     emails = ','.join(self.emails)
-    logging.info("new emails in [%s]: %s" % (self.class_obj['id'], emails))
     models.ClassRoster.Store(
         self.institution, self.session, self.class_obj, emails)
 
   def remove(self, student_email):
     self.emails = [ e for e in self.emails if e != student_email ]
     emails = ','.join(self.emails)
-    logging.info("remaining emails in [%s]: %s" % (self.class_obj['id'], emails))
     models.ClassRoster.Store(
         self.institution, self.session, self.class_obj, emails)
 
