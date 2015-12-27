@@ -158,7 +158,7 @@ function AddClassToBackend(class_id, daypart, loading_gif) {
       SetScheduleInGui(result);
     }
     loading_gif.style.visibility = "hidden";
-    ResetSpotsAvailableTimer(1);
+    RefreshSpotsAvailable();
   }
   var params = new FormData();
   params.append("institution", "{{ institution }}");
