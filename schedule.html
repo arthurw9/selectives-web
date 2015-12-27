@@ -142,10 +142,7 @@ function ConfirmConflictingClasses(class_id, daypart) {
                  "?");
 }
 
-function AddClassToBackend(class_id, daypart, loading_gif) {
-  if (!ConfirmConflictingClasses(class_id, daypart)) {
-    return;
-  }
+function AddClassToBackend(class_id, loading_gif) { 
   var request = new XMLHttpRequest();
   request.open("POST", "/schedule");
   request.onreadystatechange = function() {
@@ -174,10 +171,14 @@ function OnClickHandler(daypart, class_id) {
     // TODO: Support removing classes.
     return;
   }
+  if (!ConfirmConflictingClasses(class_id, daypart)) {
+    return;
+  }
+
   var loading_gif = document.getElementById(daypart + "_" + class_id + "_loading_gif");
   loading_gif.style.visibility = "visible";
   MarkClassInGui(class_id);
-  AddClassToBackend(class_id, daypart, loading_gif)
+  AddClassToBackend(class_id, loading_gif)
 }
 
 function setMouseOverBackground(element) {
