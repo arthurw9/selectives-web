@@ -449,15 +449,13 @@ class ClassRoster(ndb.Model):
       c = yaml.load(roster.class_obj)
       r = {}
       r['emails'] = roster.student_emails.split(",")
+      if r['emails'][0] == "":
+        r['emails'] = r['emails'][1:]
       r['class_name'] = c['name']
       r['class_id'] = c['id']
       r['class_details'] = roster.class_obj
       r['max_enrollment'] = c['max_enrollment']
       r['remaining_space'] = c['max_enrollment'] - len(r['emails'])
-      logging.info("Class Roster found: [%s] [%s] [%s]" % (
-          institution, session, class_id))
-      logging.info("class [%s] emails: %s" % (
-          c['id'], roster.student_emails))
       return r
     logging.info("Class Roster NOT found: [%s] [%s] [%s]" % (
           institution, session, class_id))

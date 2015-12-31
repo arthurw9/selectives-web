@@ -17,29 +17,13 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     autoescape=True)
 
 
-class PreferencesAdmin(webapp2.RequestHandler):
+class Impersonation(webapp2.RequestHandler):
 
   def RedirectToSelf(self, institution, session, message):
-    self.redirect("/preferences_admin?%s" % urllib.urlencode(
+    self.redirect("/impersonation?%s" % urllib.urlencode(
         {'message': message, 
          'institution': institution,
          'session': session}))
-
-  def post(self):
-    auth = authorizer.Authorizer(self)
-    if not auth.CanAdministerInstitutionFromUrl():
-      auth.Redirect()
-      return
-
-    institution = self.request.get("institution")
-    if not institution:
-      logging.fatal("no institution")
-    session = self.request.get("session")
-    if not session:
-      logging.fatal("no session")
-    email = auth.email
-    action = self.request.get("action")
-    self.RedirectToSelf(institution, session, "Saved Preferences")
 
   def get(self):
     auth = authorizer.Authorizer(self)
@@ -71,5 +55,5 @@ class PreferencesAdmin(webapp2.RequestHandler):
       'session_query': session_query,
       'students': students,
     }
-    template = JINJA_ENVIRONMENT.get_template('preferences_admin.html')
+    template = JINJA_ENVIRONMENT.get_template('impersonation.html')
     self.response.write(template.render(template_values))
