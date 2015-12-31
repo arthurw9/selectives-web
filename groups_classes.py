@@ -42,6 +42,7 @@ class GroupsClasses(webapp2.RequestHandler):
       logging.fatal("no groups classes")
     groups_classes = schemas.class_groups.Update(groups_classes)
     models.GroupsClasses.store(institution, session, groups_classes)
+    error_check_logic.Checker.setStatus(institution, session, 'UNKNOWN')
     self.RedirectToSelf(institution, session, "saved groups classes")
 
   def get(self):
@@ -61,7 +62,7 @@ class GroupsClasses(webapp2.RequestHandler):
     message = self.request.get('message')
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
-    setup_msg = error_check_logic.CheckAll(institution, session)
+    setup_msg = error_check_logic.Checker.getStatus(institution, session)
     groups_classes = models.GroupsClasses.Fetch(institution, session)
     if not groups_classes:
       groups_classes = '\n'.join([

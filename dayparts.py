@@ -40,6 +40,7 @@ class Dayparts(webapp2.RequestHandler):
       logging.fatal("no dayparts")
     dayparts = schemas.dayparts.Update(dayparts)
     models.Dayparts.store(institution, session, dayparts)
+    error_check_logic.Checker.setStatus(institution, session, 'UNKNOWN')
     self.RedirectToSelf(institution, session, "saved dayparts")
 
   def get(self):
@@ -59,7 +60,7 @@ class Dayparts(webapp2.RequestHandler):
     message = self.request.get('message')
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
-    setup_msg = error_check_logic.CheckAll(institution, session)
+    setup_msg = error_check_logic.Checker.getStatus(institution, session)
     dayparts = models.Dayparts.Fetch(institution, session)
     if not dayparts:
       dayparts = '\n'.join([
