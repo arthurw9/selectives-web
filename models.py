@@ -467,3 +467,28 @@ class ClassRoster(ndb.Model):
     r['max_enrollment'] = 0
     r['remaining_space'] = 0
     return r
+
+
+class ErrorCheck(ndb.Model):
+  """Values: OK, FAIL, UNKNOWN"""
+  data = ndb.StringProperty()
+
+  @classmethod
+  def errorcheck_key(cls, institution, session):
+    return ndb.Key("InstitutionKey", institution,
+                   Session, session,
+                   ErrorCheck, "errorcheck")
+
+  @classmethod
+  def Fetch(cls, institution, session):
+    errorcheck = ErrorCheck.errorcheck_key(institution, session).get()
+    if errorcheck:
+      return errorcheck.data
+    else:
+      return 'UNKNOWN'
+
+  @classmethod
+  def Store(cls, institution, session_name, errorcheck_data):
+    errorcheck = ErrorCheck(data = errorcheck_data)
+    errorcheck.key = ErrorCheck.errorcheck_key(institution, session_name)
+    errorcheck.put()

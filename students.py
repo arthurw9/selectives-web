@@ -41,6 +41,7 @@ class Students(webapp2.RequestHandler):
     students = schemas.students.Update(students)
     logging.info("posted students %s", students)
     models.Students.store(institution, session, students)
+    error_check_logic.Checker.setStatus(institution, session, 'UNKNOWN')
     self.RedirectToSelf(institution, session, "saved students")
 
   def get(self):
@@ -60,7 +61,7 @@ class Students(webapp2.RequestHandler):
     message = self.request.get('message')
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
-    setup_msg = error_check_logic.CheckAll(institution, session)
+    setup_msg = error_check_logic.Checker.getStatus(institution, session)
     students = models.Students.Fetch(institution, session)
     if not students:
       students = '\n'.join([

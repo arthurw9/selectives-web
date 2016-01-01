@@ -40,6 +40,7 @@ class Requirements(webapp2.RequestHandler):
       logging.fatal("no requirements")
     requirements = schemas.requirements.Update(requirements)
     models.Requirements.store(institution, session, requirements)
+    error_check_logic.Checker.setStatus(institution, session, 'UNKNOWN')
     self.RedirectToSelf(institution, session, "saved requirements")
 
   def get(self):
@@ -59,7 +60,7 @@ class Requirements(webapp2.RequestHandler):
     message = self.request.get('message')
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
-    setup_msg = error_check_logic.CheckAll(institution, session)
+    setup_msg = error_check_logic.Checker.getStatus(institution, session)
     requirements = models.Requirements.Fetch(institution, session)
     if not requirements:
       requirements = '\n'.join([

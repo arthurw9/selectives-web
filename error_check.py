@@ -44,7 +44,7 @@ class ErrorCheck(webapp2.RequestHandler):
     message = self.request.get('message')
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
-    setup_msg, error_chk = error_check_logic.CheckAll(institution, session)
+    setup_msg, error_chk = error_check_logic.Checker().Run(institution, session)
 
     template_values = {
       'logout_url': auth.GetLogoutUrl(self),
