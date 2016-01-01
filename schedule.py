@@ -111,7 +111,8 @@ class Schedule(webapp2.RequestHandler):
       hover_text = logic.GetHoverText(use_full_description, c)
       c['hover_text'] = hover_text
       for daypart in [s['daypart'] for s in c['schedule']]:
-        classes_by_daypart[daypart].append(c)
+        if daypart in classes_by_daypart:
+          classes_by_daypart[daypart].append(c)
       if not('exclude_from_catalog' in c and c['exclude_from_catalog']):
         classes_for_catalog.append(c)
     classes_for_catalog.sort(key=lambda c:c['name'])
