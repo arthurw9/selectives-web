@@ -11,9 +11,7 @@ class SpotsAvailable(webapp2.RequestHandler):
   def post(self):
     auth = authorizer.Authorizer(self)
     if not auth.HasStudentAccess():
-      # TODO: Since this is an API we should return an authorization error
-      # instead of re-directing.
-      auth.Redirect()
+      self.response.status = '403 Forbidden'
       return
 
     institution = self.request.get("institution")
