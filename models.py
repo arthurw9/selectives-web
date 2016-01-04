@@ -1,6 +1,7 @@
 import logging
 import yaml
 import time
+import webapp2
 try:
   from google.appengine.ext import ndb
 except:
@@ -20,6 +21,16 @@ GLOBAL_KEY = ndb.Key("global", "global")
 # - FetchEntity returns a ndbModel object
 # - FetchAllEntities returns a list of ndbModel object
 
+def GetCurrRequest():
+  return str(webapp2.get_request())
+
+def StartTiming():
+  global timer_data
+  if 'timer_data' not in globals():
+    timer_data = {}
+  req = GetCurrRequest()
+  timer_data[req] = []
+  
 def timed(fn):
   def wrapped(*argv, **kwargs):
     start = time.clock()
@@ -28,13 +39,23 @@ def timed(fn):
     entry = (start, duration, argv[0], fn.__name__, argv[1:], kwargs)
     global timer_data
     if 'timer_data' not in globals():
-      timer_data = []
-    timer_data.append(entry)
+      return ret_value
+    req = GetCurrRequest()
+    if req not in timer_data:
+      return ret_value
+    timer_data[req].append(entry)
     return ret_value
   return wrapped
 
 def GetTimerDataStr():
-  return '\n'.join([str(e) for e in timer_data])
+  req = GetCurrRequest()
+  result = ["\n\nCurr request = " + req]
+  result.append("\ntiming: ")
+  for e in timer_data[req]:
+    result.append(str(e))
+  result.append("\n");
+  del timer_data[req]
+  return '\n'.join(result)
 
 class GlobalAdmin(ndb.Model):
   """email addresses for users with full access to the site."""

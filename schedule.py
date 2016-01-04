@@ -52,6 +52,7 @@ class Schedule(webapp2.RequestHandler):
 
 
   def get(self):
+    models.StartTiming()
     auth = authorizer.Authorizer(self)
     if not auth.HasStudentAccess():
       auth.Redirect()
@@ -137,4 +138,5 @@ class Schedule(webapp2.RequestHandler):
       'classes_for_catalog': classes_for_catalog,
     }
     template = JINJA_ENVIRONMENT.get_template('schedule.html')
+    logging.info(models.GetTimerDataStr())
     self.response.write(template.render(template_values))
