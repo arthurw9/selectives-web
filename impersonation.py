@@ -42,7 +42,7 @@ class Impersonation(webapp2.RequestHandler):
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
 
-    setup_msg = error_check_logic.Checker.getStatus(institution, session)
+    setup_status = error_check_logic.Checker.getStatus(institution, session)
     students = models.Students.Fetch(institution, session)
     students = yaml.load(students)
     template_values = {
@@ -51,7 +51,7 @@ class Impersonation(webapp2.RequestHandler):
       'institution' : institution,
       'session' : session,
       'message': message,
-      'setup_msg': setup_msg,
+      'setup_status': setup_status,
       'session_query': session_query,
       'students': students,
     }

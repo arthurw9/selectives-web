@@ -44,7 +44,7 @@ class ErrorCheck(webapp2.RequestHandler):
     message = self.request.get('message')
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
-    setup_msg, error_chk = error_check_logic.Checker().Run(institution, session)
+    setup_status, error_chk_detail = error_check_logic.Checker().Run(institution, session)
 
     template_values = {
       'logout_url': auth.GetLogoutUrl(self),
@@ -52,8 +52,8 @@ class ErrorCheck(webapp2.RequestHandler):
       'institution' : institution,
       'session' : session,
       'message': message,
-      'setup_msg': setup_msg,
-      'error_chk': error_chk,
+      'setup_status': setup_status,
+      'error_chk_detail': error_chk_detail,
       'session_query': session_query,
     }
     template = JINJA_ENVIRONMENT.get_template('error_check.html')
