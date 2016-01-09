@@ -82,6 +82,9 @@ class Authorizer(object):
     if serving_session.session_name != session:
       logging.error("serving session doesn't match")
       return False
+    if (serving_session.login_type == "schedule" and
+        self.handler.request.path == "/spots_available"):
+      return True
     if not "/" + serving_session.login_type == self.handler.request.path:
       logging.error("request path doesn't match")
       return False

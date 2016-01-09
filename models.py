@@ -1,5 +1,7 @@
 import logging
 import yaml
+import time
+import webapp2
 try:
   from google.appengine.ext import ndb
 except:
@@ -19,26 +21,65 @@ GLOBAL_KEY = ndb.Key("global", "global")
 # - FetchEntity returns a ndbModel object
 # - FetchAllEntities returns a list of ndbModel object
 
+def GetCurrRequest():
+  return str(webapp2.get_request())
+
+def StartTiming():
+  global timer_data
+  if 'timer_data' not in globals():
+    timer_data = {}
+  req = GetCurrRequest()
+  timer_data[req] = []
+  
+def timed(fn):
+  def wrapped(*argv, **kwargs):
+    start = time.clock()
+    ret_value = fn(*argv, **kwargs)
+    duration = time.clock() - start
+    entry = (start, duration, argv[0], fn.__name__, argv[1:], kwargs)
+    global timer_data
+    if 'timer_data' not in globals():
+      return ret_value
+    req = GetCurrRequest()
+    if req not in timer_data:
+      return ret_value
+    timer_data[req].append(entry)
+    return ret_value
+  return wrapped
+
+def GetTimerDataStr():
+  req = GetCurrRequest()
+  result = ["\n\nCurr request = " + req]
+  result.append("\ntiming: ")
+  for e in timer_data[req]:
+    result.append(str(e))
+  result.append("\n");
+  del timer_data[req]
+  return '\n'.join(result)
 
 class GlobalAdmin(ndb.Model):
   """email addresses for users with full access to the site."""
   email = ndb.StringProperty()
 
   @classmethod
+  @timed
   def global_admin_key(cls, email):
     return ndb.Key("global", "global", GlobalAdmin, email);
 
   @classmethod
+  @timed
   def Store(cls, email_addr):
     admin = GlobalAdmin(email=email_addr)
     admin.key = GlobalAdmin.global_admin_key(email_addr)
     admin.put();
 
   @classmethod
+  @timed
   def Delete(cls, email_addr):
     GlobalAdmin.global_admin_key(email_addr).delete()
 
   @classmethod
+  @timed
   def FetchAll(cls):
     return [ a.email for a in GlobalAdmin.query(ancestor=GLOBAL_KEY).fetch() ]
 
@@ -48,28 +89,34 @@ class Admin(ndb.Model):
   email = ndb.StringProperty()
 
   @classmethod
+  @timed
   def admin_key_partial(cls, institution):
     return ndb.Key('InstitutionKey', institution);
 
   @classmethod
+  @timed
   def admin_key(cls, institution, email):
     return ndb.Key('InstitutionKey', institution, Admin, email);
 
   @classmethod
+  @timed
   def Store(cls, institution, email_addr):
     key = Admin.admin_key(institution, email_addr)
     Admin(email=email_addr, key=key).put();
 
   @classmethod
+  @timed
   def Delete(cls, institution, email_addr):
     Admin.admin_key(institution, email_addr).delete()
 
   @classmethod
+  @timed
   def FetchAll(cls, institution):
     admins = Admin.query(ancestor=Admin.admin_key_partial(institution)).fetch()
     return [ a.email for a in admins ]
 
   @classmethod
+  @timed
   def GetInstitutionNames(cls, email):
     """returns False or a list of institution names."""
     admin_list = Admin.query(Admin.email == email).fetch()
@@ -86,14 +133,17 @@ class Institution(ndb.Model):
   name = ndb.StringProperty()
 
   @classmethod
+  @timed
   def institution_key(cls, name):
     return ndb.Key("global", "global", Institution, name)
 
   @classmethod
+  @timed
   def store(cls, name):
     Institution(name=name, key=Institution.institution_key(name)).put()
 
   @classmethod
+  @timed
   def FetchAllInstitutions(cls):
     return Institution.query(ancestor=GLOBAL_KEY).fetch()
 
@@ -103,26 +153,31 @@ class Session(ndb.Model):
   name = ndb.StringProperty()
 
   @classmethod
+  @timed
   def session_key_partial(cls, institution):
     return ndb.Key("InstitutionKey", institution)
 
   @classmethod
+  @timed
   def session_key(cls, institution, session_name):
     return ndb.Key(Session, session_name,
                    parent=ndb.Key("InstitutionKey", institution))
 
   @classmethod
+  @timed
   def FetchAllSessions(cls, institution):
     return Session.query(
         ancestor=Session.session_key_partial(institution)).fetch()
 
   @classmethod
+  @timed
   def store(cls, institution, session_name):
     session = Session(name=session_name)
     session.key = Session.session_key(institution, session_name)
     session.put()
 
   @classmethod
+  @timed
   def delete(cls, institution, session_name):
     Session.session_key(institution, session_name).delete()
 
@@ -133,10 +188,12 @@ class ServingSession(ndb.Model):
   login_type = ndb.StringProperty()
 
   @classmethod
+  @timed
   def serving_session_key(cls, institution):
     return ndb.Key("InstitutionKey", institution, ServingSession, "serving_session")
 
   @classmethod
+  @timed
   def FetchEntity(cls, institution):
     ss = ServingSession.serving_session_key(institution).get()
     if ss:
@@ -146,6 +203,7 @@ class ServingSession(ndb.Model):
     return ss
 
   @classmethod
+  @timed
   def store(cls, institution, session_name, login_type):
     if not login_type in ['verification', 'preferences', 'schedule']:
       raise Exception("Unexpected login_type: %s" % login_type)
@@ -156,10 +214,12 @@ class ServingSession(ndb.Model):
     serving_session.put()
 
   @classmethod
+  @timed
   def delete(cls, institution):
     ServingSession.serving_session_key(institution).delete()
 
   @classmethod
+  @timed
   def FetchAllEntities(cls):
     """Returns a list of triples (institution_name, session_name, login_type)"""
     serving_sessions = ServingSession.query().fetch()
@@ -173,12 +233,14 @@ class Dayparts(ndb.Model):
   data = ndb.TextProperty()
 
   @classmethod
+  @timed
   def dayparts_key(cls, institution, session):
     return ndb.Key("InstitutionKey", institution,
                    Session, session,
                    Dayparts, "dayparts")
 
   @classmethod
+  @timed
   def Fetch(cls, institution, session):
     dayparts = Dayparts.dayparts_key(institution, session).get()
     if dayparts:
@@ -187,6 +249,7 @@ class Dayparts(ndb.Model):
       return ''
 
   @classmethod
+  @timed
   def store(cls, institution, session_name, dayparts_data):
     dayparts = Dayparts(data = dayparts_data)
     dayparts.key = Dayparts.dayparts_key(institution, session_name)
@@ -198,12 +261,14 @@ class Classes(ndb.Model):
   data = ndb.TextProperty()
 
   @classmethod
+  @timed
   def classes_key(cls, institution, session):
     return ndb.Key("InstitutionKey", institution,
                    Session, session,
                    Classes, "classes")
 
   @classmethod
+  @timed
   def Fetch(cls, institution, session):
     classes = Classes.classes_key(institution, session).get()
     if classes:
@@ -212,6 +277,7 @@ class Classes(ndb.Model):
       return ''
 
   @classmethod
+  @timed
   def store(cls, institution, session_name, classes_data):
     classes = Classes(data = classes_data)
     classes.key = Classes.classes_key(institution, session_name)
@@ -223,12 +289,14 @@ class Students(ndb.Model):
   data = ndb.TextProperty()
 
   @classmethod
+  @timed
   def students_key(cls, institution, session):
     return ndb.Key("InstitutionKey", institution,
                    Session, session,
                    Students, "students")
 
   @classmethod
+  @timed
   def Fetch(cls, institution, session):
     students = Students.students_key(institution, session).get()
     if students:
@@ -237,6 +305,7 @@ class Students(ndb.Model):
       return ''
 
   @classmethod
+  @timed
   def store(cls, institution, session_name, students_data):
     students = Students(data = students_data)
     students.key = Students.students_key(institution, session_name)
@@ -248,12 +317,14 @@ class Requirements(ndb.Model):
   data = ndb.TextProperty()
 
   @classmethod
+  @timed
   def requirements_key(cls, institution, session):
     return ndb.Key("InstitutionKey", institution,
                    Session, session,
                    Requirements, "requirements")
 
   @classmethod
+  @timed
   def Fetch(cls, institution, session):
     requirements = Requirements.requirements_key(institution, session).get()
     if requirements:
@@ -262,6 +333,7 @@ class Requirements(ndb.Model):
       return ''
 
   @classmethod
+  @timed
   def store(cls, institution, session_name, requirements_data):
     requirements = Requirements(data = requirements_data)
     requirements.key = Requirements.requirements_key(institution, session_name)
@@ -273,12 +345,14 @@ class GroupsClasses(ndb.Model):
   data = ndb.TextProperty()
 
   @classmethod
+  @timed
   def groups_classes_key(cls, institution, session):
     return ndb.Key("InstitutionKey", institution,
                    Session, session,
                    GroupsClasses, "groups_classes")
 
   @classmethod
+  @timed
   def Fetch(cls, institution, session):
     groups_classes = GroupsClasses.groups_classes_key(institution, session).get()
     if groups_classes:
@@ -287,50 +361,57 @@ class GroupsClasses(ndb.Model):
       return ''
 
   @classmethod
+  @timed
   def store(cls, institution, session_name, groups_classes_data):
     groups_classes = GroupsClasses(data = groups_classes_data)
     groups_classes.key = GroupsClasses.groups_classes_key(institution, session_name)
     groups_classes.put()
 
 class GroupsStudents(ndb.Model):
-    """List of student groups in yaml format."""
-    data = ndb.TextProperty()
+  """List of student groups in yaml format."""
+  data = ndb.TextProperty()
 
-    @classmethod
-    def groups_students_key(cls, institution, session):
-        return ndb.Key("InstitutionKey", institution,
-                       Session, session,
-                       GroupsStudents, "groups_students")
+  @classmethod
+  @timed
+  def groups_students_key(cls, institution, session):
+    return ndb.Key("InstitutionKey", institution,
+                   Session, session,
+                   GroupsStudents, "groups_students")
 
-    @classmethod
-    def Fetch(cls, institution, session):
-        groups_students = GroupsStudents.groups_students_key(institution, session).get()
-        if groups_students:
-            return groups_students.data
-        else:
-            return ''
+  @classmethod
+  @timed
+  def Fetch(cls, institution, session):
+    groups_students = GroupsStudents.groups_students_key(institution, session).get()
+    if groups_students:
+      return groups_students.data
+    else:
+      return ''
 
-    @classmethod
-    def store(cls, institution, session_name, groups_students_data):
-        groups_students = GroupsStudents(data = groups_students_data)
-        groups_students.key = GroupsStudents.groups_students_key(institution, session_name)
-        groups_students.put()
+  @classmethod
+  @timed
+  def store(cls, institution, session_name, groups_students_data):
+    groups_students = GroupsStudents(data = groups_students_data)
+    groups_students.key = GroupsStudents.groups_students_key(institution, session_name)
+    groups_students.put()
 
 
 class RecentAccess(ndb.Model):
   date_time = ndb.DateTimeProperty(auto_now=True)
 
   @classmethod
+  @timed
   def recent_access_key(cls, email_str):
     return ndb.Key(RecentAccess, email_str)
 
   @classmethod
+  @timed
   def Store(cls, email_str):
     recent_access = RecentAccess()
     recent_access.key = RecentAccess.recent_access_key(email_str)
     recent_access.put()
 
   @classmethod
+  @timed
   def FetchRecentAccess(cls):
     recent = RecentAccess.query().order(-RecentAccess.date_time).fetch(20)
     return [ (a.key.id(), str(a.date_time)) for a in recent ] 
@@ -346,12 +427,14 @@ class Preferences(ndb.Model):
   dontwant = ndb.StringProperty()
 
   @classmethod
+  @timed
   def preferences_key(cls, email, institution, session):
     return ndb.Key("InstitutionKey", institution,
                    Session, session,
                    Preferences, email)
 
   @classmethod
+  @timed
   def Store(cls, email, institution, session, want, dontcare, dontwant):
     """params want, dontcare, and dontwant are lists of ints"""
     prefs = Preferences()
@@ -380,6 +463,7 @@ class Preferences(ndb.Model):
     prefs.put()
 
   @classmethod
+  @timed
   def FetchEntity(cls, email, institution, session):
     prefs = Preferences.preferences_key(email, institution, session).get()
     if not prefs:
@@ -395,12 +479,14 @@ class Schedule(ndb.Model):
   class_ids = ndb.StringProperty()
 
   @classmethod
+  @timed
   def schedule_key(cls, institution, session, email):
     return ndb.Key("InstitutionKey", institution,
                    Session, session,
                    Schedule, email)
 
   @classmethod
+  @timed
   def Store(cls, institution, session, email, class_ids):
     schedule = Schedule()
     schedule.key = Schedule.schedule_key(institution, session, email)
@@ -408,6 +494,7 @@ class Schedule(ndb.Model):
     schedule.put()
 
   @classmethod
+  @timed
   def Fetch(cls, institution, session, email):
     schedule = Schedule.schedule_key(institution, session, email).get()
     if not schedule:
@@ -423,6 +510,7 @@ class ClassRoster(ndb.Model):
   class_obj = ndb.StringProperty()
 
   @classmethod
+  @timed
   def class_roster_key(cls, institution, session, class_id):
     class_id = str(class_id)
     return ndb.Key("InstitutionKey", institution,
@@ -430,6 +518,7 @@ class ClassRoster(ndb.Model):
                    ClassRoster, class_id)
 
   @classmethod
+  @timed
   def Store(cls, institution, session, class_obj, student_emails):
     student_emails = student_emails.strip()
     if len(student_emails) and student_emails[-1] == ',':
@@ -442,6 +531,7 @@ class ClassRoster(ndb.Model):
     roster.put()
 
   @classmethod
+  @timed
   def FetchEntity(cls, institution, session, class_id):
     class_id = str(class_id)
     roster = ClassRoster.class_roster_key(institution, session, class_id).get()
@@ -474,12 +564,14 @@ class ErrorCheck(ndb.Model):
   data = ndb.StringProperty()
 
   @classmethod
+  @timed
   def errorcheck_key(cls, institution, session):
     return ndb.Key("InstitutionKey", institution,
                    Session, session,
                    ErrorCheck, "errorcheck")
 
   @classmethod
+  @timed
   def Fetch(cls, institution, session):
     errorcheck = ErrorCheck.errorcheck_key(institution, session).get()
     if errorcheck:
@@ -488,6 +580,7 @@ class ErrorCheck(ndb.Model):
       return 'UNKNOWN'
 
   @classmethod
+  @timed
   def Store(cls, institution, session_name, errorcheck_data):
     errorcheck = ErrorCheck(data = errorcheck_data)
     errorcheck.key = ErrorCheck.errorcheck_key(institution, session_name)
