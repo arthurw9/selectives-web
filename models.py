@@ -21,8 +21,21 @@ GLOBAL_KEY = ndb.Key("global", "global")
 # - FetchEntity returns a ndbModel object
 # - FetchAllEntities returns a list of ndbModel object
 
+def HandleContentLengthBug(req):
+  result = []
+  req = req.split('\n')
+  for line in req:
+    line = line.strip()
+    if line == '':
+      pass
+    elif line.lower().startswith('content-length'):
+      pass
+    else:
+      result.append(line)
+  return '\n'.join(result)
+    
 def GetCurrRequest():
-  return str(webapp2.get_request())
+  return HandleContentLengthBug(str(webapp2.get_request()))
 
 def StartTiming():
   global timer_data
