@@ -60,7 +60,7 @@ class Requirements(webapp2.RequestHandler):
     message = self.request.get('message')
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
-    setup_msg = error_check_logic.Checker.getStatus(institution, session)
+    setup_status = error_check_logic.Checker.getStatus(institution, session)
     requirements = models.Requirements.Fetch(institution, session)
     if not requirements:
       requirements = '\n'.join([
@@ -113,7 +113,7 @@ class Requirements(webapp2.RequestHandler):
       'institution' : institution,
       'session' : session,
       'message': message,
-      'setup_msg': setup_msg,
+      'setup_status': setup_status,
       'session_query': session_query,
       'requirements': requirements,
       'self': self.request.uri,

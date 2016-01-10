@@ -15,8 +15,8 @@ except:
 
 class Checker(object):
   def __init__(self):
-    self.error_check_msg = 'OK' # setup_msg
-    self.error_check_detail = '' # error_chk
+    self.error_check_status = 'OK'
+    self.error_check_detail = ''
 
   # Modules that change admin setup data should call this
   # with status = 'UNKNOWN'.
@@ -29,11 +29,11 @@ class Checker(object):
     return models.ErrorCheck.Fetch(institution, session)
 
   # Returns two values:
-  #   error_check_msg: 'OK' if all tests pass
-  #                    'FAIL' if any single test fails
+  #   error_check_status: 'OK' if all tests pass
+  #                       'FAIL' if any single test fails
   #   error_check_detail: String containing detailed results
   #                       for ALL tests.
-  # Sets datastore to value of error_check_msg
+  # Sets datastore to value of error_check_status
   def Run(self, institution, session):
     dayparts = models.Dayparts.Fetch(institution, session)
     classes = models.Classes.Fetch(institution, session)
@@ -42,70 +42,67 @@ class Checker(object):
     class_groups = models.GroupsClasses.Fetch(institution, session)
     student_groups = models.GroupsStudents.Fetch(institution, session)
 
-    valid_dayparts = schemas.dayparts.IsValid(dayparts)
-    valid_classes = schemas.classes.IsValid(classes)
-    valid_students = schemas.students.IsValid(students)
-    valid_requirements = schemas.requirements.IsValid(requirements)
-    valid_class_groups = schemas.class_groups.IsValid(class_groups)
-    valid_student_groups = schemas.student_groups.IsValid(student_groups)
+    isValid_dayparts = schemas.dayparts.IsValid(dayparts)
+    isValid_classes = schemas.classes.IsValid(classes)
+    isValid_students = schemas.students.IsValid(students)
+    isValid_requirements = schemas.requirements.IsValid(requirements)
+    isValid_class_groups = schemas.class_groups.IsValid(class_groups)
+    isValid_student_groups = schemas.student_groups.IsValid(student_groups)
 
-    self.error_check_detail += '\nValidate Dayparts: ' +\
-      self._Validate(dayparts, valid_dayparts)
-    self.error_check_detail += '\nValidate Classes: ' +\
-      self._Validate(classes, valid_classes)
-    self.error_check_detail += '\nValidate Students: ' +\
-      self._Validate(students, valid_students)
-    self.error_check_detail += '\nValidate Requirements: ' +\
-      self._Validate(requirements, valid_requirements)
-    self.error_check_detail += '\nValidate Class Groups: ' +\
-      self._Validate(class_groups, valid_class_groups)
-    self.error_check_detail += '\nValidate Student Groups: ' +\
-      self._Validate(student_groups, valid_student_groups)
-    self.error_check_detail += '\n\nCheck Class dayparts against Dayparts: ' +\
-      self._CheckClassDayparts(dayparts, valid_dayparts, classes, valid_classes)
-    self.error_check_detail += '\n\nCheck if all Dayparts are used: ' +\
-      self._CheckDaypartsUsed(dayparts, valid_dayparts, classes, valid_classes)
-    self.error_check_detail += '\n\nCheck Class student groups against Student Groups: ' +\
-      self._CheckClassStudentGroups(student_groups, valid_student_groups, classes, valid_classes)
-    self.error_check_detail += '\n\nCheck if all Student Groups are used: ' +\
-      self._CheckStudentGroupsUsed(student_groups, valid_student_groups, classes, valid_classes)
-    self.error_check_detail += '\n\nCheck Class student emails against Students: ' +\
-      self._CheckClassEmails(students, valid_students, classes, valid_classes)
-    self.error_check_detail += '\n\nCheck Class current_grade against Student current_grade: ' +\
-      self._CheckCurrentGrade(students, valid_students, classes, valid_classes)
+    self._Validate(dayparts, isValid_dayparts, 'Dayparts')
+    self._Validate(classes, isValid_classes, 'Classes')
+    self._Validate(students, isValid_students, 'Students')
+    self._Validate(requirements, isValid_requirements, 'Requirements')
+    self._Validate(class_groups, isValid_class_groups, 'Class Groups')
+    self._Validate(student_groups, isValid_student_groups, 'Student Groups')
+
+    self._CheckClassDayparts(dayparts, isValid_dayparts,
+                             classes, isValid_classes)
+    self._CheckDaypartsUsed(dayparts, isValid_dayparts,
+                            classes, isValid_classes)
+    self._CheckClassStudentGroups(student_groups, isValid_student_groups,
+                                  classes, isValid_classes)
+    self._CheckStudentGroupsUsed(student_groups, isValid_student_groups,
+                                 classes, isValid_classes)
+    self._CheckClassEmails(students, isValid_students,
+                           classes, isValid_classes)
+    self._CheckCurrentGrade(students, isValid_students,
+                            classes, isValid_classes)
         
-    self.setStatus(institution, session, self.error_check_msg)
-    return self.error_check_msg, self.error_check_detail
+    self.setStatus(institution, session, self.error_check_status)
+    return self.error_check_status, self.error_check_detail
 
-  def _Validate(self, yaml_str, valid_schema):
+  def _Validate(self, yaml_str, isValid_schema, name):
+    self.error_check_detail += '\nValidate %s: ' % name
     if not yaml_str:
-      self.error_check_msg = 'FAIL'
-      return('Yaml string not found. Check your Setup.')
-    if not valid_schema:
-      self.error_check_msg = 'FAIL'
-      return('Invalid yaml string. Check your Setup.')
-    return('OK')
+      self.error_check_status = 'FAIL'
+      self.error_check_detail += 'yaml string not found, check your Setup.'
+      return
+    if not isValid_schema:
+      self.error_check_status = 'FAIL'
+      self.error_check_detail += 'invalid yaml string, check your Setup.'
+      return
+    self.error_check_detail += 'OK'
+    return
 
-  def _CheckClassDayparts(self, dayparts, valid_dayparts, classes, valid_classes):
-    if not dayparts:
-      self.error_check_msg = 'FAIL'
-      return('Dayparts yaml string not found. Check your Setup.')
-    if not valid_dayparts:
-      self.error_check_msg = 'FAIL'
-      return('Invalid Dayparts yaml string. Check your Setup.')
-    if not classes:
-      self.error_check_msg = 'FAIL'
-      return('Classes yaml string not found. Check your Setup.')
-    if not valid_classes:
-      self.error_check_msg = 'FAIL'
-      return('Invalid Classes yaml string. Check your Setup.')
+  def _CheckClassDayparts(self, dayparts, isValid_dayparts, classes, isValid_classes):
+    self.error_check_detail += '\n\nCheck Class dayparts against Dayparts: '
+    if not (dayparts and isValid_dayparts):
+      self.error_check_status = 'FAIL'
+      self.error_check_detail += 'invalid Dayparts, unable to run this test.'
+      return
+    if not (classes and isValid_classes):
+      self.error_check_status = 'FAIL'
+      self.error_check_detail += 'invalid Classes, unable to run this test.'
+      return
     dayparts = yaml.load(dayparts)
     classes = yaml.load(classes)
     try:
       _ = [c for c in classes]
     except TypeError:
-      self.error_check_msg = 'FAIL'
-      return('Expecting classes to be a list.')
+      self.error_check_status = 'FAIL'
+      self.error_check_detail += 'expect classes to be a list'
+      return
     errMsg = ''
     daypart_set = set([dp['name'] for dp in dayparts])
     for c in classes:
@@ -114,29 +111,29 @@ class Checker(object):
           errMsg += '\nMismatching daypart <<' + cdaypart + '>>'\
             + ' in ' + c['name'] + ', ID ' + str(c['id'])
     if errMsg:
-      self.error_check_msg = 'FAIL'
-      return(errMsg)
-    return('OK')
+      self.error_check_status = 'FAIL'
+      self.error_check_detail += errMsg
+      return
+    self.error_check_detail += 'OK'
 
-  def _CheckDaypartsUsed(self, dayparts, valid_dayparts, classes, valid_classes):
-    if not dayparts:
-      self.error_check_msg = 'FAIL'
-      return('Dayparts yaml string not found. Check your Setup.')
-    if not valid_dayparts:
-      self.error_check_msg = 'FAIL'
-      return('Invalid Dayparts yaml string. Check your Setup.')
-    if not classes:
-      self.error_check_msg = 'FAIL'
-      return('Classes yaml string not found. Check your Setup.')
-    if not valid_classes:
-      self.error_check_msg = 'FAIL'
-      return('Invalid Classes yaml string. Check your Setup.')
+  def _CheckDaypartsUsed(self, dayparts, isValid_dayparts, classes, isValid_classes):
+    self.error_check_detail += '\n\nCheck if all Dayparts are used: '
+    if not (dayparts and isValid_dayparts):
+      self.error_check_status = 'FAIL'
+      self.error_check_detail += 'invalid Dayparts, unable to run this test.'
+      return
+    if not (classes and isValid_classes):
+      self.error_check_status = 'FAIL'
+      self.error_check_detail += 'invalid Classes, unable to run this test.'
+      return
     dayparts = yaml.load(dayparts)
     classes = yaml.load(classes)
     try:
       _ = [c for c in classes]
     except TypeError:
-      return('Expecting classes to be a list.')
+      self.error_check_status = 'FAIL'
+      self.error_check_detail += 'expect classes to be a list'
+      return
     errMsg = ''
     # There is potential for many duplicate dayparts in class schedules.
     # Making class_dps a set will greatly reduce the list.
@@ -145,30 +142,29 @@ class Checker(object):
       if dp['name'] not in class_dps:
         errMsg += '\nDaypart <<' + dp['name'] + '>> is not referenced in any classes.'
     if errMsg:
-      self.error_check_msg = 'FAIL'
-      return(errMsg)
-    return('OK')
+      self.error_check_status = 'FAIL'
+      self.error_check_detail += errMsg
+      return
+    self.error_check_detail += 'OK'
 
-  def _CheckClassStudentGroups(self, student_groups, valid_student_groups, classes, valid_classes):
-    if not student_groups:
-      self.error_check_msg = 'FAIL'
-      return('Student Groups yaml string not found. Check your Setup.')
-    if not valid_student_groups:
-      self.error_check_msg = 'FAIL'
-      return('Invalid Student Groups yaml string. Check your Setup.')
-    if not classes:
-      self.error_check_msg = 'FAIL'
-      return('Classes yaml string not found. Check your Setup.')
-    if not valid_classes:
-      self.error_check_msg = 'FAIL'
-      return('Invalid Classes yaml string. Check your Setup.')
+  def _CheckClassStudentGroups(self, student_groups, isValid_student_groups, classes, isValid_classes):
+    self.error_check_detail += '\n\nCheck Class student groups against Student Groups: '
+    if not (student_groups and isValid_student_groups):
+      self.error_check_status = 'FAIL'
+      self.error_check_detail += 'invalid Student Groups, unable to run this test.'
+      return
+    if not (classes and isValid_classes):
+      self.error_check_status = 'FAIL'
+      self.error_check_detail += 'invalid Classes, unable to run this test.'
+      return
     student_groups = yaml.load(student_groups)
     classes = yaml.load(classes)
     try:
       _ = [c for c in classes]
     except TypeError:
-      self.error_check_msg = 'FAIL'
-      return('Expecting classes to be a list.')
+      self.error_check_status = 'FAIL'
+      self.error_check_detail += 'expect classes to be a list'
+      return
     errMsg = ''
     sg_set = set([sg['group_name'] for sg in student_groups])
     for c in classes:
@@ -177,59 +173,58 @@ class Checker(object):
           errMsg += '\nReferring to non-existent student group <<' + student_group + '>>'\
             + ' in ' + c['name'] + ', ID ' + str(c['id'])
     if errMsg:
-      self.error_check_msg = 'FAIL'
-      return(errMsg)
-    return('OK')
+      self.error_check_status = 'FAIL'
+      self.error_check_detail += errMsg
+      return
+    self.error_check_detail += 'OK'
 
-  def _CheckStudentGroupsUsed(self, student_groups, valid_student_groups, classes, valid_classes):
-    if not student_groups:
-      self.error_check_msg = 'FAIL'
-      return('Student Groups yaml string not found. Check your Setup.')
-    if not valid_student_groups:
-      self.error_check_msg = 'FAIL'
-      return('Invalid Student Groups yaml string. Check your Setup.')
-    if not classes:
-      self.error_check_msg = 'FAIL'
-      return('Classes yaml string not found. Check your Setup.')
-    if not valid_classes:
-      self.error_check_msg = 'FAIL'
-      return('Invalid Classes yaml string. Check your Setup.')
+  def _CheckStudentGroupsUsed(self, student_groups, isValid_student_groups, classes, isValid_classes):
+    self.error_check_detail += '\n\nCheck if all Student Groups are used: '
+    if not (student_groups and isValid_student_groups):
+      self.error_check_status = 'FAIL'
+      self.error_check_detail += 'invalid Student Groups, unable to run this test.'
+      return
+    if not (classes and isValid_classes):
+      self.error_check_status = 'FAIL'
+      self.error_check_detail += 'invalid Classes, unable to run this test.'
+      return
     student_groups = yaml.load(student_groups)
     classes = yaml.load(classes)
     try:
       _ = [c for c in classes]
     except TypeError:
-      return('Expecting classes to be a list.')
+      self.error_check_status = 'FAIL'
+      self.error_check_detail += 'expect classes to be a list'
+      return
     errMsg = ''
     class_student_groups = set([p['group'] for c in classes for p in c['prerequisites'] if 'group' in p])
     for sg in student_groups:
       if sg['group_name'] not in class_student_groups:
         errMsg += '\nStudent Group <<' + sg['group_name'] + '>> is not referenced in any classes.'
     if errMsg:
-      self.error_check_msg = 'FAIL'
-      return(errMsg)
-    return('OK')
+      self.error_check_status = 'FAIL'
+      self.error_check_detail += errMsg
+      return
+    self.error_check_detail += 'OK'
 
-  def _CheckClassEmails(self, students, valid_students, classes, valid_classes):
-    if not students:
-      self.error_check_msg = 'FAIL'
-      return('Students yaml string not found. Check your Setup.')
-    if not valid_students:
-      self.error_check_msg = 'FAIL'
-      return('Invalid Student yaml string. Check your Setup.')
-    if not classes:
-      self.error_check_msg = 'FAIL'
-      return('Classes yaml string not found. Check your Setup.')
-    if not valid_classes:
-      self.error_check_msg = 'FAIL'
-      return('Invalid Classes yaml string. Check your Setup.')
+  def _CheckClassEmails(self, students, isValid_students, classes, isValid_classes):
+    self.error_check_detail += '\n\nCheck Class student emails against Students: '
+    if not (students and isValid_students):
+      self.error_check_status = 'FAIL'
+      self.error_check_detail += 'invalid Students, unable to run this test.'
+      return
+    if not (classes and isValid_classes):
+      self.error_check_status = 'FAIL'
+      self.error_check_detail += 'invalid Classes, unable to run this test.'
+      return
     students = yaml.load(students)
     classes = yaml.load(classes)
     try:
       _ = [c for c in classes]
     except TypeError:
-      self.error_check_msg = 'FAIL'
-      return('Expecting classes to be a list.')
+      self.error_check_status = 'FAIL'
+      self.error_check_detail += 'expect classes to be a list'
+      return
     errMsg = ''
     students_set = set([s['email'] for s in students])
     for c in classes:
@@ -238,30 +233,29 @@ class Checker(object):
           errMsg += '\nReferring to non-existent student email <<' + student_email + '>>'\
             + ' in ' + c['name'] + ', ID ' + str(c['id'])
     if errMsg:
-      self.error_check_msg = 'FAIL'
-      return(errMsg)
-    return('OK')
+      self.error_check_status = 'FAIL'
+      self.error_check_detail += errMsg
+      return
+    self.error_check_detail += 'OK'
 
-  def _CheckCurrentGrade(self, students, valid_students, classes, valid_classes):
-    if not students:
-      self.error_check_msg = 'FAIL'
-      return('Students yaml string not found. Check your Setup.')
-    if not valid_students:
-      self.error_check_msg = 'FAIL'
-      return('Invalid Student yaml string. Check your Setup.')
-    if not classes:
-      self.error_check_msg = 'FAIL'
-      return('Classes yaml string not found. Check your Setup.')
-    if not valid_classes:
-      self.error_check_msg = 'FAIL'
-      return('Invalid Classes yaml string. Check your Setup.')
+  def _CheckCurrentGrade(self, students, isValid_students, classes, isValid_classes):
+    self.error_check_detail += '\n\nCheck Class current_grade against Student current_grade: '
+    if not (students and isValid_students):
+      self.error_check_status = 'FAIL'
+      self.error_check_detail += 'invalid Students, unable to run this test.'
+      return
+    if not (classes and isValid_classes):
+      self.error_check_status = 'FAIL'
+      self.error_check_detail += 'invalid Classes, unable to run this test.'
+      return
     students = yaml.load(students)
     classes = yaml.load(classes)
     try:
       _ = [c for c in classes]
     except TypeError:
-      self.error_check_msg = 'FAIL'
-      return('Expecting classes to be a list.')
+      self.error_check_status = 'FAIL'
+      self.error_check_detail += 'expect classes to be a list'
+      return
     errMsg = ''
     student_grade_set = set([s['current_grade'] for s in students])
     for c in classes:
@@ -275,6 +269,7 @@ class Checker(object):
         errMsg += '\nStudent grade <<' + str(s['current_grade']) + '>>'\
           + ' for ' +  s['email'] + ' is not referenced in any class.'
     if errMsg:
-      self.error_check_msg = 'FAIL'
-      return(errMsg)
-    return('OK')
+      self.error_check_status = 'FAIL'
+      self.error_check_detail += errMsg
+      return
+    self.error_check_detail += 'OK'

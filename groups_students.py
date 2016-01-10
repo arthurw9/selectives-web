@@ -59,7 +59,7 @@ class GroupsStudents(webapp2.RequestHandler):
     message = self.request.get('message')
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
-    setup_msg = error_check_logic.Checker.getStatus(institution, session)
+    setup_status = error_check_logic.Checker.getStatus(institution, session)
     groups_students = models.GroupsStudents.Fetch(institution, session)
     if not groups_students:
       groups_students = '\n'.join([
@@ -77,7 +77,7 @@ class GroupsStudents(webapp2.RequestHandler):
       'institution' : institution,
       'session' : session,
       'message': message,
-      'setup_msg': setup_msg,
+      'setup_status': setup_status,
       'session_query': session_query,
       'groups_students': groups_students,
       'self': self.request.uri,
