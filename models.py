@@ -21,54 +21,62 @@ GLOBAL_KEY = ndb.Key("global", "global")
 # - FetchEntity returns a ndbModel object
 # - FetchAllEntities returns a list of ndbModel object
 
-def HandleContentLengthBug(req):
-  result = []
-  req = req.split('\n')
-  for line in req:
-    line = line.strip()
-    if line == '':
-      pass
-    elif line.lower().startswith('content-length'):
-      pass
-    else:
-      result.append(line)
-  return '\n'.join(result)
-    
-def GetCurrRequest():
-  return HandleContentLengthBug(str(webapp2.get_request()))
+class Timer(object):
 
-def StartTiming():
-  global timer_data
-  if 'timer_data' not in globals():
-    timer_data = {}
-  req = GetCurrRequest()
-  timer_data[req] = []
-  
+  def __init__(self):
+    self.start_time = time.clock()
+    self.events = []
+    self.addEvent('start')
+
+  def getTime(self):
+    return time.clock() - self.start_time
+
+  def startEvent(self, *entry):
+    event = [self.getTime(), 0]
+    event.extend(entry)
+    self.events.append(event)
+    return len(self.events) - 1
+
+  def finishEvent(self, idx):
+    duration = self.getTime() - self.events[idx][0]
+    self.events[idx][1] = duration
+
+  def addEvent(self, name):
+    event = [self.getTime(), 0]
+    event.append(name)
+    self.events.append(event)
+
+  @classmethod
+  def startTiming(cls):
+    req = webapp2.get_request()
+    req.registry['timer'] = Timer()
+
+  @classmethod
+  def getDataStr(cls):
+    now = time.clock()
+    req = webapp2.get_request();
+    timer = req.registry['timer']
+    timer.addEvent('done')
+    result = ["Timer:\n\nCurr request = " + str(req)]
+    result.append("\ntiming: ")
+    for e in timer.events:
+      result.append(str(e))
+    result.append("\n");
+    return '\n'.join(result)
+
+
 def timed(fn):
-  def wrapped(*argv, **kwargs):
-    start = time.clock()
+  def wrapper(*argv, **kwargs):
+    req = webapp2.get_request()
+    if 'timer' in req.registry:
+      timer =  req.registry['timer']
+      event_idx = timer.startEvent(argv[0], fn.__name__, argv[1:], kwargs)
     ret_value = fn(*argv, **kwargs)
-    duration = time.clock() - start
-    entry = (start, duration, argv[0], fn.__name__, argv[1:], kwargs)
-    global timer_data
-    if 'timer_data' not in globals():
-      return ret_value
-    req = GetCurrRequest()
-    if req not in timer_data:
-      return ret_value
-    timer_data[req].append(entry)
+    if 'timer' in req.registry:
+      timer.finishEvent(event_idx)
     return ret_value
-  return wrapped
+  return wrapper
 
-def GetTimerDataStr():
-  req = GetCurrRequest()
-  result = ["\n\nCurr request = " + req]
-  result.append("\ntiming: ")
-  for e in timer_data[req]:
-    result.append(str(e))
-  result.append("\n");
-  del timer_data[req]
-  return '\n'.join(result)
 
 class GlobalAdmin(ndb.Model):
   """email addresses for users with full access to the site."""
