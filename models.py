@@ -48,6 +48,7 @@ class Timer(object):
 
   @classmethod
   def startTiming(cls):
+    logging.error("starting timer")
     req = webapp2.get_request()
     req.registry['timer'] = Timer()
 
