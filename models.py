@@ -42,9 +42,7 @@ class Timer(object):
     self.events[idx][1] = duration
 
   def addEvent(self, name):
-    event = [self.getTime(), 0]
-    event.append(name)
-    self.events.append(event)
+    _ = self.startEvent(name)
 
   @classmethod
   def startTiming(cls):
@@ -60,7 +58,7 @@ class Timer(object):
     result = ["Timer:\n\nCurr request = " + str(req)]
     result.append("\ntiming: ")
     for e in timer.events:
-      result.append(str(e))
+      result.append("%0.3f, %0.3f, %s" % (e[0], e[1], str(e[2:])))
     result.append("\n");
     return '\n'.join(result)
 
@@ -70,7 +68,8 @@ def timed(fn):
     req = webapp2.get_request()
     if 'timer' in req.registry:
       timer =  req.registry['timer']
-      event_idx = timer.startEvent(argv[0], fn.__name__, argv[1:], kwargs)
+      class_name = str(argv[0]).partition("<")[0]
+      event_idx = timer.startEvent(class_name, fn.__name__, argv[1:])
     ret_value = fn(*argv, **kwargs)
     if 'timer' in req.registry:
       timer.finishEvent(event_idx)
