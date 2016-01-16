@@ -24,12 +24,12 @@ GLOBAL_KEY = ndb.Key("global", "global")
 class Timer(object):
 
   def __init__(self):
-    self.start_time = time.clock()
+    self.start_time = time.time()
     self.events = []
     self.addEvent('start')
 
   def getTime(self):
-    return time.clock() - self.start_time
+    return time.time() - self.start_time
 
   def startEvent(self, *entry):
     event = [self.getTime(), 0]
@@ -53,7 +53,6 @@ class Timer(object):
 
   @classmethod
   def getDataStr(cls):
-    now = time.clock()
     req = webapp2.get_request();
     timer = req.registry['timer']
     timer.addEvent('done')
