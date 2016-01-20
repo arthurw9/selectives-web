@@ -225,7 +225,7 @@ class ServingSession(ndb.Model):
   @classmethod
   @timed
   def store(cls, institution, session_name, login_type):
-    if not login_type in ['verification', 'preferences', 'schedule']:
+    if not login_type in ['verification', 'preferences', 'schedule', 'preregistration', 'postregistration']:
       raise Exception("Unexpected login_type: %s" % login_type)
     serving_session = ServingSession()
     serving_session.session_name = session_name

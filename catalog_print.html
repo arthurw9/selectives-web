@@ -1,0 +1,34 @@
+<h2>Selectives Course Catalog - {{session}}</h2>
+
+{% block session_body %}
+
+<form method=post>
+<input type=hidden name="institution" value="{{ institution }}" />
+<input type=hidden name="session" value="{{ session }}" />
+
+{% for c in classes %}
+  {% if not c['exclude_from_catalog'] %}
+    <h3 style="height:5px">{{c['name']}}</h3>
+    <b>Teacher: </b>{{c['instructor']}}<br>
+    <b>Maximum Enrollment: </b>{{c['max_enrollment']}}<br>
+    <b>Schedule: </b>
+    {{c['schedule'][0]['daypart']}}
+    {% if c['schedule']|length > 1 %}
+      {% for s in c['schedule'][1:] %}
+        / {{s['daypart']}}
+      {% endfor %}
+    {% endif %}<br>
+    {% if c['donation'] %}
+      <b>Suggested Donation: </b>{{c['donation']}}<br>
+    {% endif %}
+    {% if c['description'] %}
+      {% for line in c['description'].splitlines() %}
+        {{ line }}<br>
+      {% endfor %}
+    {% endif %}
+    <br>
+  {% endif %}
+{% endfor %}
+
+</form>
+{% endblock %}

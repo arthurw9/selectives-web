@@ -12,6 +12,7 @@
 <table id="students">
   {% for student in students %}
     <tr class=highlight><td>{{ student['first'] }} {{ student['last'] }}</td>
+        <td><a href="/preregistration?{{ session_query }}&student={{ student['email'] }}" target="iframe">prereg</a></td>
         <td><a href="/preferences?{{ session_query }}&student={{ student['email'] }}" target="iframe">prefs</a></td>
         <td><a href="/schedule?{{ session_query }}&student={{ student['email'] }}" target="iframe">schedule</a></td>
     </tr>

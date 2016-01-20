@@ -18,6 +18,8 @@ import class_list
 import class_roster
 import error_check
 import spots_available
+import preregistration
+import catalog_print
 
 application = webapp2.WSGIApplication([
   ('/', index.Index),
@@ -38,4 +40,6 @@ application = webapp2.WSGIApplication([
   ('/class_roster', class_roster.ClassRoster),
   ('/error_check', error_check.ErrorCheck),
   ('/spots_available', spots_available.SpotsAvailable),
+  ('/preregistration', preregistration.Preregistration),
+  ('/catalog_print', catalog_print.CatalogPrint),
 ], debug=True)

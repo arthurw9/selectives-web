@@ -85,6 +85,9 @@ class Authorizer(object):
     if (serving_session.login_type == "schedule" and
         self.handler.request.path == "/spots_available"):
       return True
+    if (serving_session.login_type == "preregistration" and
+        self.handler.request.path == "/catalog_print"):
+      return True
     if not "/" + serving_session.login_type == self.handler.request.path:
       logging.error("request path doesn't match")
       return False
@@ -134,7 +137,7 @@ class Authorizer(object):
                                      session,
                                      self.email)
       if verified:
-        logging.info("Redirecting %s to /%s", (self.email, login_type))
+        logging.info("Redirecting %s to /%s" % (self.email, login_type))
         self.handler.redirect("/%s?%s" % (login_type, urllib.urlencode(
             {'institution': institution,
              'session': session})))
