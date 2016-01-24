@@ -38,7 +38,7 @@ class Dayparts(webapp2.RequestHandler):
     dayparts = self.request.get("dayparts")
     if not dayparts:
       logging.fatal("no dayparts")
-    dayparts = schemas.dayparts.Update(dayparts)
+    dayparts = schemas.Dayparts().Update(dayparts)
     models.Dayparts.store(institution, session, dayparts)
     error_check_logic.Checker.setStatus(institution, session, 'UNKNOWN')
     self.RedirectToSelf(institution, session, "saved dayparts")

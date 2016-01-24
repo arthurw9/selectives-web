@@ -41,12 +41,12 @@ class Checker(object):
     class_groups = models.GroupsClasses.Fetch(institution, session)
     student_groups = models.GroupsStudents.Fetch(institution, session)
 
-    isValid_dayparts = schemas.dayparts.IsValid(dayparts)
-    isValid_classes = schemas.classes.IsValid(classes)
-    isValid_students = schemas.students.IsValid(students)
-    isValid_requirements = schemas.requirements.IsValid(requirements)
-    isValid_class_groups = schemas.class_groups.IsValid(class_groups)
-    isValid_student_groups = schemas.student_groups.IsValid(student_groups)
+    isValid_dayparts = schemas.Dayparts().IsValid(dayparts)
+    isValid_classes = schemas.Classes().IsValid(classes)
+    isValid_students = schemas.Students().IsValid(students)
+    isValid_requirements = schemas.Requirements().IsValid(requirements)
+    isValid_class_groups = schemas.ClassGroups().IsValid(class_groups)
+    isValid_student_groups = schemas.StudentGroups().IsValid(student_groups)
 
     self._Validate(dayparts, isValid_dayparts, 'Dayparts')
     self._Validate(classes, isValid_classes, 'Classes')

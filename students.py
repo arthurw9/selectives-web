@@ -38,7 +38,7 @@ class Students(webapp2.RequestHandler):
     students = self.request.get("students")
     if not students:
       logging.warning("no students")
-    students = schemas.students.Update(students)
+    students = schemas.Students().Update(students)
     logging.info("posted students %s", students)
     models.Students.store(institution, session, students)
     error_check_logic.Checker.setStatus(institution, session, 'UNKNOWN')
