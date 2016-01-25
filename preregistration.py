@@ -15,43 +15,17 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     autoescape=True)
 
 class Preregistration(webapp2.RequestHandler):
-  def RedirectToSelf(self, institution, session):
-    self.redirect("/preregistration?%s" % urllib.urlencode(
-        {'institution': institution,
-         'session': session}))
-
-  def RedirectToPage(self, page, institution, session):
-    self.redirect("/%s?%s" % (page, urllib.urlencode(
-        {'institution': institution,
-         'session': session})))
-
   def SortByName(self, classes):
     return sorted(classes, key=lambda e: e['name'])
 
-  def post(self):
-    auth = authorizer.Authorizer(self)
-    if not auth.CanAdministerInstitutionFromUrl():
-      auth.Redirect()
-      return
-
-    institution = self.request.get("institution")
-    if not institution:
-      logging.fatal("no institution")
-    session = self.request.get("session")
-    if not session:
-      logging.fatal("no session")
-    self.RedirectToSelf(institution, session)
+  def CoreClasses(self, classes):
+    return [c for c in classes if 'Core' in c['name']]
 
   def get(self):
     auth = authorizer.Authorizer(self)
-    if not (auth.CanAdministerInstitutionFromUrl() or
-            auth.HasStudentAccess()):
+    if not auth.HasStudentAccess():
       auth.Redirect()
       return
-
-    student = ''
-    if auth.HasStudentAccess():
-      student = auth.student_entity
     
     institution = self.request.get("institution")
     if not institution:
@@ -64,14 +38,16 @@ class Preregistration(webapp2.RequestHandler):
     classes = models.Classes.Fetch(institution, session)
     classes = yaml.load(classes)
     classes = self.SortByName(classes)
+    core = self.CoreClasses(classes)
     template_values = {
       'logout_url': auth.GetLogoutUrl(self),
       'user_email' : auth.email,
       'institution' : institution,
       'session' : session,
       'session_query': session_query,
-      'student': student,
+      'student': auth.student_entity,
       'classes': classes,
+      'core': core,
     }
     template = JINJA_ENVIRONMENT.get_template('preregistration.html')
     self.response.write(template.render(template_values))
