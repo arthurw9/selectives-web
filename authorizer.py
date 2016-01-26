@@ -1,3 +1,5 @@
+import Cookie
+import os
 import logging
 try:
   from google.appengine.api import users
@@ -20,7 +22,7 @@ class Authorizer(object):
       self.email = users.get_current_user().email().lower() # google capitalizes email addresses sometimes
       models.RecentAccess.Store(self.email)
     else:
-       models.RecentAccess.Store("anonymous")
+      models.RecentAccess.Store("anonymous")
 
   def IsGlobalAdmin(self):
     if not self.email:
@@ -145,10 +147,8 @@ class Authorizer(object):
     logging.info("Redirecting %s to /welcome", self.email)
     self.handler.redirect("/welcome")
 
-  # TODO get rid of the unnecessary handler parameter
   def GetLogoutUrl(self, handler):
-    return users.create_logout_url(self.handler.request.uri)
-
+    return "/logout"
 
   def GetLoginUrl(self):
     return users.create_login_url("/")
