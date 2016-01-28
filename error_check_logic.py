@@ -3,7 +3,6 @@ import yaml
 import logging
 import yayv
 import schemas
-import models
 
 try:
   from google.appengine.ext import ndb
@@ -42,12 +41,12 @@ class Checker(object):
     class_groups = models.GroupsClasses.Fetch(institution, session)
     student_groups = models.GroupsStudents.Fetch(institution, session)
 
-    isValid_dayparts = schemas.dayparts.IsValid(dayparts)
-    isValid_classes = schemas.classes.IsValid(classes)
-    isValid_students = schemas.students.IsValid(students)
-    isValid_requirements = schemas.requirements.IsValid(requirements)
-    isValid_class_groups = schemas.class_groups.IsValid(class_groups)
-    isValid_student_groups = schemas.student_groups.IsValid(student_groups)
+    isValid_dayparts = schemas.Dayparts().IsValid(dayparts)
+    isValid_classes = schemas.Classes().IsValid(classes)
+    isValid_students = schemas.Students().IsValid(students)
+    isValid_requirements = schemas.Requirements().IsValid(requirements)
+    isValid_class_groups = schemas.ClassGroups().IsValid(class_groups)
+    isValid_student_groups = schemas.StudentGroups().IsValid(student_groups)
 
     self._Validate(dayparts, isValid_dayparts, 'Dayparts')
     self._Validate(classes, isValid_classes, 'Classes')
@@ -56,6 +55,21 @@ class Checker(object):
     self._Validate(class_groups, isValid_class_groups, 'Class Groups')
     self._Validate(student_groups, isValid_student_groups, 'Student Groups')
 
+    # Only call yaml.load if data is valid. And store the result
+    # here instead of repeatedly calling in each function below.
+    if isValid_dayparts:
+      dayparts = yaml.load(dayparts)
+    if isValid_classes:
+      classes = yaml.load(classes)
+    if isValid_students:
+      students = yaml.load(students)
+    if isValid_requirements:
+      requirements = yaml.load(requirements)
+    if isValid_class_groups:
+      class_groups = yaml.load(class_groups)
+    if isValid_student_groups:
+      student_groups = yaml.load(student_groups)
+    
     self._CheckClassDayparts(dayparts, isValid_dayparts,
                              classes, isValid_classes)
     self._CheckDaypartsUsed(dayparts, isValid_dayparts,
@@ -95,8 +109,6 @@ class Checker(object):
       self.error_check_status = 'FAIL'
       self.error_check_detail += 'invalid Classes, unable to run this test.'
       return
-    dayparts = yaml.load(dayparts)
-    classes = yaml.load(classes)
     try:
       _ = [c for c in classes]
     except TypeError:
@@ -126,8 +138,6 @@ class Checker(object):
       self.error_check_status = 'FAIL'
       self.error_check_detail += 'invalid Classes, unable to run this test.'
       return
-    dayparts = yaml.load(dayparts)
-    classes = yaml.load(classes)
     try:
       _ = [c for c in classes]
     except TypeError:
@@ -157,8 +167,6 @@ class Checker(object):
       self.error_check_status = 'FAIL'
       self.error_check_detail += 'invalid Classes, unable to run this test.'
       return
-    student_groups = yaml.load(student_groups)
-    classes = yaml.load(classes)
     try:
       _ = [c for c in classes]
     except TypeError:
@@ -188,8 +196,6 @@ class Checker(object):
       self.error_check_status = 'FAIL'
       self.error_check_detail += 'invalid Classes, unable to run this test.'
       return
-    student_groups = yaml.load(student_groups)
-    classes = yaml.load(classes)
     try:
       _ = [c for c in classes]
     except TypeError:
@@ -217,8 +223,6 @@ class Checker(object):
       self.error_check_status = 'FAIL'
       self.error_check_detail += 'invalid Classes, unable to run this test.'
       return
-    students = yaml.load(students)
-    classes = yaml.load(classes)
     try:
       _ = [c for c in classes]
     except TypeError:
@@ -248,8 +252,6 @@ class Checker(object):
       self.error_check_status = 'FAIL'
       self.error_check_detail += 'invalid Classes, unable to run this test.'
       return
-    students = yaml.load(students)
-    classes = yaml.load(classes)
     try:
       _ = [c for c in classes]
     except TypeError:

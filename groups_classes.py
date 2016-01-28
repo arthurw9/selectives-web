@@ -40,7 +40,7 @@ class GroupsClasses(webapp2.RequestHandler):
     groups_classes = self.request.get("groups_classes")
     if not groups_classes:
       logging.fatal("no groups classes")
-    groups_classes = schemas.class_groups.Update(groups_classes)
+    groups_classes = schemas.ClassGroups().Update(groups_classes)
     models.GroupsClasses.store(institution, session, groups_classes)
     error_check_logic.Checker.setStatus(institution, session, 'UNKNOWN')
     self.RedirectToSelf(institution, session, "saved groups classes")

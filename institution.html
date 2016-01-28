@@ -40,7 +40,7 @@ function EnableLogins(session_name, login_type, enabled) {
   <input type="hidden" id="session" name="session" value="">
   <input type="hidden" id="login_type" name="login_type" value="">
   <table border=1>
-  <th colspan=2>Session</th><th colspan=3>Student Logins</th>
+  <th colspan=2>Session</th><th colspan=4>Student Logins</th>
   {% for item in sessions %}
     <tr>
       <td class="left-right-padding">
@@ -55,6 +55,14 @@ function EnableLogins(session_name, login_type, enabled) {
         <input type="checkbox" 
                onchange="return EnableLogins('{{ item.name }}', 'schedule', this.checked);"
                {% if item.schedule_enabled %}checked{% endif %}> Schedule </td>
+      <td  class="left-right-padding">
+        <input type="checkbox" 
+               onchange="return EnableLogins('{{ item.name }}', 'preregistration', this.checked);"
+               {% if item.preregistration_enabled %}checked{% endif %}> Pre-Registration</td>
+      <td  class="left-right-padding">
+        <input type="checkbox" 
+               onchange="return EnableLogins('{{ item.name }}', 'postregistration', this.checked);"
+               {% if item.postregistration_enabled %}checked{% endif %}> Post-Registration</td>
     </tr>
   {% endfor %}
   </table>

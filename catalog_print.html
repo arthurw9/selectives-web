@@ -1,0 +1,11 @@
+<h2>Selectives Course Catalog - {{session}}</h2>
+
+{% block session_body %}
+
+<form method=post>
+<input type=hidden name="institution" value="{{ institution }}" />
+<input type=hidden name="session" value="{{ session }}" />
+
+{% include 'catalog_full.html' %}
+</form>
+{% endblock %}

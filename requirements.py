@@ -38,7 +38,7 @@ class Requirements(webapp2.RequestHandler):
     requirements = self.request.get("requirements")
     if not requirements:
       logging.fatal("no requirements")
-    requirements = schemas.requirements.Update(requirements)
+    requirements = schemas.Requirements().Update(requirements)
     models.Requirements.store(institution, session, requirements)
     error_check_logic.Checker.setStatus(institution, session, 'UNKNOWN')
     self.RedirectToSelf(institution, session, "saved requirements")

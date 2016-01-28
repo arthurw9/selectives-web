@@ -38,7 +38,7 @@ class Classes(webapp2.RequestHandler):
     classes = self.request.get("classes")
     if not classes:
       logging.fatal("no classes")
-    classes = schemas.classes.Update(classes)
+    classes = schemas.Classes().Update(classes)
     models.Classes.store(institution, session, classes)
     error_check_logic.Checker.setStatus(institution, session, 'UNKNOWN')
     self.RedirectToSelf(institution, session, "saved classes")

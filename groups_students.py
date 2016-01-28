@@ -37,7 +37,7 @@ class GroupsStudents(webapp2.RequestHandler):
     groups_students = self.request.get("groups_students")
     if not groups_students:
       logging.fatal("no groups students")
-    groups_students = schemas.student_groups.Update(groups_students)
+    groups_students = schemas.StudentGroups().Update(groups_students)
     models.GroupsStudents.store(institution, session, groups_students)
     error_check_logic.Checker.setStatus(institution, session, 'UNKNOWN')
     self.RedirectToSelf(institution, session, "saved groups students")

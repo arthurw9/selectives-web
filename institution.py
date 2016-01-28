@@ -105,16 +105,22 @@ class Institution(webapp2.RequestHandler):
       preferences_enabled = serving_session.login_type == "preferences"
       verification_enabled = serving_session.login_type == "verification"
       schedule_enabled = serving_session.login_type == "schedule"
+      preregistration_enabled = serving_session.login_type == "preregistration"
+      postregistration_enabled = serving_session.login_type == "postregistration"
       if not serving_session.session_name == session.name:
         preferences_enabled = False
         verification_enabled = False
         schedule_enabled = False
+        preregistration_enabled = False
+        postregistration_enabled = False
       sessions_and_urls.append(
           {'name': session.name,
            'management_url': ('/dayparts?%s' % args),
            'verification_enabled': verification_enabled,
            'preferences_enabled': preferences_enabled,
            'schedule_enabled': schedule_enabled,
+           'preregistration_enabled': preregistration_enabled,
+           'postregistration_enabled': postregistration_enabled,
           })
 
     message = self.request.get('message')

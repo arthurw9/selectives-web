@@ -1,3 +1,5 @@
+import Cookie
+import os
 import logging
 try:
   from google.appengine.api import users
@@ -20,7 +22,7 @@ class Authorizer(object):
       self.email = users.get_current_user().email().lower() # google capitalizes email addresses sometimes
       models.RecentAccess.Store(self.email)
     else:
-       models.RecentAccess.Store("anonymous")
+      models.RecentAccess.Store("anonymous")
 
   def IsGlobalAdmin(self):
     if not self.email:
@@ -85,6 +87,9 @@ class Authorizer(object):
     if (serving_session.login_type == "schedule" and
         self.handler.request.path == "/spots_available"):
       return True
+    if (serving_session.login_type == "preregistration" and
+        self.handler.request.path == "/catalog_print"):
+      return True
     if not "/" + serving_session.login_type == self.handler.request.path:
       logging.error("request path doesn't match")
       return False
@@ -134,7 +139,7 @@ class Authorizer(object):
                                      session,
                                      self.email)
       if verified:
-        logging.info("Redirecting %s to /%s", (self.email, login_type))
+        logging.info("Redirecting %s to /%s" % (self.email, login_type))
         self.handler.redirect("/%s?%s" % (login_type, urllib.urlencode(
             {'institution': institution,
              'session': session})))
@@ -142,10 +147,8 @@ class Authorizer(object):
     logging.info("Redirecting %s to /welcome", self.email)
     self.handler.redirect("/welcome")
 
-  # TODO get rid of the unnecessary handler parameter
   def GetLogoutUrl(self, handler):
-    return users.create_logout_url(self.handler.request.uri)
-
+    return "/logout"
 
   def GetLoginUrl(self):
     return users.create_login_url("/")
