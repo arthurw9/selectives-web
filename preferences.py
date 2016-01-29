@@ -116,7 +116,6 @@ class Preferences(webapp2.RequestHandler):
     logging.info('dont want: ' + ','.join(dontwant_ids));
     logging.info('dont care: ' + ','.join(dontcare_ids));
     template_values = {
-      'logout_url': auth.GetLogoutUrl(self),
       'user_email' : auth.email,
       'institution' : institution,
       'session' : session,

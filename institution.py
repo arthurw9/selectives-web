@@ -125,10 +125,7 @@ class Institution(webapp2.RequestHandler):
 
     message = self.request.get('message')
 
-    logout_url = auth.GetLogoutUrl(self)
-
     template_values = {
-      'logout_url': logout_url,
       'user_email' : auth.email,
       'institution' : institution,
       'sessions' : sessions_and_urls,

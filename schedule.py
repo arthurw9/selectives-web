@@ -128,7 +128,6 @@ class Schedule(webapp2.RequestHandler):
         schedule = schedule[1:]
 
       template_values = {
-        'logout_url': auth.GetLogoutUrl(self),
         'user_email' : auth.email,
         'institution' : institution,
         'session' : session,

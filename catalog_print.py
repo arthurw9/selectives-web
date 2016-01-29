@@ -40,7 +40,6 @@ class CatalogPrint(webapp2.RequestHandler):
     classes = self.SortByName(classes)
     core = self.CoreClasses(classes)
     template_values = {
-      'logout_url': auth.GetLogoutUrl(self),
       'user_email' : auth.email,
       'institution' : institution,
       'session' : session,

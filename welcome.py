@@ -19,11 +19,9 @@ class Welcome(webapp2.RequestHandler):
     if auth.HasStudentAccess():
         auth.Redirect()
         return
-    logout_url = auth.GetLogoutUrl(self)
     login_url = auth.GetLoginUrl()
     template_values = {
       'login_url': login_url,
-      'logout_url': logout_url,
       'user_email' : auth.email,
     }
     template = JINJA_ENVIRONMENT.get_template('welcome.html')

@@ -29,7 +29,7 @@
       </td>
       <td align=right>
         {% if user_email %}
-          {{ user_email }} <a href="{{ logout_url }}">logout</a>
+          {{ user_email }} <a href="/logout">logout</a>
         {% else %}
           <a href="{{ login_url }}">Log In</a>
         {% endif %}

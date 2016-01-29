@@ -149,8 +149,6 @@ class Authorizer(object):
 
 # TODO get rid of the unnecessary handler parameter.
 # We really want the request, not the handler, and we could get it from WebApp2.
-  def GetLogoutUrl(self, handler):
-    return "/logout"
 
   def GetLoginUrl(self):
     return users.create_login_url("/")
