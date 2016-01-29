@@ -147,6 +147,8 @@ class Authorizer(object):
     logging.info("Redirecting %s to /welcome", self.email)
     self.handler.redirect("/welcome")
 
+# TODO get rid of the unnecessary handler parameter.
+# We really want the request, not the handler, and we could get it from WebApp2.
   def GetLogoutUrl(self, handler):
     return "/logout"
 
