@@ -22,7 +22,7 @@ class Institution(webapp2.RequestHandler):
   def post(self):
     auth = authorizer.Authorizer(self)
     if not auth.CanAdministerInstitutionFromUrl():
-      auth.Redirect(self)
+      auth.Redirect()
       return
 
     institution = self.request.get("institution")
