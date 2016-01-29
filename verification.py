@@ -32,9 +32,7 @@ class Verification(webapp2.RequestHandler):
     if student_info == None:
       student_info = {'name': 'No Data', 'current_grade': 'No Data'}
 
-    logout_url = auth.GetLogoutUrl(self)
     template_values = {
-      'logout_url': logout_url,
       'user_email' : auth.email,
       'institution' : institution,
       'session' : session,

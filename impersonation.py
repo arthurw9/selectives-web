@@ -46,7 +46,6 @@ class Impersonation(webapp2.RequestHandler):
     students = models.Students.Fetch(institution, session)
     students = yaml.load(students)
     template_values = {
-      'logout_url': auth.GetLogoutUrl(self),
       'user_email' : auth.email,
       'institution' : institution,
       'session' : session,

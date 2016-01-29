@@ -47,7 +47,6 @@ class ErrorCheck(webapp2.RequestHandler):
     setup_status, error_chk_detail = error_check_logic.Checker().Run(institution, session)
 
     template_values = {
-      'logout_url': auth.GetLogoutUrl(self),
       'user_email' : auth.email,
       'institution' : institution,
       'session' : session,

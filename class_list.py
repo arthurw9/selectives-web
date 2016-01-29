@@ -45,7 +45,6 @@ class ClassList(webapp2.RequestHandler):
     classes = models.Classes.Fetch(institution, session)
     classes = yaml.load(classes)
     template_values = {
-      'logout_url': auth.GetLogoutUrl(self),
       'user_email' : auth.email,
       'institution' : institution,
       'session' : session,

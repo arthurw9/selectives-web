@@ -55,7 +55,6 @@ class GroupsStudents(webapp2.RequestHandler):
     if not session:
       logging.fatal("no session")
 
-    logout_url = auth.GetLogoutUrl(self)
     message = self.request.get('message')
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
@@ -72,7 +71,6 @@ class GroupsStudents(webapp2.RequestHandler):
           "    - tmeydbray@gmail.com"])
 
     template_values = {
-      'logout_url': logout_url,
       'user_email' : auth.email,
       'institution' : institution,
       'session' : session,

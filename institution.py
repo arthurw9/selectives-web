@@ -22,7 +22,7 @@ class Institution(webapp2.RequestHandler):
   def post(self):
     auth = authorizer.Authorizer(self)
     if not auth.CanAdministerInstitutionFromUrl():
-      auth.Redirect(self)
+      auth.Redirect()
       return
 
     institution = self.request.get("institution")
@@ -125,10 +125,7 @@ class Institution(webapp2.RequestHandler):
 
     message = self.request.get('message')
 
-    logout_url = auth.GetLogoutUrl(self)
-
     template_values = {
-      'logout_url': logout_url,
       'user_email' : auth.email,
       'institution' : institution,
       'sessions' : sessions_and_urls,

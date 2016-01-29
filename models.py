@@ -205,7 +205,7 @@ class Session(ndb.Model):
 class ServingSession(ndb.Model):
   """Which session is currently serving. Empty if none."""
   session_name = ndb.StringProperty()
-  login_type = ndb.StringProperty()
+  login_type = ndb.StringProperty(choices=['verification', 'preferences', 'schedule', 'preregistration', 'postregistration'])
 
   @classmethod
   @timed
@@ -225,8 +225,6 @@ class ServingSession(ndb.Model):
   @classmethod
   @timed
   def store(cls, institution, session_name, login_type):
-    if not login_type in ['verification', 'preferences', 'schedule', 'preregistration', 'postregistration']:
-      raise Exception("Unexpected login_type: %s" % login_type)
     serving_session = ServingSession()
     serving_session.session_name = session_name
     serving_session.login_type = login_type

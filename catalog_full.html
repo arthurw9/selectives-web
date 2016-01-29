@@ -1,12 +1,7 @@
 {% for c in core %}
     <h3 style="height:5px">{{c['name']}}</h3>
     <b>Schedule: </b>
-    {{c['schedule'][0]['daypart']}}
-    {% if c['schedule']|length > 1 %}
-      {% for s in c['schedule'][1:] %}
-        / {{s['daypart']}}
-      {% endfor %}
-    {% endif %}<br>
+    {{ c['schedule'] | join(' / ', attribute='daypart') }}
 {% endfor %}
 <br>
 {% for c in classes %}
@@ -17,12 +12,7 @@
     {% endif %}
     <b>Maximum Enrollment: </b>{{c['max_enrollment']}}<br>
     <b>Schedule: </b>
-    {{c['schedule'][0]['daypart']}}
-    {% if c['schedule']|length > 1 %}
-      {% for s in c['schedule'][1:] %}
-        / {{s['daypart']}}
-      {% endfor %}
-    {% endif %}<br>
+    {{ c['schedule'] | join(' / ', attribute='daypart') }}<br>
     {% if c['donation'] %}
       <b>Suggested Donation: </b>{{c['donation']}}<br>
     {% endif %}
