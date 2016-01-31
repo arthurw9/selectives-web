@@ -16,6 +16,8 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 
 class Preregistration(webapp2.RequestHandler):
   def SortByName(self, classes):
+    if not classes:
+      return ''
     return sorted(classes, key=lambda e: e['name'])
 
   def CoreClasses(self, classes):
