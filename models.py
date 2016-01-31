@@ -578,8 +578,7 @@ class ClassRoster(ndb.Model):
 
 
 class ErrorCheck(ndb.Model):
-  """Values: OK, FAIL, UNKNOWN"""
-  data = ndb.StringProperty()
+  data = ndb.StringProperty(choices=['OK', 'FAIL', 'UNKNOWN'])
 
   @classmethod
   @timed
