@@ -12,10 +12,18 @@ except:
   import fake_ndb
   ndb = fake_ndb.FakeNdb()
 
+# Increase this value manually when datastore upgrade is needed
+# CURRENT_DB_VERSION = 0, Yaml format
+# CURRENT_DB_VERSION = 1, Json eliminates yaml.load for performance
+CURRENT_DB_VERSION = 1
+
 class Checker(object):
-  def __init__(self):
+
+  def __init__(self, institution, session):
     self.error_check_status = 'OK'
     self.error_check_detail = ''
+    self.institution = institution
+    self.session = session
 
   # Modules that change admin setup data should call this
   # with status = 'UNKNOWN'.
@@ -27,19 +35,45 @@ class Checker(object):
   def getStatus(self, institution, session):
     return models.ErrorCheck.Fetch(institution, session)
 
+  def DBUpdateCheck(self):
+    stored_version = models.DBVersion.Fetch(self.institution,
+                                            self.session)
+    return (stored_version != CURRENT_DB_VERSION)
+
+  def RunUpgradeScript(self):
+    dayparts = models.Dayparts.Fetch(self.institution, self.session)
+    models.Dayparts.store(self.institution, self.session, dayparts)
+
+    classes = models.Classes.Fetch(self.institution, self.session)
+    models.Classes.store(self.institution, self.session, classes)
+
+    students = models.Students.Fetch(self.institution, self.session)
+    models.Students.store(self.institution, self.session, students)
+
+    requirements = models.Requirements.Fetch(self.institution, self.session)
+    models.Requirements.store(self.institution, self.session, dayparts)
+
+    groups_classes = models.GroupsClasses.Fetch(self.institution, self.session)
+    models.GroupsClasses.store(self.institution, self.session, groups_classes)
+
+    groups_students = models.GroupsStudents.Fetch(self.institution, self.session)
+    models.GroupsStudents.store(self.institution, self.session, groups_students)
+
+    models.DBVersion.Store(self.institution, self.session, CURRENT_DB_VERSION)
+
   # Returns two values:
   #   error_check_status: 'OK' if all tests pass
   #                       'FAIL' if any single test fails
   #   error_check_detail: String containing detailed results
   #                       for ALL tests.
   # Sets datastore to value of error_check_status
-  def Run(self, institution, session):
-    dayparts = models.Dayparts.Fetch(institution, session)
-    classes = models.Classes.Fetch(institution, session)
-    students = models.Students.Fetch(institution, session)
-    requirements = models.Requirements.Fetch(institution, session)
-    class_groups = models.GroupsClasses.Fetch(institution, session)
-    student_groups = models.GroupsStudents.Fetch(institution, session)
+  def ValidateSetup(self):
+    dayparts = models.Dayparts.Fetch(self.institution, self.session)
+    classes = models.Classes.Fetch(self.institution, self.session)
+    students = models.Students.Fetch(self.institution, self.session)
+    requirements = models.Requirements.Fetch(self.institution, self.session)
+    class_groups = models.GroupsClasses.Fetch(self.institution, self.session)
+    student_groups = models.GroupsStudents.Fetch(self.institution, self.session)
 
     isValid_dayparts = schemas.Dayparts().IsValid(dayparts)
     isValid_classes = schemas.Classes().IsValid(classes)
@@ -55,20 +89,12 @@ class Checker(object):
     self._Validate(class_groups, isValid_class_groups, 'Class Groups')
     self._Validate(student_groups, isValid_student_groups, 'Student Groups')
 
-    # Only call yaml.load if data is valid. And store the result
-    # here instead of repeatedly calling in each function below.
-    if isValid_dayparts:
-      dayparts = yaml.load(dayparts)
-    if isValid_classes:
-      classes = yaml.load(classes)
-    if isValid_students:
-      students = yaml.load(students)
-    if isValid_requirements:
-      requirements = yaml.load(requirements)
-    if isValid_class_groups:
-      class_groups = yaml.load(class_groups)
-    if isValid_student_groups:
-      student_groups = yaml.load(student_groups)
+    dayparts = models.Dayparts.FetchJson(self.institution, self.session)
+    classes = models.Classes.FetchJson(self.institution, self.session)
+    students = models.Students.FetchJson(self.institution, self.session)
+    requirements = models.Requirements.FetchJson(self.institution, self.session)
+    class_groups = models.GroupsClasses.FetchJson(self.institution, self.session)
+    student_groups = models.GroupsStudents.FetchJson(self.institution, self.session)
     
     self._CheckClassDayparts(dayparts, isValid_dayparts,
                              classes, isValid_classes)
@@ -83,7 +109,7 @@ class Checker(object):
     self._CheckCurrentGrade(students, isValid_students,
                             classes, isValid_classes)
         
-    self.setStatus(institution, session, self.error_check_status)
+    self.setStatus(self.institution, self.session, self.error_check_status)
     return self.error_check_status, self.error_check_detail
 
   def _Validate(self, yaml_str, isValid_schema, name):
@@ -98,6 +124,7 @@ class Checker(object):
       return
     self.error_check_detail += 'OK'
     return
+
 
   def _CheckClassDayparts(self, dayparts, isValid_dayparts, classes, isValid_classes):
     self.error_check_detail += '\n\nCheck Class dayparts against Dayparts: '

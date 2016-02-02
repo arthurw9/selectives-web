@@ -28,6 +28,23 @@ class ErrorCheck(webapp2.RequestHandler):
          'institution': institution,
          'session': session}))
 
+  def post(self):
+    auth = authorizer.Authorizer(self)
+    if not auth.CanAdministerInstitutionFromUrl():
+      auth.Redirect()
+      return
+
+    institution = self.request.get("institution")
+    if not institution:
+      logging.fatal("no institution")
+    session = self.request.get("session")
+    if not session:
+      logging.fatal("no session")
+
+    checker = error_check_logic.Checker(institution, session)
+    checker.RunUpgradeScript()
+    self.RedirectToSelf(institution, session, "upgrade")
+
   def get(self):
     auth = authorizer.Authorizer(self)
     if not auth.CanAdministerInstitutionFromUrl():
@@ -44,7 +61,9 @@ class ErrorCheck(webapp2.RequestHandler):
     message = self.request.get('message')
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
-    setup_status, error_chk_detail = error_check_logic.Checker().Run(institution, session)
+    checker = error_check_logic.Checker(institution, session)
+    setup_status, error_chk_detail = checker.ValidateSetup()
+    db_update_needed = checker.DBUpdateCheck()
 
     template_values = {
       'user_email' : auth.email,
@@ -54,6 +73,7 @@ class ErrorCheck(webapp2.RequestHandler):
       'setup_status': setup_status,
       'error_chk_detail': error_chk_detail,
       'session_query': session_query,
+      'db_update_needed': db_update_needed,
     }
     template = JINJA_ENVIRONMENT.get_template('error_check.html')
     self.response.write(template.render(template_values))

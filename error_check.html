@@ -2,6 +2,15 @@
 {% block session_body %}
 
 <h3>Error Check</h3>
+{% if db_update_needed %}
+<p style="color:red">DB UPDATE NEEDED!</p>
+<form method=post>
+<input type=hidden name="institution" value="{{ institution }}" />
+<input type=hidden name="session" value="{{ session }}" />
+Click to run the upgrade script.
+<input type=submit />
+</form>
+{% endif %}
 {% for line in error_chk_detail.splitlines() %}
   {{ line }}<br>
 {% endfor %}

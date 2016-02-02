@@ -42,8 +42,7 @@ class ClassList(webapp2.RequestHandler):
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
 
-    classes = models.Classes.Fetch(institution, session)
-    classes = yaml.load(classes)
+    classes = models.Classes.FetchJson(institution, session)
     template_values = {
       'user_email' : auth.email,
       'institution' : institution,

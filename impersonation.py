@@ -43,8 +43,7 @@ class Impersonation(webapp2.RequestHandler):
                                       'session': session})
 
     setup_status = error_check_logic.Checker.getStatus(institution, session)
-    students = models.Students.Fetch(institution, session)
-    students = yaml.load(students)
+    students = models.Students.FetchJson(institution, session)
     template_values = {
       'user_email' : auth.email,
       'institution' : institution,

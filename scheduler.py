@@ -25,10 +25,8 @@ class Scheduler(webapp2.RequestHandler):
          'session': session}))
 
   def ClearPrefs(self, institution, session):
-    students = models.Students.Fetch(institution, session)
-    students = yaml.load(students)
-    classes = models.Classes.Fetch(institution, session)
-    classes = yaml.load(classes)
+    students = models.Students.FetchJson(institution, session)
+    classes = models.Classes.FetchJson(institution, session)
     for student in students:
       email = student['email']
       #TODO find the list of eligible classes for each student
@@ -36,10 +34,8 @@ class Scheduler(webapp2.RequestHandler):
                                [], [], [])
 
   def RandomPrefs(self, institution, session):
-    students = models.Students.Fetch(institution, session)
-    students = yaml.load(students)
-    classes = models.Classes.Fetch(institution, session)
-    classes = yaml.load(classes)
+    students = models.Students.FetchJson(institution, session)
+    classes = models.Classes.FetchJson(institution, session)
     for student in students:
       email = student['email']
       eligible_class_ids = logic.EligibleClassIdsForStudent(
@@ -53,15 +49,13 @@ class Scheduler(webapp2.RequestHandler):
                                want, [], dontwant)
 
   def ClearAllSchedules(self, institution, session):
-    students = models.Students.Fetch(institution, session)
-    students = yaml.load(students)
+    students = models.Students.FetchJson(institution, session)
     for student in students:
       empty_class_ids = ''
       models.Schedule.Store(institution, session,
                             student['email'],
                             empty_class_ids)
-    classes = models.Classes.Fetch(institution, session)
-    classes = yaml.load(classes)
+    classes = models.Classes.FetchJson(institution, session)
     for class_obj in classes:
       no_student_emails = ""
       models.ClassRoster.Store(institution, session,
@@ -106,7 +100,7 @@ class Scheduler(webapp2.RequestHandler):
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
 
-    num_students = len(yaml.load(models.Students.Fetch(institution, session)))
+    num_students = len(models.Students.FetchJson(institution, session))
     template_values = {
       'user_email' : auth.email,
       'institution' : institution,

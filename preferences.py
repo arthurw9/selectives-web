@@ -72,8 +72,7 @@ class Preferences(webapp2.RequestHandler):
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
 
-    classes = models.Classes.Fetch(institution, session)
-    classes = yaml.load(classes)
+    classes = models.Classes.FetchJson(institution, session)
     try:
       _ = [c for c in classes]
     except TypeError:
