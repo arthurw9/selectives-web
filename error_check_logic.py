@@ -33,7 +33,12 @@ class Checker(object):
 
   @classmethod
   def getStatus(self, institution, session):
-    return models.ErrorCheck.Fetch(institution, session)
+    stored_version = models.DBVersion.Fetch(institution,
+                                            session)
+    if (stored_version != CURRENT_DB_VERSION):
+      return 'DBUPGRADE'
+    else:
+      return models.ErrorCheck.Fetch(institution, session)
 
   def DBUpdateCheck(self):
     stored_version = models.DBVersion.Fetch(self.institution,

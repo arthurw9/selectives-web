@@ -18,15 +18,22 @@
         {{ institution }} {{ session }} Selectives
         </a></h1>
       </td>
+      <!--This message will only display on certain admin pages that pass setup_status.-->
+      {% if setup_status and (setup_status == 'DBUPGRADE') %}
       <td style="color:red">
-        <!--This message will only display on certain admin pages that pass setup_status.-->
-        {% if setup_status and (setup_status == 'FAIL') %}
-        Error Check failed! See Error Check page for details.
-        {% endif %}
-        {% if setup_status and (setup_status == 'UNKNOWN') %}
-        Setup status unknown. Running Error Check is advised.
-        {% endif %}
+        Database upgraded required! Go to Error Check to run upgrade script.
       </td>
+      {% endif %}
+      {% if setup_status and (setup_status == 'FAIL') %}
+      <td style="color:blue">
+        Error Check failed! See Error Check page for details.
+      </td>
+      {% endif %}
+      {% if setup_status and (setup_status == 'UNKNOWN') %}
+      <td style="color:blue">
+        Setup status unknown. Running Error Check is advised.
+      </td>
+      {% endif %}
       <td align=right>
         {% if user_email %}
           {{ user_email }} <a href="/logout">logout</a>
