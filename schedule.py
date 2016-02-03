@@ -3,7 +3,6 @@ import urllib
 import jinja2
 import webapp2
 import logging
-import yaml
 import json
 
 import models
@@ -73,12 +72,10 @@ class Schedule(webapp2.RequestHandler):
       session_query = urllib.urlencode({'institution': institution,
                                         'session': session})
       email = auth.student_email
-      dayparts = models.Dayparts.Fetch(institution, session)
-      dayparts = yaml.load(dayparts)
+      dayparts = models.Dayparts.FetchJson(institution, session)
       if not dayparts:
         dayparts = []
-      classes = models.Classes.Fetch(institution, session)
-      classes = yaml.load(classes)
+      classes = models.Classes.FetchJson(institution, session)
       try:
         _ = [c for c in classes]
       except TypeError:

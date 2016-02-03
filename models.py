@@ -249,6 +249,7 @@ class ServingSession(ndb.Model):
 class Dayparts(ndb.Model):
   """Examples: Monday AM, or M-W-F 8am-9am"""
   data = ndb.TextProperty()
+  jdata = ndb.JsonProperty()
 
   @classmethod
   @timed
@@ -256,6 +257,15 @@ class Dayparts(ndb.Model):
     return ndb.Key("InstitutionKey", institution,
                    Session, session,
                    Dayparts, "dayparts")
+
+  @classmethod
+  @timed
+  def FetchJson(cls, institution, session):
+    dayparts = Dayparts.dayparts_key(institution, session).get()
+    if dayparts:
+      return dayparts.jdata
+    else:
+      return ''
 
   @classmethod
   @timed
@@ -269,14 +279,16 @@ class Dayparts(ndb.Model):
   @classmethod
   @timed
   def store(cls, institution, session_name, dayparts_data):
-    dayparts = Dayparts(data = dayparts_data)
+    dayparts = Dayparts(data = dayparts_data,
+                        jdata = yaml.load(dayparts_data))
     dayparts.key = Dayparts.dayparts_key(institution, session_name)
     dayparts.put()
 
 
 class Classes(ndb.Model):
-  """List of classes in yaml format."""
+  """List of classes in yaml and json format."""
   data = ndb.TextProperty()
+  jdata = ndb.JsonProperty()
 
   @classmethod
   @timed
@@ -284,6 +296,15 @@ class Classes(ndb.Model):
     return ndb.Key("InstitutionKey", institution,
                    Session, session,
                    Classes, "classes")
+
+  @classmethod
+  @timed
+  def FetchJson(cls, institution, session):
+    classes = Classes.classes_key(institution, session).get()
+    if classes:
+      return classes.jdata
+    else:
+      return ''
 
   @classmethod
   @timed
@@ -297,14 +318,16 @@ class Classes(ndb.Model):
   @classmethod
   @timed
   def store(cls, institution, session_name, classes_data):
-    classes = Classes(data = classes_data)
+    classes = Classes(data = classes_data,
+                      jdata = yaml.load(classes_data))
     classes.key = Classes.classes_key(institution, session_name)
     classes.put()
 
 
 class Students(ndb.Model):
-  """List of students in yaml format."""
+  """List of students in yaml and json format."""
   data = ndb.TextProperty()
+  jdata = ndb.JsonProperty()
 
   @classmethod
   @timed
@@ -312,6 +335,15 @@ class Students(ndb.Model):
     return ndb.Key("InstitutionKey", institution,
                    Session, session,
                    Students, "students")
+
+  @classmethod
+  @timed
+  def FetchJson(cls, institution, session):
+    students = Students.students_key(institution, session).get()
+    if students:
+      return students.jdata
+    else:
+      return ''
 
   @classmethod
   @timed
@@ -325,7 +357,8 @@ class Students(ndb.Model):
   @classmethod
   @timed
   def store(cls, institution, session_name, students_data):
-    students = Students(data = students_data)
+    students = Students(data = students_data,
+                        jdata = yaml.load(students_data))
     students.key = Students.students_key(institution, session_name)
     students.put()
 
@@ -333,6 +366,7 @@ class Students(ndb.Model):
 class Requirements(ndb.Model):
   """Examples: 8th Core, PE"""
   data = ndb.TextProperty()
+  jdata = ndb.JsonProperty()
 
   @classmethod
   @timed
@@ -340,6 +374,15 @@ class Requirements(ndb.Model):
     return ndb.Key("InstitutionKey", institution,
                    Session, session,
                    Requirements, "requirements")
+
+  @classmethod
+  @timed
+  def FetchJson(cls, institution, session):
+    requirements = Requirements.requirements_key(institution, session).get()
+    if requirements:
+      return requirements.jdata
+    else:
+      return ''
 
   @classmethod
   @timed
@@ -353,14 +396,17 @@ class Requirements(ndb.Model):
   @classmethod
   @timed
   def store(cls, institution, session_name, requirements_data):
-    requirements = Requirements(data = requirements_data)
+    requirements = Requirements(
+        data = requirements_data,
+        jdata = yaml.load(requirements_data))
     requirements.key = Requirements.requirements_key(institution, session_name)
     requirements.put()
 
 
 class GroupsClasses(ndb.Model):
-  """List of class groups in yaml format."""
+  """List of class groups in yaml and json format."""
   data = ndb.TextProperty()
+  jdata = ndb.JsonProperty()
 
   @classmethod
   @timed
@@ -368,6 +414,15 @@ class GroupsClasses(ndb.Model):
     return ndb.Key("InstitutionKey", institution,
                    Session, session,
                    GroupsClasses, "groups_classes")
+
+  @classmethod
+  @timed
+  def FetchJson(cls, institution, session):
+    groups_classes = GroupsClasses.groups_classes_key(institution, session).get()
+    if groups_classes:
+      return groups_classes.jdata
+    else:
+      return ''
 
   @classmethod
   @timed
@@ -381,13 +436,16 @@ class GroupsClasses(ndb.Model):
   @classmethod
   @timed
   def store(cls, institution, session_name, groups_classes_data):
-    groups_classes = GroupsClasses(data = groups_classes_data)
+    groups_classes = GroupsClasses(
+        data = groups_classes_data,
+        jdata = yaml.load(groups_classes_data))
     groups_classes.key = GroupsClasses.groups_classes_key(institution, session_name)
     groups_classes.put()
 
 class GroupsStudents(ndb.Model):
-  """List of student groups in yaml format."""
+  """List of student groups in yaml and json format."""
   data = ndb.TextProperty()
+  jdata = ndb.JsonProperty()
 
   @classmethod
   @timed
@@ -395,6 +453,15 @@ class GroupsStudents(ndb.Model):
     return ndb.Key("InstitutionKey", institution,
                    Session, session,
                    GroupsStudents, "groups_students")
+
+  @classmethod
+  @timed
+  def FetchJson(cls, institution, session):
+    groups_students = GroupsStudents.groups_students_key(institution, session).get()
+    if groups_students:
+      return groups_students.jdata
+    else:
+      return ''
 
   @classmethod
   @timed
@@ -408,7 +475,9 @@ class GroupsStudents(ndb.Model):
   @classmethod
   @timed
   def store(cls, institution, session_name, groups_students_data):
-    groups_students = GroupsStudents(data = groups_students_data)
+    groups_students = GroupsStudents(
+        data = groups_students_data,
+        jdata = yaml.load(groups_students_data))
     groups_students.key = GroupsStudents.groups_students_key(institution, session_name)
     groups_students.put()
 
@@ -578,8 +647,7 @@ class ClassRoster(ndb.Model):
 
 
 class ErrorCheck(ndb.Model):
-  """Values: OK, FAIL, UNKNOWN"""
-  data = ndb.StringProperty()
+  data = ndb.StringProperty(choices=['OK', 'FAIL', 'UNKNOWN'])
 
   @classmethod
   @timed
@@ -603,3 +671,29 @@ class ErrorCheck(ndb.Model):
     errorcheck = ErrorCheck(data = errorcheck_data)
     errorcheck.key = ErrorCheck.errorcheck_key(institution, session_name)
     errorcheck.put()
+
+
+class DBVersion(ndb.Model):
+  data = ndb.IntegerProperty()
+
+  @classmethod
+  @timed
+  def db_version_key(cls, institution, session):
+    return ndb.Key("InstitutionKey", institution,
+                   Session, session,
+                   DBVersion, "db_version")
+  @classmethod
+  @timed
+  def Fetch(cls, institution, session):
+    db_version = DBVersion.db_version_key(institution, session).get()
+    if db_version:
+      return db_version.data
+    else:
+      return 0
+
+  @classmethod
+  @timed
+  def Store(cls, institution, session, version):
+    db_version = DBVersion(data = version)
+    db_version.key = DBVersion.db_version_key(institution, session)
+    db_version.put()

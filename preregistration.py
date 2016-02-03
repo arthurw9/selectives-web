@@ -16,6 +16,8 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 
 class Preregistration(webapp2.RequestHandler):
   def SortByName(self, classes):
+    if not classes:
+      return ''
     return sorted(classes, key=lambda e: e['name'])
 
   def CoreClasses(self, classes):
@@ -35,8 +37,7 @@ class Preregistration(webapp2.RequestHandler):
       logging.fatal("no session")
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
-    classes = models.Classes.Fetch(institution, session)
-    classes = yaml.load(classes)
+    classes = models.Classes.FetchJson(institution, session)
     classes = self.SortByName(classes)
     core = self.CoreClasses(classes)
     template_values = {

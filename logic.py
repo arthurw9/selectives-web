@@ -151,8 +151,7 @@ class _ClassInfo(object):
   """Reports on conflicting classes and other class info."""
 
   def __init__(self, institution, session):
-    classes = models.Classes.Fetch(institution, session)
-    classes = yaml.load(classes)
+    classes = models.Classes.FetchJson(institution, session)
     self.dayparts_by_class_id = {}
     self.classes_by_id = {}
     for c in classes:

@@ -97,8 +97,7 @@ class Authorizer(object):
 
   def _VerifyStudent(self, institution, session, student_email):
     # returns true on success
-    students = models.Students.Fetch(institution, session)
-    students = yaml.load(students)
+    students = models.Students.FetchJson(institution, session)
     student_entity = logic.FindStudent(student_email, students)
     if student_entity:
       self.student_email = student_email
