@@ -28,22 +28,24 @@ class Checker(object):
   # Modules that change admin setup data should call this
   # with status = 'UNKNOWN'.
   @classmethod
-  def setStatus(self, institution, session, status = 'UNKNOWN'):
+  def setStatus(cls, institution, session, status = 'UNKNOWN'):
     models.ErrorCheck.Store(institution, session, status)
 
   @classmethod
-  def getStatus(self, institution, session):
-    stored_version = models.DBVersion.Fetch(institution,
-                                            session)
-    if (stored_version != CURRENT_DB_VERSION):
-      return 'DBUPGRADE'
+  def getStatus(cls, institution, session):
+    if (cls.DBUpdateNeeded(institution, session)):
+      return 'DB_UPDATE_NEEDED'
     else:
       return models.ErrorCheck.Fetch(institution, session)
 
-  def DBUpdateCheck(self):
-    stored_version = models.DBVersion.Fetch(self.institution,
-                                            self.session)
+  @classmethod
+  def DBUpdateNeeded(cls, institution, session):
+    stored_version = models.DBVersion.Fetch(institution, session)
     return (stored_version != CURRENT_DB_VERSION)
+
+  @classmethod
+  def setDBVersion(cls, institution, session, status = CURRENT_DB_VERSION):
+    models.DBVersion.Store(institution, session, status)
 
   def RunUpgradeScript(self):
     dayparts = models.Dayparts.Fetch(self.institution, self.session)
@@ -64,7 +66,7 @@ class Checker(object):
     groups_students = models.GroupsStudents.Fetch(self.institution, self.session)
     models.GroupsStudents.store(self.institution, self.session, groups_students)
 
-    models.DBVersion.Store(self.institution, self.session, CURRENT_DB_VERSION)
+    self.setDBVersion(self.institution, self.session, CURRENT_DB_VERSION)
 
   # Returns two values:
   #   error_check_status: 'OK' if all tests pass
@@ -115,6 +117,11 @@ class Checker(object):
                             classes, isValid_classes)
         
     self.setStatus(self.institution, self.session, self.error_check_status)
+
+    # database upgrade is higher priority than other setup errors
+    if (self.DBUpdateNeeded(self.institution, self.session)):
+      self.error_check_status = 'DB_UPDATE_NEEDED'
+    
     return self.error_check_status, self.error_check_detail
 
   def _Validate(self, yaml_str, isValid_schema, name):

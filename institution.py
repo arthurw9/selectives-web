@@ -6,6 +6,7 @@ import logging
 
 import models
 import authorizer
+import error_check_logic
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
@@ -46,6 +47,9 @@ class Institution(webapp2.RequestHandler):
       name = self.request.get("session")
       logging.info('adding session: %s for institution: %s' % (name, institution))
       models.Session.store(institution, name)
+      # Set current database version when creating a new session
+      # so we don't get upgrade error message.
+      error_check_logic.Checker.setDBVersion(institution, name)
       self.RedirectToSelf(institution, 'added session %s' % name)
       return
 
