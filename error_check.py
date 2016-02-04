@@ -63,10 +63,6 @@ class ErrorCheck(webapp2.RequestHandler):
                                       'session': session})
     checker = error_check_logic.Checker(institution, session)
     setup_status, error_chk_detail = checker.ValidateSetup()
-    db_update_needed = checker.DBUpdateCheck()
-    # database upgrade is higher priority than other setup errors
-    if (db_update_needed):
-      setup_status = 'DBUPGRADE'
 
     template_values = {
       'user_email' : auth.email,
@@ -76,7 +72,6 @@ class ErrorCheck(webapp2.RequestHandler):
       'setup_status': setup_status,
       'error_chk_detail': error_chk_detail,
       'session_query': session_query,
-      'db_update_needed': db_update_needed,
     }
     template = JINJA_ENVIRONMENT.get_template('error_check.html')
     self.response.write(template.render(template_values))

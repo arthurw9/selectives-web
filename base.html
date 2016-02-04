@@ -19,9 +19,9 @@
         </a></h1>
       </td>
       <!--This message will only display on certain admin pages that pass setup_status.-->
-      {% if setup_status and (setup_status == 'DBUPGRADE') %}
+      {% if setup_status and (setup_status == 'DB_UPDATE_NEEDED') %}
       <td style="color:red">
-        Database upgraded required! Go to Error Check to run upgrade script.
+        Database upgrade required! Go to Error Check to run upgrade script.
       </td>
       {% endif %}
       {% if setup_status and (setup_status == 'FAIL') %}

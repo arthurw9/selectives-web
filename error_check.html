@@ -2,7 +2,7 @@
 {% block session_body %}
 
 <h3>Error Check</h3>
-{% if db_update_needed %}
+{% if setup_status == 'DB_UPDATE_NEEDED' %}
 <p style="color:red">DB UPDATE NEEDED!</p>
 <form method=post>
 <input type=hidden name="institution" value="{{ institution }}" />

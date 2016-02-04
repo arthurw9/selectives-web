@@ -87,8 +87,7 @@ def StudentIsEligibleForClass(institution, session, student, c):
       return True
     # this prerequisite uses a student group. Let's look up the group.
     eligible_group_name = prereq['group']
-    student_groups = models.GroupsStudents.Fetch(institution, session)
-    student_groups = yaml.load(student_groups)
+    student_groups = models.GroupsStudents.FetchJson(institution, session)
     if not student_groups:
       # Error in setup: prerequisite uses a student group but no groups
       # exist yet. Admin should have run error check and caught
