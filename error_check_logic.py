@@ -15,7 +15,7 @@ except:
 # Increase this value manually when datastore upgrade is needed
 # CURRENT_DB_VERSION = 0, Yaml format
 # CURRENT_DB_VERSION = 1, Json eliminates yaml.load for performance
-CURRENT_DB_VERSION = 2
+CURRENT_DB_VERSION = 1
 
 class Checker(object):
 
