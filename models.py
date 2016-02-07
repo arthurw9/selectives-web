@@ -593,8 +593,8 @@ class Schedule(ndb.Model):
 class ClassRoster(ndb.Model):
   # comma separated list of student emails
   student_emails = ndb.TextProperty()
-  # class obj encoded as a YAML string
-  class_obj = ndb.StringProperty()
+  # class obj, yaml.dump and yaml.load takes too long
+  jclass_obj = ndb.JsonProperty()
 
   @classmethod
   @timed
@@ -614,7 +614,7 @@ class ClassRoster(ndb.Model):
     roster = ClassRoster()
     roster.key = ClassRoster.class_roster_key(institution, session, class_id)
     roster.student_emails = student_emails
-    roster.class_obj = yaml.dump(class_obj)
+    roster.jclass_obj = class_obj
     roster.put()
 
   @classmethod
@@ -623,14 +623,14 @@ class ClassRoster(ndb.Model):
     class_id = str(class_id)
     roster = ClassRoster.class_roster_key(institution, session, class_id).get()
     if roster:
-      c = yaml.load(roster.class_obj)
+      c = roster.jclass_obj
       r = {}
       r['emails'] = roster.student_emails.split(",")
       if r['emails'][0] == "":
         r['emails'] = r['emails'][1:]
       r['class_name'] = c['name']
       r['class_id'] = c['id']
-      r['class_details'] = roster.class_obj
+      r['class_details'] = roster.jclass_obj
       r['max_enrollment'] = c['max_enrollment']
       r['remaining_space'] = c['max_enrollment'] - len(r['emails'])
       return r

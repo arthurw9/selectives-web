@@ -58,7 +58,7 @@ class Checker(object):
     models.Students.store(self.institution, self.session, students)
 
     requirements = models.Requirements.Fetch(self.institution, self.session)
-    models.Requirements.store(self.institution, self.session, dayparts)
+    models.Requirements.store(self.institution, self.session, requirements)
 
     groups_classes = models.GroupsClasses.Fetch(self.institution, self.session)
     models.GroupsClasses.store(self.institution, self.session, groups_classes)

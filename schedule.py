@@ -118,6 +118,8 @@ class Schedule(webapp2.RequestHandler):
         if not('exclude_from_catalog' in c and c['exclude_from_catalog']):
           classes_for_catalog.append(c)
       classes_for_catalog.sort(key=lambda c:c['name'])
+      for daypart in classes_by_daypart:
+        classes_by_daypart[daypart].sort(key=lambda c:c['name'])
       
       schedule = models.Schedule.Fetch(institution, session, email)
       schedule = schedule.split(",")
