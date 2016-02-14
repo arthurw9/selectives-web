@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block body %}
+
+<h2 style="margin-bottom:0">Selectives Schedule - {{session}}<br>
+{% if student %}
+{{ student['first'] + ' ' + student['last'] }}
+{% endif %}
+</h2>
+
+<h3 style="margin-bottom:4px; margin-top:4px">
+Homeroom: {{ student['current_homeroom'] }}<br>
+Grade: {{ student['current_grade'] }}<br>
+</h3>
+<a href="print_schedule?{{ session_query }}&student={{student['email'] }}">View Printer Friendly Page</a>
+
+<table>
+  {% for row in dayparts_ordered %}
+  <tr>
+    <td class="schedPostRegRowHeader"></td>
+    {% for daypart in row %}
+    <td class="schedPostRegHeader">{{ daypart }}</td>
+    {% endfor %}
+  </tr>
+  <tr>
+    <td class="schedPostRegRowHeader">
+      Class:<br>
+      Location:<br>
+      Instructor:<br>
+      Donation:
+    </td>
+    {% for daypart in row %}
+      <td class="schedPostRegItem">
+      {% if schedule_by_daypart[daypart] %}
+        {{ schedule_by_daypart[daypart]['name'] }}<br>
+        {% for s in schedule_by_daypart[daypart]['schedule'] %}
+          {% if s['daypart'] == daypart %}
+          {{ s['location'] }}<br>
+          {% endif %}
+        {% endfor %}
+        {{ schedule_by_daypart[daypart]['instructor'] }}<br>
+        {{ schedule_by_daypart[daypart]['donation'] }}<br>
+      {% endif %}
+      </td>
+    {% endfor %}
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

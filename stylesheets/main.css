@@ -72,3 +72,21 @@ textarea { width:60%; height:300px }
 .schedTableData {
   vertical-align:top;
 }
+.schedPostRegItem {
+  text-align: center;
+  min-width:200px;
+  box-sizing: border-box;
+  border: 2px solid #666666;
+  border-radius:0.3em;
+}
+.schedPostRegHeader {
+  text-align: center;
+  min-width:200px;
+  font-size:120%;
+  font-weight:bold;
+  padding-top:25px;
+}
+.schedPostRegRowHeader {
+  text-align: right;
+  width:5px;
+}

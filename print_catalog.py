@@ -13,7 +13,7 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
 
-class CatalogPrint(webapp2.RequestHandler):
+class PrintCatalog(webapp2.RequestHandler):
   def SortByName(self, classes):
     return sorted(classes, key=lambda e: e['name'])
 
@@ -47,6 +47,6 @@ class CatalogPrint(webapp2.RequestHandler):
       'classes': classes,
       'core': core,
     }
-    template = JINJA_ENVIRONMENT.get_template('catalog_print.html')
+    template = JINJA_ENVIRONMENT.get_template('print_catalog.html')
     self.response.write(template.render(template_values))
   

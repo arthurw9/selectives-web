@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+{% autoescape true %}
+<html>
+  <head>
+    <title>Selectives Web</title>
+    <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
+  </head>
+  <body>
+    <h2>Selectives Course Catalog - {{session}}</h2>
+
+    {% include 'catalog_full.html' %}
+  </body>
+</html>
+{% endautoescape %}

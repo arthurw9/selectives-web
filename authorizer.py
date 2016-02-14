@@ -88,7 +88,10 @@ class Authorizer(object):
         self.handler.request.path == "/spots_available"):
       return True
     if (serving_session.login_type == "preregistration" and
-        self.handler.request.path == "/catalog_print"):
+        self.handler.request.path == "/print_catalog"):
+      return True
+    if (serving_session.login_type == "postregistration" and
+        self.handler.request.path == "/print_schedule"):
       return True
     if not "/" + serving_session.login_type == self.handler.request.path:
       logging.error("request path doesn't match")
