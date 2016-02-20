@@ -17,18 +17,13 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
 
-def studentFullName(students, email):
+def getStudentInfo(students, email):
   for s in students:
     if s['email'].lower().strip() == email.lower().strip():
-      return s['first'] + ' ' + s['last']
-  return ''
-
-def studentGrade(students, email):
-  for s in students:
-    if s['email'].lower().strip() == email.lower().strip():
-      return str(s['current_grade'])
-  return '0'
-
+      return [s['first'] + ' ' + s['last'],
+              str(s['current_grade']),
+              str(s['current_homeroom'])]
+    
 def getRosterClassObj(classes, roster):
   name = roster[0]
   instructor = roster[1]
@@ -54,10 +49,12 @@ def getRosterClassObj(classes, roster):
 def getRosterEmails(students, roster):
   name = roster[5]
   grade = roster[6]
+  homerm = roster[7]
   for s in students:
     if (s['first'] in name and
         s['last'] in name and
-        str(s['current_grade']) == grade):
+        str(s['current_grade']) == grade and
+        str(s['current_homeroom']) == homerm):
       return s['email']
   return ''
 
@@ -159,17 +156,18 @@ class Rosters(webapp2.RequestHandler):
         rosters += '"' + '/'.join(s['daypart'] for s in class_roster['schedule']) + '",'
         rosters += '"' + '/'.join(s['location'] for s in class_roster['schedule']) + '"'
 
-        roster_students = [(studentFullName(students, s),
-                            studentGrade(students, s)) for s in class_roster['emails']]
+        roster_students = [getStudentInfo(students, s) for s in class_roster['emails']]
         roster_students = sorted(roster_students)
         if (len(roster_students) > 0):
           rosters += ',"' + roster_students[0][0] + '"'
-          rosters += ',"' + roster_students[0][1] + '"\n'
+          rosters += ',"' + roster_students[0][1] + '"'
+          rosters += ',"' + roster_students[0][2] + '"\n'
         else:
           rosters += '\n'
         for s in roster_students[1:]:
-          rosters += '"","","","","","' + s[0] + '",'
-          rosters += '"' + s[1] + '"\n'
+          rosters += '"","","","","","' + s[0] + '"'
+          rosters += ',"' + s[1] + '"'
+          rosters += ',"' + s[2] + '"\n'
 
     template_values = {
       'user_email' : auth.email,
