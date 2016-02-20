@@ -102,6 +102,14 @@ class Rosters(webapp2.RequestHandler):
         student_emails += getRosterEmails(students, roster) + ', '
     models.ClassRoster.Store(institution, session, roster_class, student_emails)
     
+    for c in classes:
+      roster = models.ClassRoster.FetchEntity(institution, session, c['id'])
+      if ('None' not in roster['class_name']):
+        for student_email in roster['emails']:
+          schedule = models.Schedule.Fetch(institution, session, student_email.strip().lower())
+          new_schedule = schedule + ',' + str(roster['class_id'])
+          models.Schedule.Store(institution, session, student_email.strip().lower(), new_schedule)
+
     self.RedirectToSelf(institution, session, "saved rosters")
 
   def get(self):

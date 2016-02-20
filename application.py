@@ -23,6 +23,7 @@ import print_catalog
 import logout
 import postregistration
 import print_schedule
+import rosters
 
 application = webapp2.WSGIApplication([
   ('/', index.Index),
@@ -48,4 +49,5 @@ application = webapp2.WSGIApplication([
   ('/logout', logout.LogoutPage),
   ('/postregistration', postregistration.Postregistration),
   ('/print_schedule', print_schedule.PrintSchedule),
+  ('/rosters', rosters.Rosters),
 ], debug=True)

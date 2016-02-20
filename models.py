@@ -587,6 +587,7 @@ class Schedule(ndb.Model):
     if not schedule:
       return ""
     else:
+      schedule.class_ids = schedule.class_ids.strip(',').strip()
       return schedule.class_ids
 
 
@@ -630,6 +631,9 @@ class ClassRoster(ndb.Model):
         r['emails'] = r['emails'][1:]
       r['class_name'] = c['name']
       r['class_id'] = c['id']
+      if 'instructor' in c:
+        r['instructor'] = c['instructor']
+      r['schedule'] = c['schedule']
       r['class_details'] = roster.jclass_obj
       r['max_enrollment'] = c['max_enrollment']
       r['remaining_space'] = c['max_enrollment'] - len(r['emails'])
@@ -640,6 +644,7 @@ class ClassRoster(ndb.Model):
     r['emails'] = []
     r['class_id'] = 0
     r['class_name'] = 'None'
+    r['schedule'] = {}
     r['class_details'] = ''
     r['max_enrollment'] = 0
     r['remaining_space'] = 0
