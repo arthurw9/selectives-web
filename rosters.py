@@ -85,6 +85,7 @@ class Rosters(webapp2.RequestHandler):
     if not rosters:
       logging.fatal("no rosters")
 
+    # Replace class rosters
     classes = models.Classes.FetchJson(institution, session)
     students = models.Students.FetchJson(institution, session)
     rosters = csv.reader(StringIO.StringIO(rosters))
@@ -93,21 +94,34 @@ class Rosters(webapp2.RequestHandler):
       if roster == []:
         continue
       if roster[0] != '':
+        # Got a new class
+        # Store previous roster if it's not the first empty one
         if roster_class != {}:
+          # TODO: handle when roster_class == {} or student_emails contains ''
+          # i.e. referencing a class or student that doesn't exist
+          # Send error message, undo?
           models.ClassRoster.Store(institution, session, roster_class, student_emails)
         student_emails = ''
         roster_class = getRosterClassObj(classes, roster)
         student_emails += getRosterEmails(students, roster) + ', '
       else:
         student_emails += getRosterEmails(students, roster) + ', '
+    # Finally, store the last remaining roster after falling out of the loop
     models.ClassRoster.Store(institution, session, roster_class, student_emails)
     
+    # Replace student schedules
+    for s in students:
+      empty_schedule = ''
+      models.Schedule.Store(institution, session, s['email'].strip().lower(), empty_schedule)
     for c in classes:
       roster = models.ClassRoster.FetchEntity(institution, session, c['id'])
       if ('None' not in roster['class_name']):
         for student_email in roster['emails']:
           schedule = models.Schedule.Fetch(institution, session, student_email.strip().lower())
-          new_schedule = schedule + ',' + str(roster['class_id'])
+          if schedule == '':
+            new_schedule = str(roster['class_id'])
+          else:
+            new_schedule = schedule + ',' + str(roster['class_id'])
           models.Schedule.Store(institution, session, student_email.strip().lower(), new_schedule)
 
     self.RedirectToSelf(institution, session, "saved rosters")
