@@ -1,0 +1,22 @@
+{% extends 'menu.html' %}
+{% block session_body %}
+
+<h3>Rosters</h3>
+<table width='50%'><tr><td style="color:red">
+CAUTION! STUDENT SCHEDULES WILL BE OVERWRITTEN!!!<br>
+</td></tr>
+<tr><td>
+Don't click submit if you have any doubts whatsoever!<br>
+Double-check your data!<br>
+Submit in a test environment first along with Classes, Students, Student Groups to verify your complete setup is self-consistent.<br>
+</td></tr></table>
+<form method=post>
+<input type=hidden name="institution" value="{{ institution }}" />
+<input type=hidden name="session" value="{{ session }}" />
+<textarea name=rosters>
+{{ rosters }}
+</textarea>
+<br />
+<input type=submit />
+</form>
+{% endblock %}
