@@ -57,12 +57,8 @@ function EnableLogins(session_name, login_type, enabled) {
                {% if item.schedule_enabled %}checked{% endif %}> Schedule </td>
       <td  class="left-right-padding">
         <input type="checkbox" 
-               onchange="return EnableLogins('{{ item.name }}', 'preregistration', this.checked);"
-               {% if item.preregistration_enabled %}checked{% endif %}> Pre-Registration</td>
-      <td  class="left-right-padding">
-        <input type="checkbox" 
-               onchange="return EnableLogins('{{ item.name }}', 'postregistration', this.checked);"
-               {% if item.postregistration_enabled %}checked{% endif %}> Post-Registration</td>
+               onchange="return EnableLogins('{{ item.name }}', 'materials', this.checked);"
+               {% if item.materials_enabled %}checked{% endif %}> View Materials</td>
     </tr>
   {% endfor %}
   </table>

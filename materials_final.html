@@ -1,7 +1,7 @@
-{% extends 'base.html' %}
-{% block body %}
+{% extends 'menu_student.html' %}
+{% block session_body %}
 
-<h2 style="margin-bottom:0">Selectives Schedule - {{session}}<br>
+<h2 style="margin-bottom:0">Selectives Schedule<br>
 {% if student %}
 {{ student['first'] + ' ' + student['last'] }}
 {% endif %}

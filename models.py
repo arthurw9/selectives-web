@@ -205,7 +205,7 @@ class Session(ndb.Model):
 class ServingSession(ndb.Model):
   """Which session is currently serving. Empty if none."""
   session_name = ndb.StringProperty()
-  login_type = ndb.StringProperty(choices=['verification', 'preferences', 'schedule', 'preregistration', 'postregistration'])
+  login_type = ndb.StringProperty(choices=['verification', 'preferences', 'schedule', 'materials'])
 
   @classmethod
   @timed

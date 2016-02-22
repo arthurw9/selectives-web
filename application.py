@@ -18,12 +18,13 @@ import class_list
 import class_roster
 import error_check
 import spots_available
-import preregistration
+import materials
 import print_catalog
 import logout
-import postregistration
+import materials_final
 import print_schedule
 import rosters
+import coming_soon
 
 application = webapp2.WSGIApplication([
   ('/', index.Index),
@@ -44,10 +45,11 @@ application = webapp2.WSGIApplication([
   ('/class_roster', class_roster.ClassRoster),
   ('/error_check', error_check.ErrorCheck),
   ('/spots_available', spots_available.SpotsAvailable),
-  ('/preregistration', preregistration.Preregistration),
+  ('/materials', materials.Materials),
   ('/print_catalog', print_catalog.PrintCatalog),
   ('/logout', logout.LogoutPage),
-  ('/postregistration', postregistration.Postregistration),
+  ('/materials_final', materials_final.MaterialsFinal),
   ('/print_schedule', print_schedule.PrintSchedule),
   ('/rosters', rosters.Rosters),
+  ('/coming_soon', coming_soon.ComingSoon),
 ], debug=True)

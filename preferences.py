@@ -67,6 +67,10 @@ class Preferences(webapp2.RequestHandler):
     session = self.request.get("session")
     if not session:
       logging.fatal("no session")
+    serving_session = models.ServingSession.FetchEntity(institution)
+    if not auth.MatchServingSession(institution, session, ["preferences"]):
+      auth.RedirectTemporary(institution, session)
+      return
 
     message = self.request.get('message')
     session_query = urllib.urlencode({'institution': institution,

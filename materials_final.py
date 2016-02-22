@@ -14,7 +14,7 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
 
-class Postregistration(webapp2.RequestHandler):
+class MaterialsFinal(webapp2.RequestHandler):
   def get(self):
     auth = authorizer.Authorizer(self)
     if not auth.HasStudentAccess():
@@ -27,6 +27,10 @@ class Postregistration(webapp2.RequestHandler):
     session = self.request.get("session")
     if not session:
       logging.fatal("no session")
+    serving_session = models.ServingSession.FetchEntity(institution)
+    if not auth.MatchServingSession(institution, session, ["materials", "preferences", "schedule"]):
+      auth.RedirectTemporary(institution, session)
+      return
 
     message = self.request.get('message')
     session_query = urllib.urlencode({'institution': institution,
@@ -82,5 +86,5 @@ class Postregistration(webapp2.RequestHandler):
       'schedule_by_daypart': schedule_by_daypart,
       'dayparts_ordered': dayparts_ordered,
     }
-    template = JINJA_ENVIRONMENT.get_template('postregistration.html')
+    template = JINJA_ENVIRONMENT.get_template('materials_final.html')
     self.response.write(template.render(template_values))

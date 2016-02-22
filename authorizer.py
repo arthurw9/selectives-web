@@ -72,31 +72,17 @@ class Authorizer(object):
       return self._VerifyStudent(institution,
                                  session,
                                  self.handler.request.get("student").lower())
-    if not self._VerifyServingSession(institution, session):
-      return False
     return self._VerifyStudent(institution,
                                session,
                                self.email)
 
-  def _VerifyServingSession(self, institution, session):
+  def MatchServingSession(self, institution, session, allowedSessions):
     serving_session = models.ServingSession.FetchEntity(institution)
-    logging.info("currently serving session = %s" % serving_session)
-    if serving_session.session_name != session:
-      logging.error("serving session doesn't match")
-      return False
-    if (serving_session.login_type == "schedule" and
-        self.handler.request.path == "/spots_available"):
+    if serving_session.login_type in allowedSessions:
       return True
-    if (serving_session.login_type == "preregistration" and
-        self.handler.request.path == "/print_catalog"):
+    if self.CanAdministerInstitutionFromUrl():
       return True
-    if (serving_session.login_type == "postregistration" and
-        self.handler.request.path == "/print_schedule"):
-      return True
-    if not "/" + serving_session.login_type == self.handler.request.path:
-      logging.error("request path doesn't match")
-      return False
-    return True
+    return False
 
   def _VerifyStudent(self, institution, session, student_email):
     # returns true on success
@@ -148,6 +134,11 @@ class Authorizer(object):
         return
     logging.info("Redirecting %s to /welcome", self.email)
     self.handler.redirect("/welcome")
+
+  def RedirectTemporary(self, institution, session):
+    self.handler.redirect("/coming_soon?%s" % urllib.urlencode(
+        {'institution': institution,
+         'session': session}))
 
 # TODO get rid of the unnecessary handler parameter.
 # We really want the request, not the handler, and we could get it from WebApp2.

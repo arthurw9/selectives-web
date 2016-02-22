@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<!-- Common header used by all student viewable pages. -->
+{% autoescape true %}
+<html lang="en"> <!-- set language to be nice to web crawlers, assisted speech, spell checkers, etc. -->
+  <head>
+    <title>Discovery Selectives</title>
+    <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
+    <link href='http://fonts.googleapis.com/css?family=Oxygen' rel='stylesheet' type='text/css'>
+  </head>
+  <body>
+    <table width=100% style="border-collapse:collapse">
+    <tr style="background-color: #f1f1f1; font-family: 'Oxygen', sans-serif;">
+      <td align=center>
+        <img src="/images/DiscoveryMascot_Logo_Tiny.jpg" alt="DCS phoenix logo">
+      </td>
+      <td>
+        <h1>Discovery Selectives</h1>
+        <h1><small>2015-2016 Semester 2</small></h1>
+      </td>
+      <td align=right>
+        {% if user_email %}
+          {{ user_email }}<br>
+          <a href="/logout">logout</a>
+        {% else %}
+          <a href="{{ login_url }}">Log In</a>
+        {% endif %}
+      </td>
+    </tr>
+    </table>
+    <hr>
+    {% block body %} {% endblock %}
+  </body>
+</html>
+{% endautoescape %}
