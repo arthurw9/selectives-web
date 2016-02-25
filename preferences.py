@@ -67,8 +67,7 @@ class Preferences(webapp2.RequestHandler):
     session = self.request.get("session")
     if not session:
       logging.fatal("no session")
-    serving_session = models.ServingSession.FetchEntity(institution)
-    if not auth.MatchServingSession(institution, session, ["preferences"]):
+    if not auth.HasPageAccess(institution, session, "preferences"):
       auth.RedirectTemporary(institution, session)
       return
 

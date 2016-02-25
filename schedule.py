@@ -67,9 +67,9 @@ class Schedule(webapp2.RequestHandler):
       session = self.request.get("session")
       if not session:
         logging.fatal("no session")
-      if not auth.MatchServingSession(institution, session, ["schedule"]):
+      if not auth.HasPageAccess(institution, session, "schedule"):
         auth.RedirectTemporary(institution, session)
-        return  
+        return
 
       message = self.request.get('message')
       session_query = urllib.urlencode({'institution': institution,

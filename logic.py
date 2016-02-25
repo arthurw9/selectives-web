@@ -66,6 +66,27 @@ def FindStudent(student_email, students):
       return student
   return None
 
+def StudentAllowedPageTypes(institution, session, student, serving_rules):
+  """ Returns list containing types of pages student is allowed to access. """
+  """ For example, all page types allowed returns """
+  """ ['materials', 'schedule', 'preferences', 'verification'] """
+  """ No page types allowed returns [] """
+  pt = []
+  for serving_rule in serving_rules:
+    for eligible in serving_rule['allow']:
+      if 'email' in eligible:
+        if student['email'] == eligible['email']:
+          pt.append(serving_rule['name'])
+          break
+      if 'current_homeroom' in eligible:
+        if student['current_homeroom'] == eligible['current_homeroom']:
+          pt.append(serving_rule['name'])
+          break
+      if 'current_grade' in eligible:
+        if student['current_grade'] == eligible['current_grade']:
+          pt.append(serving_rule['name'])
+          break
+  return pt
 
 def StudentIsEligibleForClass(institution, session, student, c):
   """returns True is student is eligible for class c."""

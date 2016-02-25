@@ -25,6 +25,7 @@ import materials_final
 import print_schedule
 import rosters
 import coming_soon
+import serving_rules
 
 application = webapp2.WSGIApplication([
   ('/', index.Index),
@@ -52,4 +53,5 @@ application = webapp2.WSGIApplication([
   ('/print_schedule', print_schedule.PrintSchedule),
   ('/rosters', rosters.Rosters),
   ('/coming_soon', coming_soon.ComingSoon),
+  ('/serving_rules', serving_rules.ServingRules),
 ], debug=True)

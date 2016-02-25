@@ -201,6 +201,44 @@ class Session(ndb.Model):
   def delete(cls, institution, session_name):
     Session.session_key(institution, session_name).delete()
 
+class ServingRules(ndb.Model):
+  """List of serving rules in yaml and json format."""
+  data = ndb.TextProperty()
+  jdata = ndb.JsonProperty()
+
+  @classmethod
+  @timed
+  def serving_rules_key(cls, institution, session):
+    return ndb.Key("InstitutionKey", institution,
+                   Session, session,
+                   ServingRules, "serving_rules")
+
+  @classmethod
+  @timed
+  def FetchJson(cls, institution, session):
+    serving_rules = ServingRules.serving_rules_key(institution, session).get()
+    if serving_rules:
+      return serving_rules.jdata
+    else:
+      return ''
+
+  @classmethod
+  @timed
+  def Fetch(cls, institution, session):
+    serving_rules = ServingRules.serving_rules_key(institution, session).get()
+    if serving_rules:
+      return serving_rules.data
+    else:
+      return ''
+
+  @classmethod
+  @timed
+  def store(cls, institution, session_name, sr_data):
+    serving_rules = ServingRules(data = sr_data,
+                                 jdata = yaml.load(sr_data))
+    serving_rules.key = ServingRules.serving_rules_key(institution, session_name)
+    serving_rules.put()
+
 
 class ServingSession(ndb.Model):
   """Which session is currently serving. Empty if none."""

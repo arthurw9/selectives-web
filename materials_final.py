@@ -27,8 +27,7 @@ class MaterialsFinal(webapp2.RequestHandler):
     session = self.request.get("session")
     if not session:
       logging.fatal("no session")
-    serving_session = models.ServingSession.FetchEntity(institution)
-    if not auth.MatchServingSession(institution, session, ["materials", "preferences", "schedule"]):
+    if not auth.HasPageAccess(institution, session, "materials"):
       auth.RedirectTemporary(institution, session)
       return
 

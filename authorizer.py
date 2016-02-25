@@ -72,15 +72,28 @@ class Authorizer(object):
       return self._VerifyStudent(institution,
                                  session,
                                  self.handler.request.get("student").lower())
+    if not self._VerifyServingSession(institution, session):
+      return False
     return self._VerifyStudent(institution,
                                session,
                                self.email)
 
-  def MatchServingSession(self, institution, session, allowedSessions):
+  def _VerifyServingSession(self, institution, session):
     serving_session = models.ServingSession.FetchEntity(institution)
-    if serving_session.login_type in allowedSessions:
+    logging.info("currently serving session = %s" % serving_session)
+    if serving_session.session_name == session:
+      return True
+    logging.error("serving session doesn't match")
+    return False
+
+  def HasPageAccess(self, institution, session, current_page):
+    serving_rules = models.ServingRules.FetchJson(institution, session)
+    page_types = logic.StudentAllowedPageTypes(
+            institution, session, self.student_entity, serving_rules)
+    if current_page in page_types:
       return True
     if self.CanAdministerInstitutionFromUrl():
+      # Needed for impersonation page
       return True
     return False
 

@@ -60,3 +60,11 @@ def StudentGroups():
         "- group_name: REQUIRED\n"
         "  emails:\n"
         "    - REQUIRED\n")
+
+def ServingRules():
+  return yayv.ByExample(
+        "- name: REQUIRED\n"
+        "  allow:\n"
+        "    - current_grade: OPTIONAL\n"
+        "      current_homeroom: OPTIONAL\n"
+        "      email: OPTIONAL\n")
