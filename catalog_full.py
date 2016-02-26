@@ -7,14 +7,17 @@ import yaml
 
 import models
 import authorizer
+import schemas
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
 
-class PrintCatalog(webapp2.RequestHandler):
+class CatalogFull(webapp2.RequestHandler):
   def SortByName(self, classes):
+    if not classes:
+      return ''
     return sorted(classes, key=lambda e: e['name'])
 
   def CoreClasses(self, classes):
@@ -25,14 +28,17 @@ class PrintCatalog(webapp2.RequestHandler):
     if not auth.HasStudentAccess():
       auth.Redirect()
       return
-
+    
     institution = self.request.get("institution")
     if not institution:
       logging.fatal("no institution")
     session = self.request.get("session")
     if not session:
       logging.fatal("no session")
-    message = self.request.get('message')
+    if not auth.HasPageAccess(institution, session, "materials"):
+      auth.RedirectTemporary(institution, session)
+      return
+
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
     classes = models.Classes.FetchJson(institution, session)
@@ -42,11 +48,11 @@ class PrintCatalog(webapp2.RequestHandler):
       'user_email' : auth.email,
       'institution' : institution,
       'session' : session,
-      'message': message,
       'session_query': session_query,
+      'student': auth.student_entity,
       'classes': classes,
       'core': core,
     }
-    template = JINJA_ENVIRONMENT.get_template('print_catalog.html')
+    template = JINJA_ENVIRONMENT.get_template('catalog_full.html')
     self.response.write(template.render(template_values))
   

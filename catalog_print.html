@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+{% autoescape true %}
+<html>
+  <head>
+    <title>Discovery Selectives</title>
+    <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
+  </head>
+  <body>
+    <h2>Selectives Personalized Course Catalog - {{session}}</h2>
+    {% if student %}
+      {{ student['first'] + ' ' + student['last'] }}<br>
+      Grade: {{ student['current_grade'] }}<br>
+      Homeroom: {{ student['current_homeroom'] }}<br><br>
+    {% endif %}
+
+    {% include 'catalog_personal_include.html' %}
+  </body>
+</html>
+{% endautoescape %}

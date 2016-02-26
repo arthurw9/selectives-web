@@ -15,7 +15,7 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     autoescape=True)
 
 
-class Preregistration(webapp2.RequestHandler):
+class CatalogPrint(webapp2.RequestHandler):
   def get(self):
     auth = authorizer.Authorizer(self)
     if not auth.HasStudentAccess():
@@ -62,5 +62,5 @@ class Preregistration(webapp2.RequestHandler):
       'student': auth.student_entity,
       'classes_for_catalog': classes_for_catalog,
     }
-    template = JINJA_ENVIRONMENT.get_template('preregistration.html')
+    template = JINJA_ENVIRONMENT.get_template('catalog_print.html')
     self.response.write(template.render(template_values))

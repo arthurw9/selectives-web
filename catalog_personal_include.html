@@ -1,0 +1,23 @@
+{% for c in classes_for_catalog %}
+  <h3>{{c['name']}}</h3>
+  <b>Teacher: </b>{{c['instructor']}}<br>
+  <b>Maximum Enrollment: </b>{{c['max_enrollment']}}<br>
+  <b>Schedule: </b>
+  {{c['schedule'][0]['daypart']}}
+  {% if c['schedule']|length > 1 %}
+    {% for s in c['schedule'][1:] %}
+      / {{s['daypart']}}
+    {% endfor %}
+  {% endif %}<br>
+  {% if c['donation'] %}
+    <b>Suggested Donation: </b>{{c['donation']}}<br>
+  {% endif %}
+  <br>
+  {% if c['description'] %}
+    {% for line in c['description'].splitlines() %}
+      {{ line }}<br>
+    {% endfor %}
+   <br>
+  {% endif %}
+  <hr width="80%" align="left">
+{% endfor %}

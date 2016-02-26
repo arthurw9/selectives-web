@@ -1,27 +1,15 @@
-{% for c in core %}
-    <h3 style="height:5px">{{c['name']}}</h3>
-    <b>Schedule: </b>
-    {{ c['schedule'] | join(' / ', attribute='daypart') }}
-{% endfor %}
-<br>
-{% for c in classes %}
-  {% if not c['exclude_from_catalog'] %}
-    <h3 style="height:5px">{{c['name']}}</h3>
-    {% if c['instructor'] %}
-      <b>Teacher: </b>{{c['instructor']}}<br>
-    {% endif %}
-    <b>Maximum Enrollment: </b>{{c['max_enrollment']}}<br>
-    <b>Schedule: </b>
-    {{ c['schedule'] | join(' / ', attribute='daypart') }}<br>
-    {% if c['donation'] %}
-      <b>Suggested Donation: </b>{{c['donation']}}<br>
-    {% endif %}
-    <div style="line-height:6px"><br></div>
-    {% if c['description'] %}
-      {% for line in c['description'].splitlines() %}
-        {{ line }}<div style="line-height:6px"><br></div>
-      {% endfor %}
-    {% endif %}
-    <br>
-  {% endif %}
-{% endfor %}
+{% extends 'menu_student.html' %}
+{% block session_body %}
+
+<h2>Selectives Course Catalog</h2>
+{% if student %}
+  {{ student['first'] + ' ' + student['last'] }}<br>
+  Grade: {{ student['current_grade'] }}<br>
+  Homeroom: {{ student['current_homeroom'] }}<br><br>
+  <a href="catalog_full_print?{{ session_query }}&student={{student['email'] }}">View Printer Friendly Page</a><br>
+{% else %}
+  <a href="catalog_full_print?{{ session_query }}">View Printer Friendly Page</a><br>
+{% endif %}
+
+{% include 'catalog_full_include.html' %}
+{% endblock %}

@@ -1,15 +1,15 @@
 {% extends 'menu_student.html' %}
 {% block session_body %}
 
-<h2>Selectives Course Catalog</h2>
+<h2>Selectives Personalized Course Catalog</h2>
 {% if student %}
   {{ student['first'] + ' ' + student['last'] }}<br>
   Grade: {{ student['current_grade'] }}<br>
   Homeroom: {{ student['current_homeroom'] }}<br><br>
-  <a href="print_catalog?{{ session_query }}&student={{student['email'] }}">View Printer Friendly Page</a><br>
+  <a href="catalog_print?{{ session_query }}&student={{student['email'] }}">View Printer Friendly Page</a><br>
 {% else %}
-  <a href="print_catalog?{{ session_query }}">View Printer Friendly Page</a><br>
+  <a href="catalog_print?{{ session_query }}">View Printer Friendly Page</a><br>
 {% endif %}
 
-{% include 'catalog_full.html' %}
+{% include 'catalog_personal_include.html' %}
 {% endblock %}

@@ -73,19 +73,20 @@ def StudentAllowedPageTypes(institution, session, student, serving_rules):
   """ No page types allowed returns [] """
   pt = []
   for serving_rule in serving_rules:
-    for eligible in serving_rule['allow']:
-      if 'email' in eligible:
-        if student['email'].lower() == eligible['email'].lower():
-          pt.append(serving_rule['name'])
-          break
-      if 'current_homeroom' in eligible:
-        if student['current_homeroom'] == eligible['current_homeroom']:
-          pt.append(serving_rule['name'])
-          break
-      if 'current_grade' in eligible:
-        if student['current_grade'] == eligible['current_grade']:
-          pt.append(serving_rule['name'])
-          break
+    if serving_rule['allow']: # check that allow for this rule is not blank
+      for eligible in serving_rule['allow']:
+        if 'email' in eligible:
+          if student['email'].lower() == eligible['email'].lower():
+            pt.append(serving_rule['name'])
+            break
+        if 'current_homeroom' in eligible:
+          if student['current_homeroom'] == eligible['current_homeroom']:
+            pt.append(serving_rule['name'])
+            break
+        if 'current_grade' in eligible:
+          if student['current_grade'] == eligible['current_grade']:
+            pt.append(serving_rule['name'])
+            break
   return pt
 
 def StudentIsEligibleForClass(institution, session, student, c):

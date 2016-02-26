@@ -228,8 +228,7 @@ function SetScheduleInGui(schedule) {
 
 Name: {{ student['first'] + ' ' + student['last'] }}<br>
 Grade: {{ student['current_grade'] }}<br>
-email: {{ student['email'] }}<br>
-<a href="#mycatalog">View My Course Catalog</a><br><br>
+email: {{ student['email'] }}<br><br>
 
 <form method=post>
 <input type=hidden name="institution" value="{{ institution }}" />
@@ -269,32 +268,4 @@ email: {{ student['email'] }}<br>
 SetScheduleInGui({{ schedule|safe }});
 RefreshSpotsAvailable();
 </script>
-
-<a name="mycatalog"></a>
-<h2>Course Catalog for {{ student['first'] + ' ' + student['last'] }}</h2>
-
-{% for c in classes_for_catalog %}
-  <h3>{{c['name']}}</h3>
-  <b>Teacher: </b>{{c['instructor']}}<br>
-  <b>Maximum Enrollment: </b>{{c['max_enrollment']}}<br>
-  <b>Schedule: </b>
-  {{c['schedule'][0]['daypart']}}
-  {% if c['schedule']|length > 1 %}
-    {% for s in c['schedule'][1:] %}
-      / {{s['daypart']}}
-    {% endfor %}
-  {% endif %}<br>
-  {% if c['donation'] %}
-    <b>Suggested Donation: </b>{{c['donation']}}<br>
-  {% endif %}
-  <br>
-  {% if c['description'] %}
-    {% for line in c['description'].splitlines() %}
-      {{ line }}<br>
-    {% endfor %}
-   <br>
-  {% endif %}
-  <hr width="80%" align="left">
-{% endfor %}
-
 {% endblock %}
