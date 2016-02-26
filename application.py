@@ -18,10 +18,10 @@ import class_list
 import class_roster
 import error_check
 import spots_available
-import materials
+import preregistration
 import print_catalog
 import logout
-import materials_final
+import postregistration
 import print_schedule
 import rosters
 import coming_soon
@@ -46,10 +46,10 @@ application = webapp2.WSGIApplication([
   ('/class_roster', class_roster.ClassRoster),
   ('/error_check', error_check.ErrorCheck),
   ('/spots_available', spots_available.SpotsAvailable),
-  ('/materials', materials.Materials),
+  ('/preregistration', preregistration.Preregistration),
   ('/print_catalog', print_catalog.PrintCatalog),
   ('/logout', logout.LogoutPage),
-  ('/materials_final', materials_final.MaterialsFinal),
+  ('/postregistration', postregistration.Postregistration),
   ('/print_schedule', print_schedule.PrintSchedule),
   ('/rosters', rosters.Rosters),
   ('/coming_soon', coming_soon.ComingSoon),

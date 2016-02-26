@@ -14,7 +14,7 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
 
-class MaterialsFinal(webapp2.RequestHandler):
+class Postregistration(webapp2.RequestHandler):
   def get(self):
     auth = authorizer.Authorizer(self)
     if not auth.HasStudentAccess():
@@ -85,5 +85,5 @@ class MaterialsFinal(webapp2.RequestHandler):
       'schedule_by_daypart': schedule_by_daypart,
       'dayparts_ordered': dayparts_ordered,
     }
-    template = JINJA_ENVIRONMENT.get_template('materials_final.html')
+    template = JINJA_ENVIRONMENT.get_template('postregistration.html')
     self.response.write(template.render(template_values))

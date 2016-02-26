@@ -135,13 +135,13 @@ class Authorizer(object):
     for ss in serving_sessions:
       institution = ss.institution_name
       session = ss.session_name
-      login_type = ss.login_type
+      start_page = ss.start_page
       verified = self._VerifyStudent(institution,
                                      session,
                                      self.email)
       if verified:
-        logging.info("Redirecting %s to /%s" % (self.email, login_type))
-        self.handler.redirect("/%s?%s" % (login_type, urllib.urlencode(
+        logging.info("Redirecting %s to /%s" % (self.email, start_page))
+        self.handler.redirect("/%s?%s" % (start_page, urllib.urlencode(
             {'institution': institution,
              'session': session})))
         return

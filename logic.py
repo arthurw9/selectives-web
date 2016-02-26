@@ -75,7 +75,7 @@ def StudentAllowedPageTypes(institution, session, student, serving_rules):
   for serving_rule in serving_rules:
     for eligible in serving_rule['allow']:
       if 'email' in eligible:
-        if student['email'] == eligible['email']:
+        if student['email'].lower() == eligible['email'].lower():
           pt.append(serving_rule['name'])
           break
       if 'current_homeroom' in eligible:

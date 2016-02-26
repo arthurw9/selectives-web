@@ -14,7 +14,7 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
 
-class Materials(webapp2.RequestHandler):
+class Preregistration(webapp2.RequestHandler):
   def SortByName(self, classes):
     if not classes:
       return ''
@@ -53,6 +53,6 @@ class Materials(webapp2.RequestHandler):
       'classes': classes,
       'core': core,
     }
-    template = JINJA_ENVIRONMENT.get_template('materials.html')
+    template = JINJA_ENVIRONMENT.get_template('preregistration.html')
     self.response.write(template.render(template_values))
   

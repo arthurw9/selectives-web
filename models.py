@@ -243,7 +243,7 @@ class ServingRules(ndb.Model):
 class ServingSession(ndb.Model):
   """Which session is currently serving. Empty if none."""
   session_name = ndb.StringProperty()
-  login_type = ndb.StringProperty(choices=['verification', 'preferences', 'schedule', 'materials'])
+  start_page = ndb.StringProperty(choices=['verification', 'preferences', 'schedule', 'preregistration', 'postregistration'])
 
   @classmethod
   @timed
@@ -262,10 +262,10 @@ class ServingSession(ndb.Model):
 
   @classmethod
   @timed
-  def store(cls, institution, session_name, login_type):
+  def store(cls, institution, session_name, start_page):
     serving_session = ServingSession()
     serving_session.session_name = session_name
-    serving_session.login_type = login_type
+    serving_session.start_page = start_page
     serving_session.key = ServingSession.serving_session_key(institution)
     serving_session.put()
 
@@ -277,7 +277,7 @@ class ServingSession(ndb.Model):
   @classmethod
   @timed
   def FetchAllEntities(cls):
-    """Returns a list of triples (institution_name, session_name, login_type)"""
+    """Returns a list of triples (institution_name, session_name, start_page)"""
     serving_sessions = ServingSession.query().fetch()
     for ss in serving_sessions:
       ss.institution_name = ss.key.parent().id()
