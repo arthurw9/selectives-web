@@ -25,6 +25,8 @@ def getStudentInfo(students, email):
               str(s['current_homeroom'])]
     
 def getRosterClassObj(classes, roster):
+  if len(roster) < 5:
+    return {}
   name = roster[0]
   instructor = roster[1]
   max_enrollment = roster[2]
@@ -47,6 +49,8 @@ def getRosterClassObj(classes, roster):
   return {}
 
 def getRosterEmails(students, roster):
+  if len(roster) < 8:
+    return ''
   name = roster[5]
   grade = roster[6]
   homerm = roster[7]
@@ -92,7 +96,7 @@ class Rosters(webapp2.RequestHandler):
         continue
       if roster[0] != '':
         # Got a new class
-        # Store previous roster if it's not the first empty one
+        # Store previous roster if it's not the first empty one or not found
         if roster_class != {}:
           # TODO: handle when roster_class == {} or student_emails contains ''
           # i.e. referencing a class or student that doesn't exist
@@ -104,7 +108,9 @@ class Rosters(webapp2.RequestHandler):
       else:
         student_emails += getRosterEmails(students, roster) + ', '
     # Finally, store the last remaining roster after falling out of the loop
-    models.ClassRoster.Store(institution, session, roster_class, student_emails)
+    # unless we were not able to find one
+    if roster_class != {}:
+      models.ClassRoster.Store(institution, session, roster_class, student_emails)
     
     # Replace student schedules
     for s in students:
@@ -154,7 +160,7 @@ class Rosters(webapp2.RequestHandler):
           rosters += '"",'
         rosters += '"' + str(class_roster['max_enrollment']) + '",'
         rosters += '"' + '/'.join(s['daypart'] for s in class_roster['schedule']) + '",'
-        rosters += '"' + '/'.join(s['location'] for s in class_roster['schedule']) + '"'
+        rosters += '"' + '/'.join(str(s['location']) for s in class_roster['schedule']) + '"'
 
         roster_students = [getStudentInfo(students, s) for s in class_roster['emails']]
         roster_students = sorted(roster_students)
