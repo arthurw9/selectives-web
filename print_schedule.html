@@ -7,15 +7,16 @@
   </head>
   <body>
 
-<h2 style="margin-bottom:0">Selectives Schedule - {{session}}<br>
-{% if student %}
+{% if not student %}
+Student not found! This error should never happen. Please inform the selectives team. Thanks!
+{% else %}
+<h2 style="margin-bottom:0">
+  Selectives Schedule - {{session}}<br>
   {{ student['first'] + ' ' + student['last'] }}
-{% endif %}
 </h2>
-
 <h3 style="margin-bottom:4px; margin-top:4px">
-Homeroom: {{ student['current_homeroom'] }}<br>
-Grade: {{ student['current_grade'] }}<br>
+  Homeroom: {{ student['current_homeroom'] }}<br>
+  Grade: {{ student['current_grade'] }}<br>
 </h3>
 
 <table>
@@ -50,6 +51,7 @@ Grade: {{ student['current_grade'] }}<br>
   </tr>
   {% endfor %}
 </table>
+{% endif %}
 </body>
 </html>
 {% endautoescape %}

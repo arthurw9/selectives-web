@@ -224,11 +224,13 @@ function SetScheduleInGui(schedule) {
 }
 </script>
 
-<h3>Schedule</h3>
-
-Name: {{ student['first'] + ' ' + student['last'] }}<br>
-Grade: {{ student['current_grade'] }}<br>
-email: {{ student['email'] }}<br><br>
+<h2 style="margin-bottom:0">
+  {{ student['first'] + ' ' + student['last'] }}
+</h2>
+<h3 style="margin-bottom:4px; margin-top:4px">
+  Homeroom: {{ student['current_homeroom'] }}<br>
+  Grade: {{ student['current_grade'] }}<br>
+</h3>
 
 <form method=post>
 <input type=hidden name="institution" value="{{ institution }}" />

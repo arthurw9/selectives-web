@@ -1,15 +1,15 @@
 {% extends 'menu_student.html' %}
 {% block session_body %}
 
-<h2 style="margin-bottom:0">Selectives Schedule<br>
-{% if student %}
-{{ student['first'] + ' ' + student['last'] }}
-{% endif %}
+{% if not student %}
+Student not found! This error should never happen. Please inform the selectives team. Thanks!
+{% else %}
+<h2 style="margin-bottom:0">
+  {{ student['first'] + ' ' + student['last'] }}
 </h2>
-
 <h3 style="margin-bottom:4px; margin-top:4px">
-Homeroom: {{ student['current_homeroom'] }}<br>
-Grade: {{ student['current_grade'] }}<br>
+  Homeroom: {{ student['current_homeroom'] }}<br>
+  Grade: {{ student['current_grade'] }}<br>
 </h3>
 <a href="print_schedule?{{ session_query }}&student={{student['email'] }}">View Printer Friendly Page</a>
 
@@ -45,4 +45,5 @@ Grade: {{ student['current_grade'] }}<br>
   </tr>
   {% endfor %}
 </table>
+{% endif %}
 {% endblock %}
