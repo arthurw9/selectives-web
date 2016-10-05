@@ -11,6 +11,10 @@
     <tr class=highlight>
       <td><a href="/class_roster?{{ session_query }}&class_id={{ c['id'] }}">roster</a></td>
       <td>{{ c['name'] }}</td>
+      <td>
+        {% for s in c['schedule'] %}
+          {{ s['daypart'] }}
+        {% endfor %}</td>
       <td>{{ c['instructor'] }}</td>
     </tr>
   {% endfor %}
