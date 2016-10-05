@@ -13,8 +13,26 @@ function RemoveStudent(email) {
   return false;
 }
 </script>
-<h3>{{ class_roster['class_name'] }} Class Roster</h3>
-{{ class_roster['class_details'] }}
+<h3 style="height:3px">{{ class_roster['class_name'] }} Class Roster</h3>
+<br><b>Schedule:</b>
+{{ class_roster['class_details']['schedule'] | join(' / ', attribute='daypart') }}
+<br><b>Location:</b>
+{{ class_roster['class_details']['schedule'] | join(' / ', attribute='location') }}
+<br><b>Instructor:</b>
+{{ class_roster['class_details']['instructor'] }}
+<br><b>Max Enrollment:</b>
+{{ class_roster['class_details']['max_enrollment'] }}
+{% if 'prerequisites' in class_roster['class_details'] 
+   and class_roster['class_details']['prerequisites'] != [] %}
+  <br><b>Prerequisites:</b>
+  {% for p in class_roster['class_details']['prerequisites'] %}
+    <br> - {{ p }}
+  {% endfor %}
+{% endif %}
+{% if 'exclude_from_catalog' in class_roster['class_details'] %}
+  <br><b>Exclude From Catalog:</b>
+  {{ class_roster['class_details']['exclude_from_catalog'] }}
+{% endif %}
 <br>
 <br>
 Students:
