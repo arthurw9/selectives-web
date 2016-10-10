@@ -73,6 +73,7 @@ class ClassRoster(webapp2.RequestHandler):
                                       'session': session})
 
     class_roster = models.ClassRoster.FetchEntity(institution, session, class_id)
+    class_roster['emails'].sort()
     students = models.Students.Fetch(institution, session)
     template_values = {
       'user_email' : auth.email,
