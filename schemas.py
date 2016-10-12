@@ -33,6 +33,18 @@ def Students():
         "  current_grade: REQUIRED\n"
         "  current_homeroom: REQUIRED\n")
 
+def AutoRegister():
+  return yayv.ByExample(
+        "- class: OPTIONAL\n" # for human use
+        "  class_id: REQUIRED\n" # should match id from Classes
+        "  applies_to:\n"
+        "    - current_grade: OPTIONAL\n"
+        "      email: OPTIONAL\n"
+        "      group: OPTIONAL\n"
+        "  id: AUTO_INC\n"
+        "  exempt:\n"
+        "    - OPTIONAL\n")
+
 def Requirements():
   return yayv.ByExample(
         "- name: REQUIRED\n"

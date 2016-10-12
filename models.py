@@ -401,8 +401,48 @@ class Students(ndb.Model):
     students.put()
 
 
+class AutoRegister(ndb.Model):
+  """Examples: 8th Core, 7th Core, 6th Core"""
+  data = ndb.TextProperty()
+  jdata = ndb.JsonProperty()
+
+  @classmethod
+  @timed
+  def auto_register_key(cls, institution, session):
+    return ndb.Key("InstitutionKey", institution,
+                   Session, session,
+                   AutoRegister, "auto_register")
+
+  @classmethod
+  @timed
+  def FetchJson(cls, institution, session):
+    auto_register = AutoRegister.auto_register_key(institution, session).get()
+    if auto_register:
+      return auto_register.jdata
+    else:
+      return ''
+
+  @classmethod
+  @timed
+  def Fetch(cls, institution, session):
+    auto_register = AutoRegister.auto_register_key(institution, session).get()
+    if auto_register:
+      return auto_register.data
+    else:
+      return ''
+
+  @classmethod
+  @timed
+  def store(cls, institution, session_name, auto_register_data):
+    auto_register = AutoRegister(
+        data = auto_register_data,
+        jdata = yaml.load(auto_register_data))
+    auto_register.key = AutoRegister.auto_register_key(institution, session_name)
+    auto_register.put()
+
+
 class Requirements(ndb.Model):
-  """Examples: 8th Core, PE"""
+  """Examples: one PE required, PEs must be on opposite sides of the week"""
   data = ndb.TextProperty()
   jdata = ndb.JsonProperty()
 

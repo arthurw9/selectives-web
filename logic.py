@@ -189,7 +189,14 @@ class _ClassInfo(object):
     return class_obj
 
   def RemoveConflicts(self, class_ids, new_class_id):
-    """return new_class_id and non-conflicting old class_ids""" 
+    """return new_class_id and non-conflicting old class_ids"""
+    if new_class_id in class_ids:
+      # Check if we are trying to add a class that is already
+      # in a student's schedule. (This can happen by running
+      # Auto Register multiple times.)
+      # If so, don't remove it.
+      self.removed_class_ids = []
+      return class_ids
     if new_class_id in self.dayparts_by_class_id:
       new_dayparts = self.dayparts_by_class_id[new_class_id]
     else:

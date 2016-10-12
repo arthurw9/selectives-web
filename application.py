@@ -28,6 +28,7 @@ import print_schedule
 import rosters
 import coming_soon
 import serving_rules
+import auto_register
 
 application = webapp2.WSGIApplication([
   ('/', index.Index),
@@ -58,4 +59,5 @@ application = webapp2.WSGIApplication([
   ('/rosters', rosters.Rosters),
   ('/coming_soon', coming_soon.ComingSoon),
   ('/serving_rules', serving_rules.ServingRules),
+  ('/auto_register', auto_register.AutoRegister),
 ], debug=True)

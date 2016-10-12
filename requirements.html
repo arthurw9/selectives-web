@@ -3,9 +3,21 @@
 
 <h3>Requirements</h3>
 <table width='50%'><tr><td>
-Requirements are required classes for every student or groups of students (for instance all 8th graders).
-Students may be exempt from requirements.<br>
-TIP: Each requirement has name, applies_to, exempt, class_or_group_options.
+During registration, student schedules will be checked against requirements listed below. Additionally, the Student Schedule Errors report will generate a list of schedules that don't meet these requirements.
+<br>Classes listed under Auto Register will be checked separately and do not need to be relisted here.
+<br>No-repeat and pre-selected groups from Student Groups also do not need to be relisted here.
+<br><br>Fields:
+<ul style="margin-top: 0px">
+    <li>name: label for this requirement
+    <li>applies_to:
+    <li>- use empty list [] to specify all students
+    <li>- current_grade to specify one grade level such as 8th, 7th, or 6th
+    <li>- email for individual students
+    <li>- group from Student Groups
+    <li>exempt: list of emails who are exempt from this requirement
+    <li>class_or_group_options: the class or Class Groups that are required
+</ul>
+Name is a required field.
 </td></tr></table>
 <form method=post>
 <input type=hidden name="institution" value="{{ institution }}" />
