@@ -15,19 +15,20 @@ AutoRegister/class                     --> Classes/name
 ServingRules/allow/current_grade       --> Students/current_grade
   & ServingRules/allow/current_homeroom      & Students/current_homeroom
   & ServingRules/allow/email                 & Students/email
+Student/email                - contains correct graduation year
 Students/current_grade       - output number of students in each grade
 Students/current_homeroom    - output number of students in each homeroom
 
 TODO (Only if we get Requirements working and not decide to implement
 it some other way.)
-ClassGroups/classes/name              --> Classes/name
-  & ClassGroups/classes/id                  Classes/id
-Requirements/applies_to/email         --> Students/email
-  & Requirements/exempt                     Students/email
-Requirements/current_grade            --> Students/current_grade
-Requirements/group                    --> StudentGroups/group_name
-Requirements/class_or_group_options   --> Classes/id
-Requirements/class_or_group_options   --> ClassGroups/name
+ClassGroups/classes/name               --> Classes/name
+  & ClassGroups/classes/id                  & Classes/id
+Requirements/applies_to/email          --> Students/email
+  & Requirements/exempt                     & Students/email
+Requirements/current_grade             --> Students/current_grade
+Requirements/group                     --> StudentGroups/group_name
+Requirements/class_or_group_options    --> Classes/id
+Requirements/class_or_group_options    --> ClassGroups/name
 """
 
 import models
@@ -35,6 +36,7 @@ import yaml
 import logging
 import yayv
 import schemas
+from datetime import date
 
 try:
   from google.appengine.ext import ndb
@@ -164,6 +166,7 @@ class Checker(object):
                                    auto_register, isValid_auto_register)
     self._CheckServingRules(students, isValid_students,
                             serving_rules, isValid_serving_rules)
+    self._CheckStudentEmail(students, isValid_students)
     self._PrintNumberStudentsPerGrade(students, isValid_students)
     self._PrintNumberStudentsPerHomeroom(students, isValid_students)
     self.setStatus(self.institution, self.session, self.error_check_status)
@@ -460,12 +463,12 @@ class Checker(object):
     self.error_check_detail += 'OK'
 
   def _CheckServingRules(self, students, isValid_students, serving_rules, isValid_serving_rules):
-    self.error_check_detail += '\n\nCheck Serving Rules against Students: '
     """Check each Serving Rule allow type (current_grade, current_homeroom, email) against Students.
     ServingRules/allow/current_grade    --> Students/current_grade
     ServingRules/allow/current_homeroom     Students/current_homeroom
     ServingRules/allow/email                Students/email
     """
+    self.error_check_detail += '\n\nCheck Serving Rules against Students: '
     if not (students and isValid_students):
       self.error_check_status = 'FAIL'
       self.error_check_detail += 'invalid Students, unable to run this test.'
@@ -497,12 +500,54 @@ class Checker(object):
       return
     self.error_check_detail += 'OK'
 
+  def _CheckStudentEmail(self, students, isValid_students, grad_year=0):
+    """Check that student email addresses contain the correct two-digit
+    graduation year.
+    grad_year - optional parameter to specify the 8th grade graduation
+                year. If not passed, graduation year will be
+                calculated based on today's date. For instance, if
+                today is September 2016, an eighth grade email format
+                is first.last17@mydiscoveryk8.org,
+                seventh grade is first.last18@mydiscoveryk8.org,
+                sixth grade is first.last19@mydiscoveryk8.org.
+                If today is May 2017, eighth grade will be
+                first.last17@mydiscoveryk8.org, and so on.
+    """
+    self.error_check_detail += '\n\nCheck graduation year in Student email: '
+    if not (students and isValid_students):
+      self.error_check_status = 'FAIL'
+      self.error_check_detail += 'invalid Students, unable to run this test.'
+      return
+    if grad_year == 0:
+      curr_year = date.today().year % 100 # just want the last two digits
+      if date.today().month in (8,9,10,11,12): # school year starts in August
+        grad_8 = curr_year + 1
+      else:
+        grad_8 = curr_year
+    else:
+      grad_8 = grad_year % 100 # just want the last two digits
+    # 7th and 6th graduation years calculated based on 8th.
+    grad_7 = grad_8 + 1
+    grad_6 = grad_7 + 1
+
+    errMsg = ""
+    for s in students:
+      if s['current_grade'] == 8 and str(grad_8)+"@" not in s['email'] or\
+         s['current_grade'] == 7 and str(grad_7)+"@" not in s['email'] or\
+         s['current_grade'] == 6 and str(grad_6)+"@" not in s['email']:
+          errMsg += '\n%dth grade : %s' % (s['current_grade'], s['email'])
+    if errMsg:
+      self.error_check_status = 'FAIL'
+      self.error_check_detail += errMsg
+      return
+    self.error_check_detail += 'OK'
+
   def _PrintNumberStudentsPerGrade(self, students, isValid_students):
     """Print the number of students per grade level.
     The admin can use this information to check for gross errors.
     For instance, if there is only one student in a grade, there might be a typo.
     """
-    self.error_check_detail += '\n\nGrade level : Students'
+    self.error_check_detail += '\n\nGrade level : Students '
     if not (students and isValid_students):
       self.error_check_status = 'FAIL'
       self.error_check_detail += 'invalid Students, unable to run this test.'
@@ -517,7 +562,7 @@ class Checker(object):
     The admin can use this information to check for gross errors.
     For instance, if there is only one student in a homeroom, there might be a typo.
     """
-    self.error_check_detail += '\n\nHomeroom : Students'
+    self.error_check_detail += '\n\nHomeroom : Students '
     if not (students and isValid_students):
       self.error_check_status = 'FAIL'
       self.error_check_detail += 'invalid Students, unable to run this test.'
