@@ -58,6 +58,7 @@ textarea { width:60%; height:300px }
   cursor: pointer; cursor: hand;
   background:#eeeeff;
 
+  max-width:200px;
   border: 1px solid #666666;
   border-radius:0.2em;
   margin:0 0 1px 0;
@@ -73,6 +74,7 @@ textarea { width:60%; height:300px }
   vertical-align:top;
 }
 .schedPostRegItem {
+  max-width:200px;
   text-align: center;
   min-width:200px;
   box-sizing: border-box;
