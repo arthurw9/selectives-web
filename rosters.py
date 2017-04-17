@@ -151,29 +151,29 @@ class Rosters(webapp2.RequestHandler):
     classes = sorted(classes, key=lambda c: c['name'])
     for c in classes:
       class_roster = models.ClassRoster.FetchEntity(institution, session, c['id'])
-      if ('None' not in class_roster['class_name'] and
-          'Core' not in class_roster['class_name']):
-        rosters += '"' + class_roster['class_name'] + '",'
-        if 'instructor' in class_roster:
-          rosters += '"' + class_roster['instructor'] + '",'
-        else:
-          rosters += '"",'
-        rosters += '"' + str(class_roster['max_enrollment']) + '",'
-        rosters += '"' + '/'.join(s['daypart'] for s in class_roster['schedule']) + '",'
-        rosters += '"' + '/'.join(str(s['location']) for s in class_roster['schedule']) + '"'
+      if ('None' in class_roster['class_name']):
+        continue
+      rosters += '"' + c['name'] + '",'
+      if 'instructor' in c and c['instructor'] != None:
+        rosters += '"' + c['instructor'] + '",'
+      else:
+        rosters += '"",'
+      rosters += '"' + str(c['max_enrollment']) + '",'
+      rosters += '"' + '/'.join(s['daypart'] for s in c['schedule']) + '",'
+      rosters += '"' + '/'.join(str(s['location']) for s in c['schedule']) + '"'
 
-        roster_students = [getStudentInfo(students, s) for s in class_roster['emails']]
-        roster_students = sorted(roster_students)
-        if (len(roster_students) > 0):
-          rosters += ',"' + roster_students[0][0] + '"'
-          rosters += ',"' + roster_students[0][1] + '"'
-          rosters += ',"' + roster_students[0][2] + '"\n'
-        else:
-          rosters += '\n'
-        for s in roster_students[1:]:
-          rosters += '"","","","","","' + s[0] + '"'
-          rosters += ',"' + s[1] + '"'
-          rosters += ',"' + s[2] + '"\n'
+      roster_students = [getStudentInfo(students, s) for s in class_roster['emails']]
+      roster_students = sorted(roster_students)
+      if (len(roster_students) > 0):
+        rosters += ',"' + roster_students[0][0] + '"'
+        rosters += ',"' + roster_students[0][1] + '"'
+        rosters += ',"' + roster_students[0][2] + '"\n'
+      else:
+        rosters += '\n'
+      for s in roster_students[1:]:
+        rosters += '"","","","","","' + s[0] + '"'
+        rosters += ',"' + s[1] + '"'
+        rosters += ',"' + s[2] + '"\n'
 
     template_values = {
       'user_email' : auth.email,

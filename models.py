@@ -696,6 +696,14 @@ class ClassRoster(ndb.Model):
     roster.jclass_obj = class_obj
     roster.put()
 
+  # CAUTION
+  # Do not use jclass_obj. After a roster is created, if the admin makes
+  # changes to Classes data through Setup, jclass_obj will not be consistent
+  # with it. Errors will occur.
+  # Already modified rosters.py, class_roster.py, class_roster.html to
+  # stop using jclass_obj.
+  # TODO: check how other pages are using this and possibly delete it.
+  #       (scheduler.py, spots_available.py, others?)
   @classmethod
   @timed
   def FetchEntity(cls, institution, session, class_id):

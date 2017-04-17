@@ -75,6 +75,12 @@ class ClassRoster(webapp2.RequestHandler):
     class_roster = models.ClassRoster.FetchEntity(institution, session, class_id)
     class_roster['emails'].sort()
     students = models.Students.Fetch(institution, session)
+    classes = models.Classes.FetchJson(institution, session)
+    class_details = ''
+    for c in classes:
+      if (str(c['id']) == class_id):
+        class_details = c
+        break
     template_values = {
       'user_email' : auth.email,
       'institution' : institution,
@@ -82,7 +88,8 @@ class ClassRoster(webapp2.RequestHandler):
       'message': message,
       'session_query': session_query,
       'class_roster': class_roster,
-      'students': students
+      'students': students,
+      'class_details': class_details
     }
     template = JINJA_ENVIRONMENT.get_template('class_roster.html')
     self.response.write(template.render(template_values))
