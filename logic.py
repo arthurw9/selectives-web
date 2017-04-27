@@ -162,7 +162,7 @@ class _ClassRoster(object):
         self.institution, self.session, self.class_obj, emails)
 
   def remove(self, student_email):
-    self.emails = [ e for e in self.emails if e != student_email ]
+    self.emails = [ e for e in self.emails if e.lower().strip() != student_email.lower().strip() ]
     emails = ','.join(self.emails)
     models.ClassRoster.Store(
         self.institution, self.session, self.class_obj, emails)

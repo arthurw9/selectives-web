@@ -104,9 +104,9 @@ class Rosters(webapp2.RequestHandler):
           models.ClassRoster.Store(institution, session, roster_class, student_emails)
         student_emails = ''
         roster_class = getRosterClassObj(classes, roster)
-        student_emails += getRosterEmails(students, roster) + ', '
+        student_emails += getRosterEmails(students, roster) + ','
       else:
-        student_emails += getRosterEmails(students, roster) + ', '
+        student_emails += getRosterEmails(students, roster) + ','
     # Finally, store the last remaining roster after falling out of the loop
     # unless we were not able to find one
     if roster_class != {}:
