@@ -59,7 +59,7 @@ def getRosterEmails(students, roster):
         s['last'] in name and
         str(s['current_grade']) == grade and
         str(s['current_homeroom']) == homerm):
-      return s['email']
+      return s['email'].strip().lower()
   return ''
 
 class Rosters(webapp2.RequestHandler):
