@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+{% autoescape true %}
+<html>
+  <head>
+    <title>Discovery Selectives</title>
+    <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
+  </head>
+
+  <body style="font-family:arial;">
+    <table class="attendanceHeader">
+      <tr>
+        <td class="name">{{ class_details['name'] }}</td>
+        <td>
+          <table class="attendanceHeaderDetails">
+            <tr>
+              <td>Day/Block</td>
+              <td>Enrolled</td>
+              <td>Instructor</td>
+              <td>Location</td>
+            </tr>
+            <tr>
+              <td><b>
+                {{class_details['schedule'] | join(' / ', attribute='daypart')}}</b></td>
+              <td align="center"><b>
+                {{students|length}}</b></td>
+              <td><b>
+                {{class_details['instructor']}}</b></td>
+              <td><b>
+                {% if class_details['num_locations'] == 1 %}
+                  {{class_details['schedule'][0]['location']}}
+                {% else %}
+                  {{class_details['schedule'] | join(' / ', attribute='location')}}
+                {% endif %}
+              </b></td>
+             </tr>
+           </table>
+        </td>
+      </tr>
+    </table>
+    <table class="attendance">
+      <tr>
+        <th>Name</th>
+        <th>Grade</th>
+        <th>Rm</th>
+        {% for i in range(num_cols) %}
+          <th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
+        {% endfor %}
+      </tr>
+    {% for e in students %}
+      {% if e|length > 1 %}
+      <tr>
+        <td>{{ e['first'] + ' ' + e['last'] }}</td>
+        <td align="center">{{ e['current_grade'] }}</td>
+        <td align="center">{{ e['current_homeroom'] }}</td>
+        {% for i in range(num_cols) %}
+          <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+        {% endfor %}
+      </tr>
+      {% endif %}
+    {% endfor %}
+    </table>
+    <table class="attendanceLegend">
+      <tr>
+        <td>&#10004 = present&nbsp&nbsp A = absent&nbsp&nbsp FT = field trip</td>
+      {% if class_roster['last_modified'] %}
+        <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+        <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+        <td>last modified: {{class_roster['last_modified']}}</td>
+      </tr>
+      {% endif %}
+    </table>
+  </body>
+</html>
+{% endautoescape %}

@@ -1,0 +1,28 @@
+{% extends 'menu.html' %}
+{% block session_body %}
+
+<h3>Attendance List</h3>
+<br>
+<br>
+
+{% if classes %}
+<table>
+  {% for c in classes %}
+    <tr class=highlight>
+      <td><a href="/attendance_sheet?{{ session_query }}&class_id={{ c['id'] }}">view</a></td>
+      <td>{{ c['name'] }}</td>
+      <td>
+        {% for s in c['schedule'] %}
+          {{ s['daypart'] }}
+        {% endfor %}</td>
+      <td>{{ c['instructor'] }}</td>
+    </tr>
+  {% endfor %}
+</table>
+
+{% else %}
+There are no classes to display.<br>
+Go to Setup >> Classes and add some classes.
+{% endif %}
+
+{% endblock %}

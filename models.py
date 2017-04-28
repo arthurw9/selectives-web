@@ -674,6 +674,7 @@ class ClassRoster(ndb.Model):
   student_emails = ndb.TextProperty()
   # class obj, yaml.dump and yaml.load takes too long
   jclass_obj = ndb.JsonProperty()
+  last_modified = ndb.DateTimeProperty(auto_now=True)
 
   @classmethod
   @timed
@@ -703,7 +704,8 @@ class ClassRoster(ndb.Model):
   # Already modified rosters.py, class_roster.py, class_roster.html to
   # stop using jclass_obj.
   # TODO: check how other pages are using this and possibly delete it.
-  #       (scheduler.py, spots_available.py, others?)
+  #       (scheduler.py, logic.py)
+  #       spots_available.py - checked, only uses remaining_space field
   @classmethod
   @timed
   def FetchEntity(cls, institution, session, class_id):
@@ -723,6 +725,12 @@ class ClassRoster(ndb.Model):
       r['class_details'] = roster.jclass_obj
       r['max_enrollment'] = c['max_enrollment']
       r['remaining_space'] = c['max_enrollment'] - len(r['emails'])
+      if (roster.last_modified):
+        r['last_modified'] = str(roster.last_modified.month) + '/' +\
+                             str(roster.last_modified.day) + '/' +\
+                             str(roster.last_modified.year)
+      else:
+        r['last_modified'] = None
       return r
     logging.info("Class Roster NOT found: [%s] [%s] [%s]" % (
           institution, session, class_id))
@@ -734,6 +742,7 @@ class ClassRoster(ndb.Model):
     r['class_details'] = ''
     r['max_enrollment'] = 0
     r['remaining_space'] = 0
+    r['last_modified'] = None
     return r
 
 
