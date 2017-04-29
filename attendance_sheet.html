@@ -65,7 +65,7 @@
       {% if class_roster['last_modified'] %}
         <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
         <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-        <td>last modified: {{class_roster['last_modified']}}</td>
+        <td>last modified: {{class_roster['last_modified'].month}}/{{class_roster['last_modified'].day}}/{{class_roster['last_modified'].year}}</td>
       </tr>
       {% endif %}
     </table>

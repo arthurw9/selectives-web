@@ -2,6 +2,7 @@ import logging
 import yaml
 import time
 import webapp2
+import datetime
 try:
   from google.appengine.ext import ndb
 except:
@@ -674,7 +675,8 @@ class ClassRoster(ndb.Model):
   student_emails = ndb.TextProperty()
   # class obj, yaml.dump and yaml.load takes too long
   jclass_obj = ndb.JsonProperty()
-  last_modified = ndb.DateTimeProperty(auto_now=True)
+  # Not using auto_now=True on purpose, see note below.
+  last_modified = ndb.DateTimeProperty()
 
   @classmethod
   @timed
@@ -695,6 +697,15 @@ class ClassRoster(ndb.Model):
     roster.key = ClassRoster.class_roster_key(institution, session, class_id)
     roster.student_emails = student_emails
     roster.jclass_obj = class_obj
+    # Appengine datetimes are stored in UTC, so by around 4pm the date is wrong.
+    # This is a kludgy way to get PST. It doesn't handle daylight savings time,
+    # but off by one hour is better than off by eight.
+    # The alternatives:
+    #  - pytz has a few hundred files.
+    #  - tzinfo has four methods to implement which I don't need.
+    # Don't use hour because it will be wrong half the year.
+    # If someone wants to do this the "right" way later, that would be fine.
+    roster.last_modified = datetime.datetime.now() - datetime.timedelta(hours=8)
     roster.put()
 
   # CAUTION
@@ -726,9 +737,7 @@ class ClassRoster(ndb.Model):
       r['max_enrollment'] = c['max_enrollment']
       r['remaining_space'] = c['max_enrollment'] - len(r['emails'])
       if (roster.last_modified):
-        r['last_modified'] = str(roster.last_modified.month) + '/' +\
-                             str(roster.last_modified.day) + '/' +\
-                             str(roster.last_modified.year)
+        r['last_modified'] = roster.last_modified
       else:
         r['last_modified'] = None
       return r
