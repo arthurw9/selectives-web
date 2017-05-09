@@ -54,7 +54,8 @@ class ClassList(webapp2.RequestHandler):
                                       'session': session})
 
     classes = models.Classes.FetchJson(institution, session)
-    classes.sort(key=listOrder)
+    if classes:
+      classes.sort(key=listOrder)
     template_values = {
       'user_email' : auth.email,
       'institution' : institution,
