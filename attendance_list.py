@@ -51,6 +51,13 @@ class AttendanceList(webapp2.RequestHandler):
     classes = models.Classes.FetchJson(institution, session)
     if classes:
       classes.sort(key=listOrder)
+    rosters = {}
+    for c in classes:
+      rosters[c['id']] = models.ClassRoster.FetchEntity(institution, session, c['id'])
+      c['num_locations'] = len(set(s['location'] for s in c['schedule']))
+    students = models.Students.FetchJson(institution, session)
+    for s in students:
+      s['email'] = s['email'].lower()
     template_values = {
       'user_email' : auth.email,
       'institution' : institution,
@@ -58,6 +65,8 @@ class AttendanceList(webapp2.RequestHandler):
       'message': message,
       'session_query': session_query,
       'classes': classes,
+      'rosters': rosters,
+      'students': students,
     }
     template = JINJA_ENVIRONMENT.get_template('attendance_list.html')
     self.response.write(template.render(template_values))
