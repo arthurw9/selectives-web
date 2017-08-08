@@ -8,7 +8,7 @@ import models
 import authorizer
 
 JINJA_ENVIRONMENT = jinja2.Environment(
-    loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
+    loader=jinja2.FileSystemLoader(os.path.dirname(os.path.dirname(__file__))),
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
 
@@ -33,7 +33,7 @@ def getStudentDetails(students, roster_emails):
 class AttendanceSheet(webapp2.RequestHandler):
 
   def RedirectToSelf(self, institution, session, class_id, message):
-    self.redirect("/attendance_sheet?%s" % urllib.urlencode(
+    self.redirect("/report/attendance_sheet?%s" % urllib.urlencode(
         {'message': message,
          'institution': institution,
          'session': session,
@@ -76,5 +76,5 @@ class AttendanceSheet(webapp2.RequestHandler):
       'class_details': class_details,
       'num_cols': NUM_COLS,
     }
-    template = JINJA_ENVIRONMENT.get_template('attendance_sheet.html')
+    template = JINJA_ENVIRONMENT.get_template('report/attendance_sheet.html')
     self.response.write(template.render(template_values))

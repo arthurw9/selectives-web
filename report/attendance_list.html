@@ -167,7 +167,7 @@ window.onload = function() {
           {{ s['daypart'] }}
         {% endfor %}</td>
       <td>{{ c['instructor'] }}</td>
-      <td><a href="/attendance_sheet?{{ session_query }}&class_id={{ c['id'] }}">view</a></td>
+      <td><a href="/report/attendance_sheet?{{ session_query }}&class_id={{ c['id'] }}">view</a></td>
     </tr>
   {% endfor %}
 </table>

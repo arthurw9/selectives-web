@@ -6,8 +6,13 @@ import webapp2
 import models
 import authorizer
 
+# I created a report subdirectory for various reports needed in the scheduling process.
+# Since we are inside the report folder, I need to call
+# os.path.dirname(os.path.dirname(...)) to go up to the parent directory.
+# This is necessary because Jinja doesn't allow .. notation in extends
+# in other words {% extends '../menu.html' %} is not possible.
 JINJA_ENVIRONMENT = jinja2.Environment(
-    loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
+    loader=jinja2.FileSystemLoader(os.path.dirname(os.path.dirname(__file__))),
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
 
@@ -26,7 +31,7 @@ def listOrder(c):
 class AttendanceList(webapp2.RequestHandler):
 
   def RedirectToSelf(self, institution, session, message):
-    self.redirect("/attendance_list?%s" % urllib.urlencode(
+    self.redirect("/report/attendance_list?%s" % urllib.urlencode(
         {'message': message,
          'institution': institution,
          'session': session}))
@@ -68,5 +73,5 @@ class AttendanceList(webapp2.RequestHandler):
       'rosters': rosters,
       'students': students,
     }
-    template = JINJA_ENVIRONMENT.get_template('attendance_list.html')
+    template = JINJA_ENVIRONMENT.get_template('report/attendance_list.html')
     self.response.write(template.render(template_values))
