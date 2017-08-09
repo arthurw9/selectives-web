@@ -63,6 +63,8 @@ class AttendanceList(webapp2.RequestHandler):
     students = models.Students.FetchJson(institution, session)
     for s in students:
       s['email'] = s['email'].lower()
+    if students:
+      students.sort(key=lambda(s): s['last'])
     template_values = {
       'user_email' : auth.email,
       'institution' : institution,
