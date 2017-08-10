@@ -30,7 +30,6 @@ import coming_soon
 import serving_rules
 import auto_register
 import report.attendance_list
-import report.attendance_sheet
 
 application = webapp2.WSGIApplication([
   ('/', index.Index),
@@ -63,5 +62,4 @@ application = webapp2.WSGIApplication([
   ('/serving_rules', serving_rules.ServingRules),
   ('/auto_register', auto_register.AutoRegister),
   ('/report/attendance_list', report.attendance_list.AttendanceList),
-  ('/report/attendance_sheet', report.attendance_sheet.AttendanceSheet),
 ], debug=True)
