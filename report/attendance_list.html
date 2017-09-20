@@ -132,25 +132,26 @@ function printStudents(doc, student_batch) {
 window.onload = function() {
   var selectAll = document.getElementById("selectAll");
   var unselectAll = document.getElementById("unselectAll");
-  var viewPDF = document.getElementById("viewPDF");
+  var downloadPDF = document.getElementById("downloadPDF");
 
   selectAll.onclick = function() {
     {% for c in classes %}
-      document.getElementById("viewPDF{{c['id']}}").checked = true;
+      document.getElementById("selectPDF{{c['id']}}").checked = true;
     {% endfor %}
   }
   unselectAll.onclick = function() {
     {% for c in classes %}
-      document.getElementById("viewPDF{{c['id']}}").checked = false;
+      document.getElementById("selectPDF{{c['id']}}").checked = false;
     {% endfor %}
   }
 
-  viewPDF.onclick = function() {
+  downloadPDF.onclick = function() {
     var doc = new jsPDF({orientation: 'landscape'});
     var totalPgCnt = 0;
-
+    
     {% for c in classes %}
-      if (document.getElementById("viewPDF{{c['id']}}").checked) {
+      if (document.getElementById("selectPDF{{c['id']}}").checked) {
+        
         var student_list = [];
         {% for s in students if s['email'] in rosters[c['id']]['emails'] %}
           curr_student = {};
@@ -192,7 +193,7 @@ window.onload = function() {
       }
     {% endfor %}
     doc.deletePage(totalPgCnt+1); // delete extra last page
-    doc.output('dataurl');
+    doc.save('selectives_attendance.pdf');
 
     // Prevent redirect and event bubbling.
     return false;
@@ -208,11 +209,11 @@ window.onload = function() {
 <form>
 <input type="button" id="selectAll" value="Select All">
 <input type="button" id="unselectAll" value="Unselect All">
-<input type="button" id="viewPDF" value="View PDF">
+<input type="button" id="downloadPDF" value="Download PDF">
 <table>
   {% for c in classes %}
     <tr class=highlight>
-      <td><input type="checkBox" id="viewPDF{{c['id']}}" name="download" value="c"+{{c['id']}}></td>
+      <td><input type="checkBox" id="selectPDF{{c['id']}}" value="c"+{{c['id']}}></td>
       <td>{{ c['name'] }}</td>
       <td>
         {% for s in c['schedule'] %}
