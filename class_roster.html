@@ -22,6 +22,8 @@ function RemoveStudent(email) {
 {{ class_details['instructor'] }}
 <br><b>Max Enrollment:</b>
 {{ class_details['max_enrollment'] }}
+<br><b>Actual Enrollment:</b>
+{{ class_roster['emails']|length }}
 {% if 'prerequisites' in class_details 
    and class_details['prerequisites'] != [] %}
   <br><b>Prerequisites:</b>
