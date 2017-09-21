@@ -37,7 +37,6 @@ function RemoveStudent(email) {
 {% endif %}
 <br>
 <br>
-Students:
 <form method=post>
 <input type=hidden name="institution" value="{{ institution }}" />
 <input type=hidden name="session" value="{{ session }}" />
@@ -45,11 +44,19 @@ Students:
 <input type=hidden name="action" />
 <input type=hidden name="email" />
 <table>
-  {% for e in class_roster['emails'] %}
+  <tr class=highlight>
+    <th></th>
+    <th>Student</th>
+    <th>Grade</th>
+    <th>Homeroom</th>
+  </tr>
+  {% for e in class_roster['students'] %}
     {% if e|length > 1 %}
     <tr class=highlight>
-      <td><button onclick="return RemoveStudent('{{ e }}');">remove</button></td>
-      <td>{{ e }}</td>
+      <td><button onclick="return RemoveStudent('{{ e['email'] }}');">remove</button></td>
+      <td>{{ e['first'] }} {{ e['last'] }}</td>
+      <td> {{ e['current_grade'] }}</td>
+      <td> {{ e['current_homeroom'] }}</td>
     </tr>
     {% endif %}
   {% endfor %}
