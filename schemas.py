@@ -31,7 +31,8 @@ def Students():
         "  first: REQUIRED\n"
         "  last: REQUIRED\n"
         "  current_grade: REQUIRED\n"
-        "  current_homeroom: REQUIRED\n")
+        "  current_homeroom: REQUIRED\n"
+        "  edtechid: OPTIONAL\n")
 
 def AutoRegister():
   return yayv.ByExample(

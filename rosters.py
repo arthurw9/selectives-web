@@ -22,8 +22,11 @@ def getStudentInfo(students, email):
     if s['email'].lower().strip() == email.lower().strip():
       return [s['first'] + ' ' + s['last'],
               str(s['current_grade']),
-              str(s['current_homeroom'])]
-    
+              str(s['current_homeroom']),
+              str(s['edtechid'])]
+  else:
+    logging.error('getStudentInfo: ' + email + ' not found in student list')
+
 def getRosterClassObj(classes, roster):
   if len(roster) < 5:
     return {}
@@ -167,13 +170,15 @@ class Rosters(webapp2.RequestHandler):
       if (len(roster_students) > 0):
         rosters += ',"' + roster_students[0][0] + '"'
         rosters += ',"' + roster_students[0][1] + '"'
-        rosters += ',"' + roster_students[0][2] + '"\n'
+        rosters += ',"' + roster_students[0][2] + '"'
+        rosters += ',"' + roster_students[0][3] + '"\n'
       else:
         rosters += '\n'
       for s in roster_students[1:]:
         rosters += '"","","","","","' + s[0] + '"'
         rosters += ',"' + s[1] + '"'
-        rosters += ',"' + s[2] + '"\n'
+        rosters += ',"' + s[2] + '"'
+        rosters += ',"' + s[3] + '"\n'
 
     template_values = {
       'user_email' : auth.email,
