@@ -163,7 +163,7 @@ window.onload = function() {
         {% endfor %}
 
         var classInfo = new Object();
-        classInfo.name = '{{c['name']}}';
+        classInfo.name = "{{c['name'] | safe}}";
         // shorten the name if it's too long, otherwise it'll overwrite other sections
         classInfo.name = classInfo.name.slice(0,CLASS_NAME_MAX);
         classInfo.daypart = '{{c['schedule'] | join(' / ', attribute='daypart')}}';
