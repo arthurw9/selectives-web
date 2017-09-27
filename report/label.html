@@ -1,0 +1,127 @@
+{% extends 'menu.html' %}
+{% block session_body %}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.4/jspdf.debug.js">
+// Using jsPDF. To learn more:
+//   http://rawgit.com/MrRio/jsPDF/master/#
+//   http://rawgit.com/MrRio/jsPDF/master/docs/jspdf.js.html#line1158
+</script>
+<script>
+var CLASS_NAME_MAX = 28;
+var START_X = 4;
+var START_Y = 22;
+var DELTA_X = 112;
+var DELTA_Y = 56;
+var NUM_ROWS = 5;
+
+function printWithWordWrap(doc, name, x, y) {
+  var num_lines = 1;
+  var str_len = 0;
+  var line = '';
+  for (var i=0; i<name.length; i++) {
+    str_len += name[i].length+1;
+    if (str_len < CLASS_NAME_MAX) {
+      line = line + ' ' + name[i];
+    } else {
+      doc.text(line.trim(), x, y+(num_lines-1)*7);
+      line = name[i];
+      str_len = line.length;
+      num_lines++;
+    }
+  }
+  doc.text(line.trim(), x, y+(num_lines-1)*7);
+  return num_lines;
+}
+  
+window.onload = function() {
+  var selectAll = document.getElementById("selectAll");
+  var unselectAll = document.getElementById("unselectAll");
+  var viewPDF = document.getElementById("viewPDF");
+
+  selectAll.onclick = function() {
+    {% for c in classes %}
+      document.getElementById("viewPDF{{c['id']}}").checked = true;
+    {% endfor %}
+  }
+  unselectAll.onclick = function() {
+    {% for c in classes %}
+      document.getElementById("viewPDF{{c['id']}}").checked = false;
+    {% endfor %}
+  }
+
+  downloadPDF.onclick = function() {
+    var doc = new jsPDF();
+    var x = START_X;
+    var y = START_Y;
+    {% for c in classes %}
+      if (document.getElementById("viewPDF{{c['id']}}").checked) {
+        var classInfo = new Object();
+        classInfo.name = "{{c['name'] | safe}}";
+        classInfo.name = classInfo.name.split([' ']);
+        classInfo.daypart = '{{c['schedule'] | join(' / ', attribute='daypart')}}';
+        {% if c['num_locations'] == 1 %}
+          classInfo.location = '{{c['schedule'][0]['location']}}';
+        {% else %}
+          classInfo.location = '{{c['schedule'] | join(' / ', attribute='location')}}';
+        {% endif %}
+        classInfo.instructor = '{{ c['instructor'] }}';
+
+        doc.setFontType('bold');
+        doc.setFontSize(20);
+        var num_lines = printWithWordWrap(doc, classInfo.name, x, y);
+        doc.setFontType('normal');
+        doc.setFontSize(16);
+        doc.text(classInfo.instructor, x, y+num_lines*10);
+        doc.text(classInfo.daypart, x, y+num_lines*10+7);
+        doc.text(classInfo.location, x, y+num_lines*10+7*2);
+
+        // Advance x and y
+        if (x == START_X) {
+          x = START_X + DELTA_X;
+        } else {
+          x = START_X;
+          y += DELTA_Y;
+          if (y > START_Y+(DELTA_Y*(NUM_ROWS-1))) {
+            y = START_Y;
+            doc.addPage();
+          }
+        }
+      }
+    {% endfor %}
+    doc.save('selectives_labels.pdf');
+
+    // Prevent redirect and event bubbling.
+    return false;
+  };
+};
+</script>
+
+<h3>Folder Label</h3>
+<br>
+<br>
+
+{% if classes %}
+<form>
+<input type="button" id="selectAll" value="Select All">
+<input type="button" id="unselectAll" value="Unselect All">
+<input type="button" id="downloadPDF" value="Download PDF">
+<table>
+  {% for c in classes %}
+    <tr class=highlight>
+      <td><input type="checkBox" id="viewPDF{{c['id']}}" value="c"+{{c['id']}}></td>
+      <td>{{ c['name'] }}</td>
+      <td>
+        {% for s in c['schedule'] %}
+          {{ s['daypart'] }}
+        {% endfor %}</td>
+      <td>{{ c['instructor'] }}</td>
+    </tr>
+  {% endfor %}
+</table>
+</form>
+{% else %}
+There are no classes to display.<br>
+Go to Setup >> Classes and add some classes.
+{% endif %}
+
+{% endblock %}
