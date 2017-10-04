@@ -30,6 +30,7 @@ import coming_soon
 import serving_rules
 import auto_register
 import report.attendance_list
+import report.student_schedules
 import report.signup_card
 import report.signup_main
 import report.signup_pe
@@ -67,6 +68,7 @@ application = webapp2.WSGIApplication([
   ('/serving_rules', serving_rules.ServingRules),
   ('/auto_register', auto_register.AutoRegister),
   ('/report/attendance_list', report.attendance_list.AttendanceList),
+  ('/report/student_schedules', report.student_schedules.StudentSchedules),
   ('/report/signup_card', report.signup_card.SignupCard),
   ('/report/signup_main', report.signup_main.SignupMain),
   ('/report/signup_pe', report.signup_pe.SignupPE),
