@@ -17,53 +17,40 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
 
-def getStudentInfo(students, email):
-  for s in students:
-    if s['email'].lower().strip() == email.lower().strip():
-      return [s['first'] + ' ' + s['last'],
-              str(s['current_grade']),
-              str(s['current_homeroom']),
-              str(s['edtechid'])]
+def getStudentInfo(student_dict, email):
+  if email in student_dict:
+    s = student_dict[email]
+    return [s['first'],
+            s['last'],
+            str(s['current_grade']),
+            str(s['current_homeroom']),
+            str(s['edtechid'])]
   else:
-    logging.error('getStudentInfo: ' + email + ' not found in student list')
-
-def getRosterClassObj(classes, roster):
-  if len(roster) < 5:
-    return {}
-  name = roster[0]
-  instructor = roster[1]
-  max_enrollment = roster[2]
-  daypart = sorted(roster[3].split('/'))
-  location = sorted(roster[4].split('/'))
-  for c in classes:
-    if ('instructor' in c):
-      if (c['name'] == name and
-          c['instructor'] == instructor and
-          str(c['max_enrollment']) == max_enrollment and 
-          sorted([s['daypart'] for s in c['schedule']]) == daypart and
-          sorted([s['location'] for s in c['schedule']]) == location):
-        return c
-    else:
-      if (c['name'] == name and
-          str(c['max_enrollment']) == max_enrollment and 
-          sorted([s['daypart'] for s in c['schedule']]) == daypart and
-          sorted([s['location'] for s in c['schedule']]) == location):
-        return c
-  return {}
-
-def getRosterEmails(students, roster):
-  if len(roster) < 8:
+    logging.error('getStudentInfo: ' + email + ' not found in dictionary')
     return ''
-  name = roster[5]
-  grade = roster[6]
-  homerm = roster[7]
-  for s in students:
-    if (s['first'] in name and
-        s['last'] in name and
-        str(s['current_grade']) == grade and
-        str(s['current_homeroom']) == homerm):
-      return s['email'].strip().lower()
-  return ''
+
+def getClassObj(class_dict, line):
+  if len(line) < 1:
+    return {}
+  id = line[0]
+  if id in class_dict:
+    return class_dict[id]
+  else:
+    return {}
+
+def getStudentEmail(student_dict, line):
+  if len(line) < 10:
+    return ''
+  first = line[6]
+  last = line[7]
+  grade = line[8]
+  homerm = line[9]
+
+  key = first + last + grade + homerm
+  if key in student_dict:
+    return student_dict[key]
+  else:
+    return ''
 
 class Rosters(webapp2.RequestHandler):
 
@@ -89,46 +76,65 @@ class Rosters(webapp2.RequestHandler):
     if not rosters:
       logging.fatal("no rosters")
 
-    # Replace class rosters
+    class_put_dict = {} # {79:{'name':'3D Printing', etc.}}
+    student_put_dict = {} # {'firstlast623': 'first.last19@mydiscoverk8.org'}
+    student_put_sched = {} # {'first.last19@mydiscoveryk8.org': [5,6,29,79,10]}
+
     classes = models.Classes.FetchJson(institution, session)
-    students = models.Students.FetchJson(institution, session)
-    rosters = csv.reader(StringIO.StringIO(rosters))
-    roster_class = {}
-    for roster in rosters:
-      if roster == []:
-        continue
-      if roster[0] != '':
-        # Got a new class
-        # Store previous roster if it's not the first empty one or not found
-        if roster_class != {}:
-          # TODO: handle when roster_class == {} or student_emails contains ''
-          # i.e. referencing a class or student that doesn't exist
-          # Send error message, undo?
-          models.ClassRoster.Store(institution, session, roster_class, student_emails)
-        student_emails = ''
-        roster_class = getRosterClassObj(classes, roster)
-        student_emails += getRosterEmails(students, roster) + ','
-      else:
-        student_emails += getRosterEmails(students, roster) + ','
-    # Finally, store the last remaining roster after falling out of the loop
-    # unless we were not able to find one
-    if roster_class != {}:
-      models.ClassRoster.Store(institution, session, roster_class, student_emails)
-    
-    # Replace student schedules
-    for s in students:
-      empty_schedule = ''
-      models.Schedule.Store(institution, session, s['email'].strip().lower(), empty_schedule)
     for c in classes:
-      roster = models.ClassRoster.FetchEntity(institution, session, c['id'])
-      if ('None' not in roster['class_name']):
-        for student_email in roster['emails']:
-          schedule = models.Schedule.Fetch(institution, session, student_email.strip().lower())
-          if schedule == '':
-            new_schedule = str(roster['class_id'])
-          else:
-            new_schedule = schedule + ',' + str(roster['class_id'])
-          models.Schedule.Store(institution, session, student_email.strip().lower(), new_schedule)
+      key = str(c['id'])
+      class_put_dict[key] = c
+
+    students = models.Students.FetchJson(institution, session)
+    for s in students:
+      key = s['first'] +\
+            s['last'] +\
+            str(s['current_grade']) +\
+            str(s['current_homeroom'])
+      student_put_dict[key] = s['email'].strip().lower()
+      student_put_sched[s['email'].strip().lower()] = []
+
+    # Replace class rosters and build student_put_sched
+    rosters = csv.reader(StringIO.StringIO(rosters))
+    curr_class_obj = {}
+    student_emails = ''
+    for line in rosters:
+      # If line contains only student info
+      if line != [] and line[0] == '':
+        curr_email = getStudentEmail(student_put_dict, line).strip().lower()
+        if curr_email in student_put_sched:
+          student_put_sched[curr_email].append(curr_class_obj['id'])
+          student_emails += curr_email + ','
+        else:
+          logging.error("Invalid email: " + curr_email +\
+                        "at line: " + str(line))
+      # Else, the line contains class data i.e. start of a new class
+      # Or it's the last empty line []
+      else:
+        # If currently processing a roster, store it.
+        if curr_class_obj != {}:
+          models.ClassRoster.Store(institution, session,
+                                   curr_class_obj,
+                                   student_emails)
+        # Get new class data and start building new email list
+        student_emails = ''
+        curr_class_obj = getClassObj(class_put_dict, line)
+        if curr_class_obj == {} and line != []:
+          logging.error("curr_class_obj: " + str(curr_class_obj) +\
+                        " at line: " + str(line))
+        curr_email = getStudentEmail(student_put_dict, line).strip().lower()
+        if curr_email in student_put_sched:
+          student_put_sched[curr_email].append(curr_class_obj['id'])
+          student_emails += curr_email + ','
+        elif line != []:
+          logging.error("email: " + curr_email +\
+                        "at line: " + str(line))
+
+    # Replace student schedules using dictionary built above
+    for email_key in student_put_sched:
+      models.Schedule.Store(institution, session,
+                            email_key,
+                            ','.join(str(cid) for cid in student_put_sched[email_key]))
 
     self.RedirectToSelf(institution, session, "saved rosters")
 
@@ -152,10 +158,17 @@ class Rosters(webapp2.RequestHandler):
     classes = models.Classes.FetchJson(institution, session)
     students = models.Students.FetchJson(institution, session)
     classes = sorted(classes, key=lambda c: c['name'])
+
+    student_get_dict = {} # {'John.Smith19@mydiscoveryk8.org': {'first':'John', 'last':'Smith', etc.}}
+    for s in students:
+      student_get_dict[s['email'].strip().lower()] = s
+
     for c in classes:
-      class_roster = models.ClassRoster.FetchEntity(institution, session, c['id'])
+      class_roster = models.ClassRoster.FetchEntity(institution, session,
+                                                    c['id'])
       if ('None' in class_roster['class_name']):
         continue
+      rosters += '"' + str(c['id']) + '",'
       rosters += '"' + c['name'] + '",'
       if 'instructor' in c and c['instructor'] != None:
         rosters += '"' + c['instructor'] + '",'
@@ -165,20 +178,22 @@ class Rosters(webapp2.RequestHandler):
       rosters += '"' + '/'.join(s['daypart'] for s in c['schedule']) + '",'
       rosters += '"' + '/'.join(str(s['location']) for s in c['schedule']) + '"'
 
-      roster_students = [getStudentInfo(students, s) for s in class_roster['emails']]
+      roster_students = [getStudentInfo(student_get_dict, s) for s in class_roster['emails']]
       roster_students = sorted(roster_students)
       if (len(roster_students) > 0):
         rosters += ',"' + roster_students[0][0] + '"'
         rosters += ',"' + roster_students[0][1] + '"'
         rosters += ',"' + roster_students[0][2] + '"'
-        rosters += ',"' + roster_students[0][3] + '"\n'
+        rosters += ',"' + roster_students[0][3] + '"'
+        rosters += ',"' + roster_students[0][4] + '"\n'
       else:
         rosters += '\n'
       for s in roster_students[1:]:
-        rosters += '"","","","","","' + s[0] + '"'
+        rosters += '"","","","","","","' + s[0] + '"'
         rosters += ',"' + s[1] + '"'
         rosters += ',"' + s[2] + '"'
-        rosters += ',"' + s[3] + '"\n'
+        rosters += ',"' + s[3] + '"'
+        rosters += ',"' + s[4] + '"\n'
 
     template_values = {
       'user_email' : auth.email,
