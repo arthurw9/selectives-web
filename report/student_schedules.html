@@ -24,7 +24,9 @@ window.onload = function() {
     var line1 = 0;
     var line2 = 0;
     var line3 = 0;
-    
+
+    doc.setFontSize(TEXT_FONT_SIZE+2);
+    doc.text('Date Last Modified: ' + '{{last_modified}}', 145, 7);
     doc.setFontSize(TEXT_FONT_SIZE);
     doc.text('Page ' + totalPgCnt, 180, 12)
     doc.setFontType('bold');

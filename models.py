@@ -643,6 +643,7 @@ class Preferences(ndb.Model):
 
 class Schedule(ndb.Model):
   class_ids = ndb.StringProperty()
+  last_modified = ndb.DateTimeProperty() # See note below.
 
   @classmethod
   @timed
@@ -657,6 +658,12 @@ class Schedule(ndb.Model):
     schedule = Schedule()
     schedule.key = Schedule.schedule_key(institution, session, email)
     schedule.class_ids = class_ids
+    # Appengine datetimes are stored in UTC, so by around 4pm the date is wrong.
+    # This kludge gets PST, but it doesn't handle daylight savings time,
+    # but off by one hour is better than off by eight hours. The date will
+    # be wrong half the year when someone is modifying data between
+    # 11pm and midnight.
+    schedule.last_modified = datetime.datetime.now() - datetime.timedelta(hours=8)
     schedule.put()
 
   @classmethod
@@ -668,6 +675,16 @@ class Schedule(ndb.Model):
     else:
       schedule.class_ids = schedule.class_ids.strip(',').strip()
       return schedule.class_ids
+
+  @classmethod
+  @timed
+  def FetchEntity(cls, institution, session, email):
+    schedule = Schedule.schedule_key(institution, session, email).get()
+    if not schedule:
+      return {}
+    else:
+      schedule.class_ids = schedule.class_ids.strip(',').strip()
+      return schedule
 
 
 class ClassRoster(ndb.Model):
