@@ -36,6 +36,7 @@ import report.signup_main
 import report.signup_pe
 import report.homeroom
 import report.label
+import error_registration
 
 application = webapp2.WSGIApplication([
   ('/', index.Index),
@@ -74,4 +75,5 @@ application = webapp2.WSGIApplication([
   ('/report/signup_pe', report.signup_pe.SignupPE),
   ('/report/homeroom', report.homeroom.Homeroom),
   ('/report/label', report.label.Label),
+  ('/error_registration', error_registration.ErrorRegistration),
 ], debug=True)
