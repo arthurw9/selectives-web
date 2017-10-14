@@ -49,6 +49,7 @@ class StudentSchedules(webapp2.RequestHandler):
       classes_by_id[c['id']] = c
     students = models.Students.FetchJson(institution, session)
     last_modified_overall = datetime.datetime(2000,1,1)
+    last_modified_overall_str = ''
     for s in students:
       s['email'] = s['email'].lower()
       sched_obj = models.Schedule.FetchEntity(institution, session, s['email'])
