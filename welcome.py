@@ -19,6 +19,9 @@ class Welcome(webapp2.RequestHandler):
     if auth.HasStudentAccess():
         auth.Redirect()
         return
+    if auth.HasTeacherAccess():
+        auth.Redirect()
+        return
     login_url = auth.GetLoginUrl()
     template_values = {
       'login_url': login_url,

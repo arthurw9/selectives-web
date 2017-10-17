@@ -2,15 +2,13 @@ import os
 import urllib
 import jinja2
 import webapp2
+import logging
+import json
 
 import models
 import authorizer
+import logic
 
-# I created a report subdirectory for various reports needed in the scheduling process.
-# Since we are inside the report folder, I need to call
-# os.path.dirname(os.path.dirname(...)) to go up to the parent directory.
-# This is necessary because Jinja doesn't allow .. notation in extends
-# in other words {% extends '../menu.html' %} is not possible.
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(os.path.dirname(__file__))),
     extensions=['jinja2.ext.autoescape'],
@@ -28,25 +26,15 @@ def listOrder(c):
     return (c['name'],
             dayOrder.index(c['schedule'][0]['daypart']))
 
-class AttendanceList(webapp2.RequestHandler):
-
-  def RedirectToSelf(self, institution, session, message):
-    self.redirect("/report/attendance_list?%s" % urllib.urlencode(
-        {'message': message,
-         'institution': institution,
-         'session': session}))
-
+class MyAttendance(webapp2.RequestHandler):
   def get(self):
     auth = authorizer.Authorizer(self)
-    if not (auth.CanAdministerInstitutionFromUrl() or
-            auth.HasTeacherAccess()):
+    if not auth.HasTeacherAccess():
       auth.Redirect()
       return
 
     user_type = 'None'
-    if auth.CanAdministerInstitutionFromUrl():
-      user_type = 'Admin'
-    elif auth.HasTeacherAccess():
+    if auth.HasTeacherAccess():
       user_type = 'Teacher'
 
     institution = self.request.get("institution")
@@ -59,10 +47,16 @@ class AttendanceList(webapp2.RequestHandler):
     message = self.request.get('message')
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
+    email = auth.teacher_email
 
     classes = models.Classes.FetchJson(institution, session)
     if classes:
       classes.sort(key=listOrder)
+    my_classes = []
+    for c in classes:
+      if 'instructor' in c and c['instructor'] == auth.teacher_entity['last']:
+        my_classes.append(c)
+  
     rosters = {}
     for c in classes:
       rosters[c['id']] = models.ClassRoster.FetchEntity(institution, session, c['id'])
@@ -79,9 +73,11 @@ class AttendanceList(webapp2.RequestHandler):
       'session' : session,
       'message': message,
       'session_query': session_query,
-      'classes': classes,
+      'classes': my_classes,
       'rosters': rosters,
       'students': students,
+      'teacher': auth.teacher_entity,
     }
     template = JINJA_ENVIRONMENT.get_template('report/attendance_list.html')
     self.response.write(template.render(template_values))
+    

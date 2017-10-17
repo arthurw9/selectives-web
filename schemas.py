@@ -34,6 +34,13 @@ def Students():
         "  current_homeroom: REQUIRED\n"
         "  edtechid: OPTIONAL\n")
 
+def Teachers():
+  return yayv.ByExample(
+        "- email: UNIQUE\n"
+        "  first: REQUIRED\n"
+        "  last: REQUIRED\n"
+        "  current_homeroom: OPTIONAL\n")
+
 def AutoRegister():
   return yayv.ByExample(
         "- class: OPTIONAL\n" # for human use

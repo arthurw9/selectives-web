@@ -55,15 +55,15 @@ def GetHoverText(full_text, c):
   return class_desc
 
 
-def FindStudent(student_email, students):
-  # is students iterable?
+def FindUser(user_email, user_list):
+  # is user_list iterable?
   try:
-    _ = (e for e in students)
+    _ = (e for e in user_list)
   except TypeError:
     return None
-  for student in students:
-    if student_email == student['email'].lower():
-      return student
+  for user in user_list:
+    if user_email == user['email'].lower():
+      return user
   return None
 
 def StudentAllowedPageTypes(institution, session, student, serving_rules):

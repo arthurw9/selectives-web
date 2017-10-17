@@ -37,6 +37,12 @@ import report.signup_pe
 import report.homeroom
 import report.label
 import error_registration
+import teachers
+import teacher.take_attendance
+import teacher.my_rosters
+import teacher.all_rosters
+import teacher.my_attendance
+import teacher.teacher_catalog
 
 application = webapp2.WSGIApplication([
   ('/', index.Index),
@@ -76,4 +82,10 @@ application = webapp2.WSGIApplication([
   ('/report/homeroom', report.homeroom.Homeroom),
   ('/report/label', report.label.Label),
   ('/error_registration', error_registration.ErrorRegistration),
+  ('/teachers', teachers.Teachers),
+  ('/teacher/take_attendance', teacher.take_attendance.TakeAttendance),
+  ('/teacher/my_rosters', teacher.my_rosters.MyRosters),
+  ('/teacher/all_rosters', teacher.all_rosters.AllRosters),
+  ('/teacher/my_attendance', teacher.my_attendance.MyAttendance),
+  ('/teacher/teacher_catalog', teacher.teacher_catalog.TeacherCatalog),
 ], debug=True)

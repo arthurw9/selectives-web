@@ -78,6 +78,28 @@ class Authorizer(object):
                                session,
                                self.email)
 
+  def HasTeacherAccess(self):
+    if not self.email:
+      logging.error("No user")
+      return False
+    institution = self.handler.request.get("institution")
+    if not institution:
+      logging.error("No institution")
+      return False
+    session = self.handler.request.get("session")
+    if not session:
+      logging.error("No session")
+      return False
+    if self.CanAdministerInstitutionFromUrl():
+      return self._VerifyTeacher(institution,
+                                 session,
+                                 self.handler.request.get("teacher").lower())
+    if not self._VerifyServingSession(institution, session):
+      return False
+    return self._VerifyTeacher(institution,
+                               session,
+                               self.email)
+
   def _VerifyServingSession(self, institution, session):
     serving_session = models.ServingSession.FetchEntity(institution)
     logging.info("currently serving session = %s" % serving_session)
@@ -100,7 +122,7 @@ class Authorizer(object):
   def _VerifyStudent(self, institution, session, student_email):
     # returns true on success
     students = models.Students.FetchJson(institution, session)
-    student_entity = logic.FindStudent(student_email, students)
+    student_entity = logic.FindUser(student_email, students)
     if student_entity:
       self.student_email = student_email
       self.student_entity = student_entity
@@ -108,6 +130,17 @@ class Authorizer(object):
     logging.error("student not found '%s'" % student_email)
     return False
 
+
+  def _VerifyTeacher(self, institution, session, teacher_email):
+    # returns true on success
+    teachers = models.Teachers.FetchJson(institution, session)
+    teacher_entity = logic.FindUser(teacher_email, teachers)
+    if teacher_entity:
+      self.teacher_email = teacher_email
+      self.teacher_entity = teacher_entity
+      return True
+    logging.error("teacher not found '%s'" % teacher_email)
+    return False
 
   def Redirect(self):
     # are they logged in?
@@ -137,6 +170,21 @@ class Authorizer(object):
       session = ss.session_name
       start_page = ss.start_page
       verified = self._VerifyStudent(institution,
+                                     session,
+                                     self.email)
+      if verified:
+        logging.info("Redirecting %s to /%s" % (self.email, start_page))
+        self.handler.redirect("/%s?%s" % (start_page, urllib.urlencode(
+            {'institution': institution,
+             'session': session})))
+        return
+    # are they a teacher with a serving session?
+    serving_sessions = models.ServingSession.FetchAllEntities()
+    for ss in serving_sessions:
+      institution = ss.institution_name
+      session = ss.session_name
+      start_page = "teacher/take_attendance"
+      verified = self._VerifyTeacher(institution,
                                      session,
                                      self.email)
       if verified:

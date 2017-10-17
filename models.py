@@ -402,6 +402,45 @@ class Students(ndb.Model):
     students.put()
 
 
+class Teachers(ndb.Model):
+  """List of teachers in yaml and json format."""
+  data = ndb.TextProperty()
+  jdata = ndb.JsonProperty()
+
+  @classmethod
+  @timed
+  def teachers_key(cls, institution, session):
+    return ndb.Key("InstitutionKey", institution,
+                   Session, session,
+                   Teachers, "teachers")
+
+  @classmethod
+  @timed
+  def FetchJson(cls, institution, session):
+    teachers = Teachers.teachers_key(institution, session).get()
+    if teachers:
+      return teachers.jdata
+    else:
+      return ''
+
+  @classmethod
+  @timed
+  def Fetch(cls, institution, session):
+    teachers = Teachers.teachers_key(institution, session).get()
+    if teachers:
+      return teachers.data
+    else:
+      return ''
+
+  @classmethod
+  @timed
+  def store(cls, institution, session_name, teachers_data):
+    teachers = Teachers(data = teachers_data,
+                        jdata = yaml.load(teachers_data))
+    teachers.key = Teachers.teachers_key(institution, session_name)
+    teachers.put()
+
+
 class AutoRegister(ndb.Model):
   """Examples: 8th Core, 7th Core, 6th Core"""
   data = ndb.TextProperty()
