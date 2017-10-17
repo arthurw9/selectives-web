@@ -3,9 +3,6 @@ import urllib
 import jinja2
 import webapp2
 import logging
-import yaml
-import itertools
-import random
 
 import models
 import authorizer
@@ -29,13 +26,6 @@ def listOrder(c):
             dayOrder.index(c['schedule'][0]['daypart']))
 
 class ClassList(webapp2.RequestHandler):
-
-  def RedirectToSelf(self, institution, session, message):
-    self.redirect("/class_list?%s" % urllib.urlencode(
-        {'message': message, 
-         'institution': institution,
-         'session': session}))
-
   def get(self):
     auth = authorizer.Authorizer(self)
     if not auth.CanAdministerInstitutionFromUrl():
