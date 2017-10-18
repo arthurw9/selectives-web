@@ -55,17 +55,39 @@ def GetHoverText(full_text, c):
   return class_desc
 
 
-def FindStudent(student_email, students):
-  # is students iterable?
+def FindUser(user_email, user_list):
+  # is user_list iterable?
   try:
-    _ = (e for e in students)
+    _ = (e for e in user_list)
   except TypeError:
     return None
-  for student in students:
-    if student_email == student['email'].lower():
-      return student
+  for user in user_list:
+    if user_email == user['email'].lower():
+      return user
   return None
 
+def StudentAllowedPageTypes(institution, session, student, serving_rules):
+  """ Returns list containing types of pages student is allowed to access. """
+  """ For example, all page types allowed returns """
+  """ ['materials', 'schedule', 'preferences', 'verification'] """
+  """ No page types allowed returns [] """
+  pt = []
+  for serving_rule in serving_rules:
+    if serving_rule['allow']: # check that allow for this rule is not blank
+      for eligible in serving_rule['allow']:
+        if 'email' in eligible:
+          if student['email'].lower() == eligible['email'].lower():
+            pt.append(serving_rule['name'])
+            break
+        if 'current_homeroom' in eligible:
+          if student['current_homeroom'] == eligible['current_homeroom']:
+            pt.append(serving_rule['name'])
+            break
+        if 'current_grade' in eligible:
+          if student['current_grade'] == eligible['current_grade']:
+            pt.append(serving_rule['name'])
+            break
+  return pt
 
 def StudentIsEligibleForClass(institution, session, student, c):
   """returns True is student is eligible for class c."""
@@ -140,7 +162,7 @@ class _ClassRoster(object):
         self.institution, self.session, self.class_obj, emails)
 
   def remove(self, student_email):
-    self.emails = [ e for e in self.emails if e != student_email ]
+    self.emails = [ e for e in self.emails if e.lower().strip() != student_email.lower().strip() ]
     emails = ','.join(self.emails)
     models.ClassRoster.Store(
         self.institution, self.session, self.class_obj, emails)
@@ -167,7 +189,14 @@ class _ClassInfo(object):
     return class_obj
 
   def RemoveConflicts(self, class_ids, new_class_id):
-    """return new_class_id and non-conflicting old class_ids""" 
+    """return new_class_id and non-conflicting old class_ids"""
+    if new_class_id in class_ids:
+      # Check if we are trying to add a class that is already
+      # in a student's schedule. (This can happen by running
+      # Auto Register multiple times.)
+      # If so, don't remove it.
+      self.removed_class_ids = []
+      return class_ids
     if new_class_id in self.dayparts_by_class_id:
       new_dayparts = self.dayparts_by_class_id[new_class_id]
     else:

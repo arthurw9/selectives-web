@@ -1,0 +1,21 @@
+{% extends 'menu.html' %}
+{% block session_body %}
+
+<h3>Serving Rules</h3>
+<table width='50%'>
+<tr><td>
+Required field: name
+Optional field: allow
+</td></tr>
+</table>
+
+<form method=post>
+<input type=hidden name="institution" value="{{ institution }}" />
+<input type=hidden name="session" value="{{ session }}" />
+<textarea name=serving_rules>
+{{ serving_rules }}
+</textarea>
+<br />
+<input type=submit />
+</form>
+{% endblock %}

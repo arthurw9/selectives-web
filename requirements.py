@@ -84,27 +84,7 @@ class Requirements(webapp2.RequestHandler):
           "      - PE_Thu_or_Fri",
           "    -",  # OR
           "      - PE_1_day_equivalent",  # AND
-          "      - PE_1_day_equivalent",
-          "- name: CORE_6",
-          "  applies_to:",
-          "    - current_grade: 6",
-          "  exempt:",
-          "    - student3@mydiscoveryk8.org",
-          "  class_or_group_options:",
-          "    -",
-          "      - 6th Grade Core",
-          "- name: CORE_7",
-          "  applies_to:",
-          "    - current_grade: 7",
-          "  class_or_group_options:",
-          "    -",
-          "      - 7th Grade Core",
-          "- name: CORE_8",
-          "  applies_to:",
-          "    - current_grade: 8",
-          "  class_or_group_options:",
-          "    -",
-          "      - 8th Grade Core"])
+          "      - PE_1_day_equivalent"])
 
     template_values = {
       'user_email' : auth.email,

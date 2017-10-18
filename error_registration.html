@@ -1,0 +1,11 @@
+{% extends 'menu.html' %}
+{% block session_body %}
+
+<h3>Validate Registration</h3>
+<input type=hidden name="institution" value="{{ institution }}" />
+<input type=hidden name="session" value="{{ session }}" />
+{% for line in registration_detail.splitlines() %}
+  {{ line }}<br>
+{% endfor %}
+
+{% endblock %}

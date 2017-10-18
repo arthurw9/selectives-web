@@ -1,27 +1,19 @@
-{% for c in core %}
-    <h3 style="height:5px">{{c['name']}}</h3>
-    <b>Schedule: </b>
-    {{ c['schedule'] | join(' / ', attribute='daypart') }}
-{% endfor %}
-<br>
-{% for c in classes %}
-  {% if not c['exclude_from_catalog'] %}
-    <h3 style="height:5px">{{c['name']}}</h3>
-    {% if c['instructor'] %}
-      <b>Teacher: </b>{{c['instructor']}}<br>
-    {% endif %}
-    <b>Maximum Enrollment: </b>{{c['max_enrollment']}}<br>
-    <b>Schedule: </b>
-    {{ c['schedule'] | join(' / ', attribute='daypart') }}<br>
-    {% if c['donation'] %}
-      <b>Suggested Donation: </b>{{c['donation']}}<br>
-    {% endif %}
-    <div style="line-height:6px"><br></div>
-    {% if c['description'] %}
-      {% for line in c['description'].splitlines() %}
-        {{ line }}<div style="line-height:6px"><br></div>
-      {% endfor %}
-    {% endif %}
-    <br>
-  {% endif %}
-{% endfor %}
+{% extends 'menu_student.html' %}
+{% block session_body %}
+
+{% if not student %}
+Student not found! This error should never happen. Please inform the selectives team. Thanks!
+{% else %}
+<h2 style="margin-bottom:0">
+  Selectives Full Course Catalog<br>
+  {{ student['first'] + ' ' + student['last'] }}
+</h2>
+<h3 style="margin-bottom:4px; margin-top:4px">
+  Homeroom: {{ student['current_homeroom'] }}<br>
+  Grade: {{ student['current_grade'] }}<br>
+</h3>
+<a href="catalog_full_print?{{ session_query }}">View Printer Friendly Page</a><br>
+
+{% include 'catalog_full_include.html' %}
+{% endif %}
+{% endblock %}

@@ -67,6 +67,9 @@ class Schedule(webapp2.RequestHandler):
       session = self.request.get("session")
       if not session:
         logging.fatal("no session")
+      if not auth.HasPageAccess(institution, session, "schedule"):
+        auth.RedirectTemporary(institution, session)
+        return
 
       message = self.request.get('message')
       session_query = urllib.urlencode({'institution': institution,
@@ -103,7 +106,6 @@ class Schedule(webapp2.RequestHandler):
       for daypart in dayparts:
         classes_by_daypart[daypart['name']] = []
       classes_by_id = {}
-      classes_for_catalog = []
       use_full_description = auth.CanAdministerInstitutionFromUrl()
       for c in classes:
         class_id = str(c['id'])
@@ -115,9 +117,6 @@ class Schedule(webapp2.RequestHandler):
         for daypart in [s['daypart'] for s in c['schedule']]:
           if daypart in classes_by_daypart:
             classes_by_daypart[daypart].append(c)
-        if not('exclude_from_catalog' in c and c['exclude_from_catalog']):
-          classes_for_catalog.append(c)
-      classes_for_catalog.sort(key=lambda c:c['name'])
       for daypart in classes_by_daypart:
         classes_by_daypart[daypart].sort(key=lambda c:c['name'])
       
@@ -138,7 +137,6 @@ class Schedule(webapp2.RequestHandler):
         'dayparts_ordered': dayparts_ordered,
         'schedule': json.dumps(schedule),
         'classes_by_id': classes_by_id,
-        'classes_for_catalog': classes_for_catalog,
       }
       template = JINJA_ENVIRONMENT.get_template('schedule.html')
       self.response.write(template.render(template_values))

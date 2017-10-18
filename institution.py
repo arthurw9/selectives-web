@@ -62,21 +62,21 @@ class Institution(webapp2.RequestHandler):
 
     if action == "enable_logins":
       name = self.request.get("session")
-      login_type = self.request.get("login_type")
-      logging.info('enable login: %s for session: %s from institution: %s'
-                    % (login_type, name, institution))
-      models.ServingSession.store(institution, name, login_type)
+      start_page = self.request.get("start_page")
+      logging.info('enable start page: %s for session: %s from institution: %s'
+                    % (start_page, name, institution))
+      models.ServingSession.store(institution, name, start_page)
       self.RedirectToSelf(institution, 'enabled logins for %s' % name)
       return
 
     if action == "disable_logins":
       name = self.request.get("session")
-      login_type = self.request.get("login_type")
-      logging.info('disable login: %s for session: %s from institution: %s'
-                   % (login_type, name, institution))
+      start_page = self.request.get("start_page")
+      logging.info('disable start page: %s for session: %s from institution: %s'
+                   % (start_page, name, institution))
       models.ServingSession.delete(institution)
       self.RedirectToSelf(institution, 'disabled logins for %s %s'
-                          % (login_type, name))
+                          % (start_page, name))
       return
 
     name = self.request.get("session")
@@ -106,25 +106,25 @@ class Institution(webapp2.RequestHandler):
     for session in sessions:
       args = urllib.urlencode({'institution': institution,
                                'session': session.name})
-      preferences_enabled = serving_session.login_type == "preferences"
-      verification_enabled = serving_session.login_type == "verification"
-      schedule_enabled = serving_session.login_type == "schedule"
-      preregistration_enabled = serving_session.login_type == "preregistration"
-      postregistration_enabled = serving_session.login_type == "postregistration"
+      preferences_start = serving_session.start_page == "preferences"
+      verification_start = serving_session.start_page == "verification"
+      schedule_start = serving_session.start_page == "schedule"
+      preregistration_start = serving_session.start_page == "preregistration"
+      postregistration_start = serving_session.start_page == "postregistration"
       if not serving_session.session_name == session.name:
-        preferences_enabled = False
-        verification_enabled = False
-        schedule_enabled = False
-        preregistration_enabled = False
-        postregistration_enabled = False
+        preferences_start = False
+        verification_start = False
+        schedule_start = False
+        preregistration_start = False
+        postregistration_start = False
       sessions_and_urls.append(
           {'name': session.name,
            'management_url': ('/dayparts?%s' % args),
-           'verification_enabled': verification_enabled,
-           'preferences_enabled': preferences_enabled,
-           'schedule_enabled': schedule_enabled,
-           'preregistration_enabled': preregistration_enabled,
-           'postregistration_enabled': postregistration_enabled,
+           'verification_start': verification_start,
+           'preferences_start': preferences_start,
+           'schedule_start': schedule_start,
+           'preregistration_start': preregistration_start,
+           'postregistration_start': postregistration_start,
           })
 
     message = self.request.get('message')

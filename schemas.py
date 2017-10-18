@@ -31,7 +31,27 @@ def Students():
         "  first: REQUIRED\n"
         "  last: REQUIRED\n"
         "  current_grade: REQUIRED\n"
-        "  current_homeroom: REQUIRED\n")
+        "  current_homeroom: REQUIRED\n"
+        "  edtechid: OPTIONAL\n")
+
+def Teachers():
+  return yayv.ByExample(
+        "- email: UNIQUE\n"
+        "  first: REQUIRED\n"
+        "  last: REQUIRED\n"
+        "  current_homeroom: OPTIONAL\n")
+
+def AutoRegister():
+  return yayv.ByExample(
+        "- class: OPTIONAL\n" # for human use
+        "  class_id: REQUIRED\n" # should match id from Classes
+        "  applies_to:\n"
+        "    - current_grade: OPTIONAL\n"
+        "      email: OPTIONAL\n"
+        "      group: OPTIONAL\n"
+        "  id: AUTO_INC\n"
+        "  exempt:\n"
+        "    - OPTIONAL\n")
 
 def Requirements():
   return yayv.ByExample(
@@ -60,3 +80,11 @@ def StudentGroups():
         "- group_name: REQUIRED\n"
         "  emails:\n"
         "    - REQUIRED\n")
+
+def ServingRules():
+  return yayv.ByExample(
+        "- name: REQUIRED\n"
+        "  allow:\n"
+        "    - current_grade: OPTIONAL\n"
+        "      current_homeroom: OPTIONAL\n"
+        "      email: OPTIONAL\n")

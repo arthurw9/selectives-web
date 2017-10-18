@@ -16,6 +16,17 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
 
+dayOrder = ['Mon A', 'Mon B', 'Tues A', 'Tues B',
+            'Thurs A', 'Thurs B', 'Fri A', 'Fri B']
+
+def listOrder(c):
+  if 'instructor' in c:
+    return (c['name'],
+            dayOrder.index(c['schedule'][0]['daypart']),
+            c['instructor'])
+  else:
+    return (c['name'],
+            dayOrder.index(c['schedule'][0]['daypart']))
 
 class ClassList(webapp2.RequestHandler):
 
@@ -43,6 +54,8 @@ class ClassList(webapp2.RequestHandler):
                                       'session': session})
 
     classes = models.Classes.FetchJson(institution, session)
+    if classes:
+      classes.sort(key=listOrder)
     template_values = {
       'user_email' : auth.email,
       'institution' : institution,

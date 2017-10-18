@@ -58,6 +58,7 @@ textarea { width:60%; height:300px }
   cursor: pointer; cursor: hand;
   background:#eeeeff;
 
+  max-width:200px;
   border: 1px solid #666666;
   border-radius:0.2em;
   margin:0 0 1px 0;
@@ -71,4 +72,54 @@ textarea { width:60%; height:300px }
 }
 .schedTableData {
   vertical-align:top;
+}
+.schedPostRegItem {
+  max-width:200px;
+  text-align: center;
+  min-width:200px;
+  box-sizing: border-box;
+  border: 2px solid #666666;
+  border-radius:0.3em;
+}
+.schedPostRegHeader {
+  text-align: center;
+  min-width:200px;
+  font-size:120%;
+  font-weight:bold;
+  padding-top:25px;
+}
+.schedPostRegRowHeader {
+  text-align: right;
+  width:5px;
+}
+
+table.attendanceHeader {
+  font-size: 1.1em;
+  border-collapse: collapse;
+}
+table.attendanceHeader td.name {
+  min-width: 450px;
+  max-width: 450px;
+  font-size: 1.7em;
+  font-weight: 700;
+}
+table.attendanceHeaderDetails td {
+  padding-right: 10px;
+}
+table.attendance {
+  border: 1px solid black;
+  border-collapse: collapse;
+  margin-bottom: 5px;
+}
+table.attendance td, table.attendance th, table.attendance tr {
+  border: 1px solid black;
+}
+table.attendance tr:nth-child(even) {
+  background-color: beige;
+  -webkit-print-color-adjust: exact;
+}
+table.attendanceLegend {
+  font-size: 0.8em;
+  border: 1px solid black;
+  border-collapse: collapse;
 }

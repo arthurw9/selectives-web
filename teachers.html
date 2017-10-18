@@ -1,0 +1,18 @@
+{% extends 'menu.html' %}
+{% block session_body %}
+
+<h3>Teachers</h3>
+<table width='50%'><tr><td>
+Required fields: email, first, last.<br>
+Optional field: current_homeroom.
+</td></tr></table>
+<form method=post>
+<input type=hidden name="institution" value="{{ institution }}" />
+<input type=hidden name="session" value="{{ session }}" />
+<textarea name=teachers>
+{{ teachers }}
+</textarea>
+<br />
+<input type=submit />
+</form>
+{% endblock %}

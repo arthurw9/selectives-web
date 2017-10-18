@@ -78,27 +78,51 @@ class Authorizer(object):
                                session,
                                self.email)
 
+  def HasTeacherAccess(self):
+    if not self.email:
+      logging.error("No user")
+      return False
+    institution = self.handler.request.get("institution")
+    if not institution:
+      logging.error("No institution")
+      return False
+    session = self.handler.request.get("session")
+    if not session:
+      logging.error("No session")
+      return False
+    if self.CanAdministerInstitutionFromUrl():
+      return self._VerifyTeacher(institution,
+                                 session,
+                                 self.handler.request.get("teacher").lower())
+    if not self._VerifyServingSession(institution, session):
+      return False
+    return self._VerifyTeacher(institution,
+                               session,
+                               self.email)
+
   def _VerifyServingSession(self, institution, session):
     serving_session = models.ServingSession.FetchEntity(institution)
     logging.info("currently serving session = %s" % serving_session)
-    if serving_session.session_name != session:
-      logging.error("serving session doesn't match")
-      return False
-    if (serving_session.login_type == "schedule" and
-        self.handler.request.path == "/spots_available"):
+    if serving_session.session_name == session:
       return True
-    if (serving_session.login_type == "preregistration" and
-        self.handler.request.path == "/catalog_print"):
+    logging.error("serving session doesn't match")
+    return False
+
+  def HasPageAccess(self, institution, session, current_page):
+    serving_rules = models.ServingRules.FetchJson(institution, session)
+    page_types = logic.StudentAllowedPageTypes(
+            institution, session, self.student_entity, serving_rules)
+    if current_page in page_types:
       return True
-    if not "/" + serving_session.login_type == self.handler.request.path:
-      logging.error("request path doesn't match")
-      return False
-    return True
+    if self.CanAdministerInstitutionFromUrl():
+      # Needed for impersonation page
+      return True
+    return False
 
   def _VerifyStudent(self, institution, session, student_email):
     # returns true on success
     students = models.Students.FetchJson(institution, session)
-    student_entity = logic.FindStudent(student_email, students)
+    student_entity = logic.FindUser(student_email, students)
     if student_entity:
       self.student_email = student_email
       self.student_entity = student_entity
@@ -106,6 +130,17 @@ class Authorizer(object):
     logging.error("student not found '%s'" % student_email)
     return False
 
+
+  def _VerifyTeacher(self, institution, session, teacher_email):
+    # returns true on success
+    teachers = models.Teachers.FetchJson(institution, session)
+    teacher_entity = logic.FindUser(teacher_email, teachers)
+    if teacher_entity:
+      self.teacher_email = teacher_email
+      self.teacher_entity = teacher_entity
+      return True
+    logging.error("teacher not found '%s'" % teacher_email)
+    return False
 
   def Redirect(self):
     # are they logged in?
@@ -133,18 +168,38 @@ class Authorizer(object):
     for ss in serving_sessions:
       institution = ss.institution_name
       session = ss.session_name
-      login_type = ss.login_type
+      start_page = ss.start_page
       verified = self._VerifyStudent(institution,
                                      session,
                                      self.email)
       if verified:
-        logging.info("Redirecting %s to /%s" % (self.email, login_type))
-        self.handler.redirect("/%s?%s" % (login_type, urllib.urlencode(
+        logging.info("Redirecting %s to /%s" % (self.email, start_page))
+        self.handler.redirect("/%s?%s" % (start_page, urllib.urlencode(
+            {'institution': institution,
+             'session': session})))
+        return
+    # are they a teacher with a serving session?
+    serving_sessions = models.ServingSession.FetchAllEntities()
+    for ss in serving_sessions:
+      institution = ss.institution_name
+      session = ss.session_name
+      start_page = "teacher/take_attendance"
+      verified = self._VerifyTeacher(institution,
+                                     session,
+                                     self.email)
+      if verified:
+        logging.info("Redirecting %s to /%s" % (self.email, start_page))
+        self.handler.redirect("/%s?%s" % (start_page, urllib.urlencode(
             {'institution': institution,
              'session': session})))
         return
     logging.info("Redirecting %s to /welcome", self.email)
     self.handler.redirect("/welcome")
+
+  def RedirectTemporary(self, institution, session):
+    self.handler.redirect("/coming_soon?%s" % urllib.urlencode(
+        {'institution': institution,
+         'session': session}))
 
 # TODO get rid of the unnecessary handler parameter.
 # We really want the request, not the handler, and we could get it from WebApp2.

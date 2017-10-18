@@ -2,6 +2,7 @@ import logging
 import yaml
 import time
 import webapp2
+import datetime
 try:
   from google.appengine.ext import ndb
 except:
@@ -201,11 +202,49 @@ class Session(ndb.Model):
   def delete(cls, institution, session_name):
     Session.session_key(institution, session_name).delete()
 
+class ServingRules(ndb.Model):
+  """List of serving rules in yaml and json format."""
+  data = ndb.TextProperty()
+  jdata = ndb.JsonProperty()
+
+  @classmethod
+  @timed
+  def serving_rules_key(cls, institution, session):
+    return ndb.Key("InstitutionKey", institution,
+                   Session, session,
+                   ServingRules, "serving_rules")
+
+  @classmethod
+  @timed
+  def FetchJson(cls, institution, session):
+    serving_rules = ServingRules.serving_rules_key(institution, session).get()
+    if serving_rules:
+      return serving_rules.jdata
+    else:
+      return ''
+
+  @classmethod
+  @timed
+  def Fetch(cls, institution, session):
+    serving_rules = ServingRules.serving_rules_key(institution, session).get()
+    if serving_rules:
+      return serving_rules.data
+    else:
+      return ''
+
+  @classmethod
+  @timed
+  def store(cls, institution, session_name, sr_data):
+    serving_rules = ServingRules(data = sr_data,
+                                 jdata = yaml.load(sr_data))
+    serving_rules.key = ServingRules.serving_rules_key(institution, session_name)
+    serving_rules.put()
+
 
 class ServingSession(ndb.Model):
   """Which session is currently serving. Empty if none."""
   session_name = ndb.StringProperty()
-  login_type = ndb.StringProperty(choices=['verification', 'preferences', 'schedule', 'preregistration', 'postregistration'])
+  start_page = ndb.StringProperty(choices=['verification', 'preferences', 'schedule', 'preregistration', 'postregistration'])
 
   @classmethod
   @timed
@@ -224,10 +263,10 @@ class ServingSession(ndb.Model):
 
   @classmethod
   @timed
-  def store(cls, institution, session_name, login_type):
+  def store(cls, institution, session_name, start_page):
     serving_session = ServingSession()
     serving_session.session_name = session_name
-    serving_session.login_type = login_type
+    serving_session.start_page = start_page
     serving_session.key = ServingSession.serving_session_key(institution)
     serving_session.put()
 
@@ -239,7 +278,7 @@ class ServingSession(ndb.Model):
   @classmethod
   @timed
   def FetchAllEntities(cls):
-    """Returns a list of triples (institution_name, session_name, login_type)"""
+    """Returns a list of triples (institution_name, session_name, start_page)"""
     serving_sessions = ServingSession.query().fetch()
     for ss in serving_sessions:
       ss.institution_name = ss.key.parent().id()
@@ -363,8 +402,87 @@ class Students(ndb.Model):
     students.put()
 
 
+class Teachers(ndb.Model):
+  """List of teachers in yaml and json format."""
+  data = ndb.TextProperty()
+  jdata = ndb.JsonProperty()
+
+  @classmethod
+  @timed
+  def teachers_key(cls, institution, session):
+    return ndb.Key("InstitutionKey", institution,
+                   Session, session,
+                   Teachers, "teachers")
+
+  @classmethod
+  @timed
+  def FetchJson(cls, institution, session):
+    teachers = Teachers.teachers_key(institution, session).get()
+    if teachers:
+      return teachers.jdata
+    else:
+      return ''
+
+  @classmethod
+  @timed
+  def Fetch(cls, institution, session):
+    teachers = Teachers.teachers_key(institution, session).get()
+    if teachers:
+      return teachers.data
+    else:
+      return ''
+
+  @classmethod
+  @timed
+  def store(cls, institution, session_name, teachers_data):
+    teachers = Teachers(data = teachers_data,
+                        jdata = yaml.load(teachers_data))
+    teachers.key = Teachers.teachers_key(institution, session_name)
+    teachers.put()
+
+
+class AutoRegister(ndb.Model):
+  """Examples: 8th Core, 7th Core, 6th Core"""
+  data = ndb.TextProperty()
+  jdata = ndb.JsonProperty()
+
+  @classmethod
+  @timed
+  def auto_register_key(cls, institution, session):
+    return ndb.Key("InstitutionKey", institution,
+                   Session, session,
+                   AutoRegister, "auto_register")
+
+  @classmethod
+  @timed
+  def FetchJson(cls, institution, session):
+    auto_register = AutoRegister.auto_register_key(institution, session).get()
+    if auto_register:
+      return auto_register.jdata
+    else:
+      return ''
+
+  @classmethod
+  @timed
+  def Fetch(cls, institution, session):
+    auto_register = AutoRegister.auto_register_key(institution, session).get()
+    if auto_register:
+      return auto_register.data
+    else:
+      return ''
+
+  @classmethod
+  @timed
+  def store(cls, institution, session_name, auto_register_data):
+    auto_register = AutoRegister(
+        data = auto_register_data,
+        jdata = yaml.load(auto_register_data))
+    auto_register.key = AutoRegister.auto_register_key(institution, session_name)
+    auto_register.put()
+
+
 class Requirements(ndb.Model):
-  """Examples: 8th Core, PE"""
+  """Examples: one PE required, PEs must be on opposite sides of the week"""
   data = ndb.TextProperty()
   jdata = ndb.JsonProperty()
 
@@ -564,6 +682,7 @@ class Preferences(ndb.Model):
 
 class Schedule(ndb.Model):
   class_ids = ndb.StringProperty()
+  last_modified = ndb.DateTimeProperty() # See note below.
 
   @classmethod
   @timed
@@ -578,6 +697,12 @@ class Schedule(ndb.Model):
     schedule = Schedule()
     schedule.key = Schedule.schedule_key(institution, session, email)
     schedule.class_ids = class_ids
+    # Appengine datetimes are stored in UTC, so by around 4pm the date is wrong.
+    # This kludge gets PST, but it doesn't handle daylight savings time,
+    # but off by one hour is better than off by eight hours. The date will
+    # be wrong half the year when someone is modifying data between
+    # 11pm and midnight.
+    schedule.last_modified = datetime.datetime.now() - datetime.timedelta(hours=8)
     schedule.put()
 
   @classmethod
@@ -587,7 +712,18 @@ class Schedule(ndb.Model):
     if not schedule:
       return ""
     else:
+      schedule.class_ids = schedule.class_ids.strip(',').strip()
       return schedule.class_ids
+
+  @classmethod
+  @timed
+  def FetchEntity(cls, institution, session, email):
+    schedule = Schedule.schedule_key(institution, session, email).get()
+    if not schedule:
+      return {}
+    else:
+      schedule.class_ids = schedule.class_ids.strip(',').strip()
+      return schedule
 
 
 class ClassRoster(ndb.Model):
@@ -595,6 +731,8 @@ class ClassRoster(ndb.Model):
   student_emails = ndb.TextProperty()
   # class obj, yaml.dump and yaml.load takes too long
   jclass_obj = ndb.JsonProperty()
+  # Not using auto_now=True on purpose, see note below.
+  last_modified = ndb.DateTimeProperty()
 
   @classmethod
   @timed
@@ -615,8 +753,26 @@ class ClassRoster(ndb.Model):
     roster.key = ClassRoster.class_roster_key(institution, session, class_id)
     roster.student_emails = student_emails
     roster.jclass_obj = class_obj
+    # Appengine datetimes are stored in UTC, so by around 4pm the date is wrong.
+    # This is a kludgy way to get PST. It doesn't handle daylight savings time,
+    # but off by one hour is better than off by eight.
+    # The alternatives:
+    #  - pytz has a few hundred files.
+    #  - tzinfo has four methods to implement which I don't need.
+    # Don't use hour because it will be wrong half the year.
+    # If someone wants to do this the "right" way later, that would be fine.
+    roster.last_modified = datetime.datetime.now() - datetime.timedelta(hours=8)
     roster.put()
 
+  # CAUTION
+  # Do not use jclass_obj. After a roster is created, if the admin makes
+  # changes to Classes data through Setup, jclass_obj will not be consistent
+  # with it. Errors will occur.
+  # Already modified rosters.py, class_roster.py, class_roster.html to
+  # stop using jclass_obj.
+  # TODO: check how other pages are using this and possibly delete it.
+  #       (scheduler.py, logic.py)
+  #       spots_available.py - checked, only uses remaining_space field
   @classmethod
   @timed
   def FetchEntity(cls, institution, session, class_id):
@@ -630,9 +786,16 @@ class ClassRoster(ndb.Model):
         r['emails'] = r['emails'][1:]
       r['class_name'] = c['name']
       r['class_id'] = c['id']
+      if 'instructor' in c:
+        r['instructor'] = c['instructor']
+      r['schedule'] = c['schedule']
       r['class_details'] = roster.jclass_obj
       r['max_enrollment'] = c['max_enrollment']
       r['remaining_space'] = c['max_enrollment'] - len(r['emails'])
+      if (roster.last_modified):
+        r['last_modified'] = roster.last_modified
+      else:
+        r['last_modified'] = None
       return r
     logging.info("Class Roster NOT found: [%s] [%s] [%s]" % (
           institution, session, class_id))
@@ -640,9 +803,11 @@ class ClassRoster(ndb.Model):
     r['emails'] = []
     r['class_id'] = 0
     r['class_name'] = 'None'
+    r['schedule'] = {}
     r['class_details'] = ''
     r['max_enrollment'] = 0
     r['remaining_space'] = 0
+    r['last_modified'] = None
     return r
 
 

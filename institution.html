@@ -11,13 +11,13 @@ function RemoveSession(session_name) {
   return false;
 }
 
-function EnableLogins(session_name, login_type, enabled) {
+function EnableLogins(session_name, start_page, enabled) {
   if (enabled) {
     document.getElementById("action").value = "enable_logins";
   } else {
     document.getElementById("action").value = "disable_logins";
   }
-  document.getElementById("login_type").value = login_type;
+  document.getElementById("start_page").value = start_page;
   document.getElementById("session").value = session_name;
   document.getElementById("session_form").submit();
   return false;
@@ -38,9 +38,9 @@ function EnableLogins(session_name, login_type, enabled) {
   <input type="hidden" id="action" name="action" value="">
   <input type="hidden" name="institution" value="{{ institution }}">
   <input type="hidden" id="session" name="session" value="">
-  <input type="hidden" id="login_type" name="login_type" value="">
+  <input type="hidden" id="start_page" name="start_page" value="">
   <table border=1>
-  <th colspan=2>Session</th><th colspan=4>Student Logins</th>
+  <th colspan=2>Session</th><th colspan=4>Student Start Page</th>
   {% for item in sessions %}
     <tr>
       <td class="left-right-padding">
@@ -48,21 +48,21 @@ function EnableLogins(session_name, login_type, enabled) {
       <td  class="left-right-padding">
         <a href="{{ item.management_url }}">{{ item.name }}</a></td>
       <td  class="left-right-padding">
-        <input type="checkbox" 
+        <input type="checkbox"
                onchange="return EnableLogins('{{ item.name }}', 'preferences', this.checked);"
-               {% if item.preferences_enabled %}checked{% endif %}> Preferences</td>
+               {% if item.preferences_start %}checked{% endif %}> Preferences</td>
       <td  class="left-right-padding">
-        <input type="checkbox" 
+        <input type="checkbox"
                onchange="return EnableLogins('{{ item.name }}', 'schedule', this.checked);"
-               {% if item.schedule_enabled %}checked{% endif %}> Schedule </td>
+               {% if item.schedule_start %}checked{% endif %}> Schedule </td>
       <td  class="left-right-padding">
-        <input type="checkbox" 
+        <input type="checkbox"
                onchange="return EnableLogins('{{ item.name }}', 'preregistration', this.checked);"
-               {% if item.preregistration_enabled %}checked{% endif %}> Pre-Registration</td>
+               {% if item.preregistration_start %}checked{% endif %}> Pre-registration</td>
       <td  class="left-right-padding">
-        <input type="checkbox" 
+        <input type="checkbox"
                onchange="return EnableLogins('{{ item.name }}', 'postregistration', this.checked);"
-               {% if item.postregistration_enabled %}checked{% endif %}> Post-Registration</td>
+               {% if item.postregistration_start %}checked{% endif %}> Post-registration</td>
     </tr>
   {% endfor %}
   </table>

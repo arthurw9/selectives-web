@@ -1,0 +1,108 @@
+{% extends 'menu.html' %}
+{% block session_body %}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.4/jspdf.debug.js">
+// This page uses jsPDF. To learn more:
+//   http://rawgit.com/MrRio/jsPDF/master/#
+//   http://rawgit.com/MrRio/jsPDF/master/docs/jspdf.js.html#line1158
+</script>
+<script>
+var CLASS_NAME_MAX = 44;
+var NAME_FONT_SIZE = 52;
+var DP_FONT_SIZE = 40;
+var NAME_X = 18;
+var NAME_Y = 35;
+var DP_X = NAME_X;
+var DP_Y = 65;
+
+window.onload = function() {
+  var selectAll = document.getElementById("selectAll");
+  var unselectAll = document.getElementById("unselectAll");
+  var downloadPDF = document.getElementById("downloadPDF");
+
+  selectAll.onclick = function() {
+    {% for c in classes %}
+      document.getElementById("selectPDF{{c['id']}}").checked = true;
+    {% endfor %}
+  }
+  unselectAll.onclick = function() {
+    {% for c in classes %}
+      document.getElementById("selectPDF{{c['id']}}").checked = false;
+    {% endfor %}
+  }
+
+  downloadPDF.onclick = function() {
+    var doc = new jsPDF({orientation: 'landscape'});
+    var pgCnt = 0;
+    {% for c in classes %}
+      if (document.getElementById("selectPDF{{c['id']}}").checked) {
+        var classInfo = new Object();
+        // stops '&' from turning into &amp;
+        classInfo.name = "{{c['name'] | safe}}";
+        // Hack! to shorten titles. Don't want to modify at the
+        // source because other pages can display long names just fine.
+        if (classInfo.name.startsWith("Intermediate Strings")) {
+          classInfo.name = "Int. Strings & Beg. Instruments";
+        }
+        if (classInfo.name.startsWith("Wired")) {
+          classInfo.name = "Wired - Electronics & Robotics";
+        }
+        classInfo.name = classInfo.name.slice(0,CLASS_NAME_MAX);
+        classInfo.daypart = '{{c['schedule'] | join(' / ', attribute='daypart')}}';
+        {% if c['num_locations'] == 1 %}
+          classInfo.location = '{{c['schedule'][0]['location']}}';
+        {% else %}
+          classInfo.location = '{{c['schedule'] | join(' / ', attribute='location')}}';
+        {% endif %}
+      
+        doc.setFont('times');
+        doc.setFontType('bold');
+        doc.setFontSize(NAME_FONT_SIZE);
+        doc.text(classInfo.name, NAME_X, NAME_Y);
+        doc.setFontSize(DP_FONT_SIZE);
+        doc.text(classInfo.daypart, DP_X, DP_Y);
+        pgCnt += 1;
+        doc.addPage();
+      }
+    {% endfor %}
+    doc.deletePage(pgCnt+1); // delete extra last page
+    doc.save('selectives_signupcard.pdf');
+
+    // Prevent redirect and event bubbling.
+    return false;
+  };
+};
+</script>
+
+<h3>Signup Card</h3>
+Except for PE, classes excluded from the catalog are not listed here.
+<br>
+Chances are they were excluded because they are not available for sign up, so we don't need a card for them.
+<br>
+<br>
+
+{% if classes %}
+<form>
+<input type="button" id="selectAll" value="Select All">
+<input type="button" id="unselectAll" value="Unselect All">
+<input type="button" id="downloadPDF" value="Download PDF">
+<table>
+  {% for c in classes %}
+    <tr class=highlight>
+      <td><input type="checkBox" id="selectPDF{{c['id']}}" value="c"+{{c['id']}}></td>
+      <td>{{ c['name'] }}</td>
+      <td>
+        {% for s in c['schedule'] %}
+          {{ s['daypart'] }}
+        {% endfor %}</td>
+      <td>{{ c['instructor'] }}</td>
+    </tr>
+  {% endfor %}
+</table>
+</form>
+{% else %}
+There are no classes to display.<br>
+Go to Setup >> Classes and add some classes.
+{% endif %}
+
+{% endblock %}
