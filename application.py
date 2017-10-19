@@ -43,6 +43,7 @@ import teacher.my_rosters
 import teacher.all_rosters
 import teacher.my_attendance
 import teacher.teacher_catalog
+import teacher.teacher_roster
 
 application = webapp2.WSGIApplication([
   ('/', index.Index),
@@ -88,4 +89,5 @@ application = webapp2.WSGIApplication([
   ('/teacher/all_rosters', teacher.all_rosters.AllRosters),
   ('/teacher/my_attendance', teacher.my_attendance.MyAttendance),
   ('/teacher/teacher_catalog', teacher.teacher_catalog.TeacherCatalog),
+  ('/teacher/teacher_roster', teacher.teacher_roster.TeacherRoster),
 ], debug=True)

@@ -14,6 +14,18 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
 
+dayOrder = ['Mon A', 'Mon B', 'Tues A', 'Tues B',
+            'Thurs A', 'Thurs B', 'Fri A', 'Fri B']
+
+def listOrder(c):
+  if 'instructor' in c:
+    return (c['name'],
+            c['instructor'],
+            dayOrder.index(c['schedule'][0]['daypart']))
+  else:
+    return (c['name'],
+            dayOrder.index(c['schedule'][0]['daypart']))
+
 class AllRosters(webapp2.RequestHandler):
   def get(self):
     auth = authorizer.Authorizer(self)
@@ -33,13 +45,17 @@ class AllRosters(webapp2.RequestHandler):
                                       'session': session})
     email = auth.teacher_email
 
+    classes = models.Classes.FetchJson(institution, session)
+    if classes:
+      classes.sort(key=listOrder)
+
     template_values = {
-      'user_email' : auth.email,
       'institution' : institution,
       'session' : session,
       'message': message,
       'session_query': session_query,
       'teacher': auth.teacher_entity,
+      'classes': classes,
     }
     template = JINJA_ENVIRONMENT.get_template('teacher/all_rosters.html')
     self.response.write(template.render(template_values))
