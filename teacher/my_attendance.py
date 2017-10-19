@@ -19,12 +19,12 @@ dayOrder = ['Mon A', 'Mon B', 'Tues A', 'Tues B',
 
 def listOrder(c):
   if 'instructor' in c:
-    return (c['name'],
-            dayOrder.index(c['schedule'][0]['daypart']),
+    return (dayOrder.index(c['schedule'][0]['daypart']),
+            c['name'],
             c['instructor'])
   else:
-    return (c['name'],
-            dayOrder.index(c['schedule'][0]['daypart']))
+    return (dayOrder.index(c['schedule'][0]['daypart']),
+            c['name'])
 
 class MyAttendance(webapp2.RequestHandler):
   def get(self):
@@ -54,8 +54,10 @@ class MyAttendance(webapp2.RequestHandler):
       classes.sort(key=listOrder)
     my_classes = []
     for c in classes:
-      if 'instructor' in c and c['instructor'] == auth.teacher_entity['last']:
-        my_classes.append(c)
+      if 'owners' in c:
+        for owner in c['owners']:
+          if owner == auth.teacher_entity['email']:
+            my_classes.append(c)
   
     rosters = {}
     for c in classes:
@@ -67,7 +69,6 @@ class MyAttendance(webapp2.RequestHandler):
     if students:
       students.sort(key=lambda(s): s['last'])
     template_values = {
-      'user_email' : auth.email,
       'user_type' : user_type,
       'institution' : institution,
       'session' : session,
@@ -76,7 +77,6 @@ class MyAttendance(webapp2.RequestHandler):
       'classes': my_classes,
       'rosters': rosters,
       'students': students,
-      'teacher': auth.teacher_entity,
     }
     template = JINJA_ENVIRONMENT.get_template('report/attendance_list.html')
     self.response.write(template.render(template_values))

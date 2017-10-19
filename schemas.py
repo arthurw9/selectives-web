@@ -23,7 +23,9 @@ def Classes():
         "      location: REQUIRED\n"
         "  description: OPTIONAL\n"
         "  donation: OPTIONAL\n"
-        "  exclude_from_catalog: OPTIONAL\n")
+        "  exclude_from_catalog: OPTIONAL\n"
+        "  owners:\n"
+        "    - OPTIONAL\n")
 
 def Students():
   return yayv.ByExample(

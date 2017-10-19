@@ -4,12 +4,29 @@
 {% if not teacher %}
 Teacher not found! This error should never happen. Please inform the selectives team. Thanks!
 {% else %}
-<h2 style="margin-bottom:0">
-  {{ teacher['first'] + ' ' + teacher['last'] }}
-</h2>
-<h3 style="margin-bottom:4px; margin-top:4px">
-  Homeroom: {{ teacher['current_homeroom'] }}<br>
-</h3>
-
+<h3>Class List for {{ teacher['first'] + ' ' + teacher['last'] }}</h3>
+<br>
 {% endif %}
+
+{% if classes %}
+<table>
+  {% for c in classes %}
+    <tr class=highlight>
+      <td><a href="/teacher/teacher_roster?{{ session_query }}&class_id={{ c['id'] }}">roster</a></td>
+      <td>{{ c['name'] }}</td>
+      <td>
+        {% for s in c['schedule'] %}
+          {{ s['daypart'] }}
+        {% endfor %}</td>
+      <td>{{ c['instructor'] }}</td>
+    </tr>
+  {% endfor %}
+</table>
+
+{% else %}
+<br>
+Classes have not been created yet for this session.<br>
+Please contact the selectives website administrator for help.
+{% endif %}
+
 {% endblock %}
