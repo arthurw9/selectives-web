@@ -18,9 +18,14 @@
     <a href="/teacher/all_rosters?{{ session_query }}">All Rosters</a></li>
   <li>
     <a href="/report/attendance_list?{{ session_query }}">All Attendance Sheets</a></li>
-  <li>
+  <li style="margin-bottom:1em">
     <a href="/report/student_schedules?{{ session_query }}">All Student Schedules</a></li>
   
+  <li>
+    <a href="/teacher/attendance_today?{{ session_query }}">Today's Attendance</a></li>
+  <li>
+    <a href="/teacher/attendance_historical?{{ session_query }}">Historical Attendance</a></li>
+
 </td>
 <td valign='top'>
   {% block session_body %} {% endblock %}

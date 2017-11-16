@@ -862,3 +862,33 @@ class DBVersion(ndb.Model):
     db_version = DBVersion(data = version)
     db_version.key = DBVersion.db_version_key(institution, session)
     db_version.put()
+
+class Attendance(ndb.Model):
+  jdata = ndb.JsonProperty()
+
+  # 'c_id' is a class id.
+  # 'jdata' is a dictionary:
+  # {date1: {'absent': [email1, email2, ...],
+  #          'present': [email1, email2, ...]},
+  #  date2: {'absent': [email1, email2, ...],
+  #          'present': [email1, email2, ...]},
+  #  ...}
+  @classmethod
+  def attendance_key(cls, institution, session, c_id):
+    return ndb.Key("InstitutionKey", institution,
+                   Session, session,
+                   'Attendance', c_id)
+
+  @classmethod
+  def FetchJson(cls, institution, session, c_id):
+    attendance = Attendance.attendance_key(institution, session, c_id).get()
+    if attendance:
+      return attendance.jdata
+    else:
+      return {}
+
+  @classmethod
+  def store(cls, institution, session_name, c_id, attendance_obj):
+    attendance = Attendance(jdata = attendance_obj)
+    attendance.key = Attendance.attendance_key(institution, session_name, c_id)
+    attendance.put()

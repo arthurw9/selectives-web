@@ -45,6 +45,8 @@ import teacher.my_attendance
 import teacher.teacher_catalog
 import teacher.teacher_roster
 import teacher.my_students
+import teacher.attendance_today
+import teacher.attendance_historical
 
 application = webapp2.WSGIApplication([
   ('/', index.Index),
@@ -92,4 +94,6 @@ application = webapp2.WSGIApplication([
   ('/teacher/teacher_catalog', teacher.teacher_catalog.TeacherCatalog),
   ('/teacher/teacher_roster', teacher.teacher_roster.TeacherRoster),
   ('/teacher/my_students', teacher.my_students.MyStudents),
+  ('/teacher/attendance_today', teacher.attendance_today.AttendanceToday),
+  ('/teacher/attendance_historical', teacher.attendance_historical.AttendanceHistorical),
 ], debug=True)

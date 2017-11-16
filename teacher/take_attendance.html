@@ -1,15 +1,268 @@
 {% extends 'menu_teacher.html' %}
 {% block session_body %}
 
+<script>
+
+var my_jsrosters = {};
+var other_jsrosters = {};
+// Save the python dictionaries passed via jinja into the above
+// javascript global variables so I can access the data
+// as a dictionary instead of string.
+function SaveToJSVar(rosters, jsrosters) {
+  for (var c_id in rosters) {
+    jsrosters[c_id] = rosters[c_id];
+  }
+}
+
+// Nice to have, displays attendance list based on the current day
+// and time. 2:29pm or later is block B, before that is block A.
+// Swap this function out for a more general one if we ever
+// support more than one school.
+function GetCurrentRoster(today) {
+  var searchString = "";
+  switch (today.getDay()) {
+    case 1:
+      searchString += "Mon";
+      break;
+    case 2:
+      searchString += "Tues";
+      break;
+    case 4:
+      searchString += "Thurs";
+      break;
+    case 5:
+      searchString += "Fri";
+      break;
+    default:
+  }
+  if (today.getHours() >= 14 && today.getMinutes() >= 29) {
+    searchString += " B";
+  } else {
+    searchString += " A";
+  }
+  for (var c_id in my_jsrosters) {
+    if (my_jsrosters[c_id]['daypart'].indexOf(searchString) !== -1) {
+      return c_id;
+    }
+  }
+  // Fell out of loop because no daypart match.
+  // Return first class on 'my' list.
+  {% for c in my_classes %}
+    return {{ c['id'] }};
+  {% endfor %}
+
+  // Again fell out, try first class on general list.
+  {% for c in other_classes %}
+    return {{ c['id'] }};
+  {% endfor %}
+
+  // If there are no classes, we shouldn't have entered this function.
+  console.log("Fatal error in GetCurrentRoster");
+  return 0;
+}
+
+function SetupDropDown(today) {
+  var class_dropdown = document.getElementById("classDropDown");
+  {% for c in my_classes %}
+    var opt = document.createElement("option");
+    var c_id = parseInt({{ c['id'] }});
+    opt.value = c_id;
+    var dp_text = my_jsrosters[c_id]['daypart'];
+    opt.text = my_jsrosters[c_id]['name'] + " - " +
+               my_jsrosters[c_id]['instructor'] + " - " +
+               dp_text;
+    class_dropdown.add(opt);
+  {% endfor %}
+
+  var opt = document.createElement("option");
+  opt.disabled = "disabled";
+  opt.text = "------------------";
+  class_dropdown.add(opt);
+
+  {% for c in other_classes %}
+    var opt = document.createElement("option");
+    var c_id = parseInt({{ c['id'] }});
+    opt.value = c_id;
+    var dp_text = other_jsrosters[c_id]['daypart'];
+    opt.text = other_jsrosters[c_id]['name'] + " - " +
+               other_jsrosters[c_id]['instructor'] + " - " +
+               dp_text;
+    class_dropdown.add(opt);
+  {% endfor %}
+
+  var curr_id = GetCurrentRoster(today);
+  console.log(curr_id);
+  class_dropdown.value = curr_id;
+  BuildRosterTable(class_dropdown.value);
+}
+
+function BuildRosterTable(selected_class) {
+  var table = document.getElementById("student_table");
+  var tbody = document.getElementById("student_tbody");
+
+  if (table) {
+    // if a table already exists, replace child tbody
+    table.removeChild(tbody);
+    tbody = document.createElement("tbody");
+    tbody.id = "student_tbody";
+  } else {
+    table = document.createElement("table");
+    table.id = "student_table";
+    tbody = document.createElement("tbody");
+    tbody.id = "student_tbody";
+  }
+
+  var row = document.createElement("tr");
+  var name_th = document.createElement("th");
+  var name_txt = document.createTextNode("Name");
+  var gr_th = document.createElement("th");
+  var gr_txt = document.createTextNode("Gr");
+  var hr_th = document.createElement("th");
+  var hr_txt = document.createTextNode("Hrm");
+  name_th.appendChild(name_txt);
+  row.appendChild(name_th);
+  gr_th.appendChild(gr_txt);
+  row.appendChild(gr_th);
+  hr_th.appendChild(hr_txt);
+  row.appendChild(hr_th);
+  tbody.appendChild(row);
+
+  if (selected_class in my_jsrosters) {
+    jsrosters = my_jsrosters;
+  } else {
+    jsrosters = other_jsrosters;
+  }
+  for (var i in jsrosters[selected_class]['students']) {
+    var row = document.createElement("tr");
+    var name_td = document.createElement("td");
+    var name_txt = document.createTextNode(
+                    jsrosters[selected_class]['students'][i]['first'] + " " +
+                    jsrosters[selected_class]['students'][i]['last']);
+    name_td.appendChild(name_txt);
+    row.appendChild(name_td);
+    var gr_td = document.createElement("td");
+    var gr_txt = document.createTextNode(jsrosters[selected_class]['students'][i]['current_grade']);
+    gr_td.appendChild(gr_txt);
+    row.appendChild(gr_td);
+    var hr_td = document.createElement("td");
+    var hr_txt = document.createTextNode(jsrosters[selected_class]['students'][i]['current_homeroom']);
+    hr_td.appendChild(hr_txt);
+    row.appendChild(hr_td);
+
+    var present_td = document.createElement("td");
+    var label_present = document.createElement("label");
+    var radio_present = document.createElement("input");
+    radio_present.type = "radio";
+    radio_present.name = i;
+    radio_present.id = "present" + i;
+    radio_present.value = "present" + i;
+    radio_present.checked = true;
+    label_present.appendChild(radio_present);
+    label_present.appendChild(document.createTextNode("present"));
+    present_td.appendChild(label_present);
+    row.appendChild(present_td);
+
+    var absent_td = document.createElement("td");
+    var label_absent = document.createElement("label");
+    var radio_absent = document.createElement("input");
+    radio_absent.type = "radio";
+    radio_absent.name = i;
+    radio_absent.id = "absent" + i;
+    radio_absent.value = "absent" + i;
+    label_absent.appendChild(radio_absent);
+    label_absent.appendChild(document.createTextNode("absent"));
+    absent_td.appendChild(label_absent);
+    row.appendChild(absent_td);
+
+    tbody.appendChild(row);
+  }
+  table.appendChild(tbody);
+  document.getElementById("roster_table").appendChild(table);
+}
+
+// https://stackoverflow.com/questions/133925/javascript-post-request-like-a-form-submit
+function post(params) {
+  var form = document.createElement("form");
+  form.setAttribute("method", "post");
+  for (var key in params) {
+    if (params.hasOwnProperty(key)) {
+      var hiddenField = document.createElement("input");
+      hiddenField.setAttribute("type", "hidden");
+      hiddenField.setAttribute("name", key);
+      hiddenField.setAttribute("value", params[key]);
+      form.appendChild(hiddenField);
+    }
+  }
+  document.body.appendChild(form);
+  form.submit();
+}
+
+window.onload = function() {
+  var today = new Date(Date.now());
+  var h = document.getElementById("myHeader");
+  h.innerText = "Attendance for " +
+                "{{teacher['first']}}" + " " + "{{teacher['last']}}" +
+                " - " + today.toDateString();
+
+  SaveToJSVar({{ my_rosters|safe }}, my_jsrosters);
+  SaveToJSVar({{ other_rosters|safe }}, other_jsrosters);
+  if (Object.keys(my_jsrosters).length > 0 ||
+      Object.keys(other_jsrosters).length > 0) {
+    SetupDropDown(today);
+
+    var class_dropdown = document.getElementById("classDropDown");
+    class_dropdown.onchange = function() {
+      BuildRosterTable(class_dropdown.value);
+    }
+  } else {
+    var txt = document.getElementById("instructions");
+    txt.innerText = "No classes to display, contact the selective team for help."
+  }
+
+  var submit_btn = document.getElementById("submit");
+  submit_btn.onclick = function() {
+    var class_dropdown = document.getElementById("classDropDown");
+    var c_id = class_dropdown.value;
+    var present_kids = [];
+    var absent_kids = [];
+    if (c_id in my_jsrosters) {
+      jsrosters = my_jsrosters;
+    } else {
+      jsrosters = other_jsrosters;
+    }
+    for (var i=0; i<jsrosters[c_id]['students'].length; i++) {
+      var rp_button = document.getElementById("present"+i);
+      if (rp_button.checked) {
+        //console.log(rp_button.value);
+        //console.log(jsrosters[c_id]['students'][i]['email']);
+        present_kids.push(jsrosters[c_id]['students'][i]['email']);
+      }
+      var ra_button = document.getElementById("absent"+i);
+      if (ra_button.checked) {
+        //console.log(r_button.value);
+        //console.log(jsrosters[c_id]['students'][i]['email']);
+        absent_kids.push(jsrosters[c_id]['students'][i]['email']);
+      }
+    }
+    post({"institution":"{{institution}}",
+          "session":"{{session}}",
+          "today":today.toDateString(),
+          "c_id":c_id,
+          "present_kids":present_kids,
+          "absent_kids":absent_kids});
+  }
+}
+</script>
+
 {% if not teacher %}
 Teacher not found! This error should never happen. Please inform the selectives team. Thanks!
 {% else %}
-<h2 style="margin-bottom:0">
-  {{ teacher['first'] + ' ' + teacher['last'] }}
-</h2>
-<h3 style="margin-bottom:4px; margin-top:4px">
-  Homeroom: {{ teacher['current_homeroom'] }}<br>
-</h3>
+<h3 id="myHeader" style="margin-bottom:4px; margin-top:4px"></h3>
+<p id="instructions">Clicking submit more than once is OK; only the most recent submission will be saved.
+</p>
+<select id="classDropDown"></select>
 
+<div id="roster_table"></div>
+<input type="button" id="submit" value="Submit">
 {% endif %}
 {% endblock %}
