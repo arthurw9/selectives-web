@@ -48,15 +48,19 @@ class Classes(webapp2.RequestHandler):
     #
     # Also, calling ClassRoster.Store() when there are changes
     # to Classes, udpates the last_modified field. This fixes the
-    # bug where last modified date on attendance sheet and student
+    # bug where last modified dates on attendance sheet and student
     # schedule reports don't update when only Classes info changed
     # but no students were added or deleted.
+    #
+    # Finally, storing every ClassRoster when the corresponding
+    # class is created (because, of course, initially jclass_obj != c),
+    # fixes the bug where remaining spots on the schedule page
+    # initializes incorrectly to 0 instead of max_enrollment.
     classes = yaml.load(classes)
     for c in classes:
       roster = models.ClassRoster.FetchEntity(institution, session, c['id'])
-      if roster['emails'] != []:
-        if c != roster['class_details']:
-          models.ClassRoster.Store(institution, session, c, ",".join(roster['emails']))
+      if c != roster['class_details']:
+        models.ClassRoster.Store(institution, session, c, ",".join(roster['emails']))
 
     error_check_logic.Checker.setStatus(institution, session, 'UNKNOWN')
     self.RedirectToSelf(institution, session, "saved classes")

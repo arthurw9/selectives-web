@@ -166,7 +166,7 @@ class Rosters(webapp2.RequestHandler):
     for c in classes:
       class_roster = models.ClassRoster.FetchEntity(institution, session,
                                                     c['id'])
-      if ('None' in class_roster['class_name']):
+      if (len(class_roster['emails']) <= 0):
         continue
       rosters += '"' + str(c['id']) + '",'
       rosters += '"' + c['name'] + '",'
