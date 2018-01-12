@@ -1,24 +1,54 @@
 {% extends 'menu.html' %}
 {% block session_body %}
 
-<h3>Class List</h3>
-<br>
-<br>
+<script>
+function RunLottery(cid) {
+  form_element = document.forms[0];
+  form_element.action.value = "run lottery";
+  form_element.cid.value = cid;
+  form_element.submit();
+  return false;
+}
+</script>
 
+<h3>Class List</h3>
 {% if classes %}
+<form method=post>
+<input type=hidden name="institution" value="{{ institution }}" />
+<input type=hidden name="session" value="{{ session }}" />
+<input type=hidden name="action" />
+<input type=hidden name="cid" />
 <table>
+  <tr>
+    <th></th>
+    <th></th>
+    <th>Name</th>
+    <th>Daypart</th>
+    <th>Instructor</th>
+    <th>Max</th>
+    <th>Actual</th>
+    <th>Waitlist</th>
+  </tr>
   {% for c in classes %}
     <tr class=highlight>
       <td><a href="/class_roster?{{ session_query }}&class_id={{ c['id'] }}">roster</a></td>
+      <td><a href="/class_waitlist?{{ session_query }}&class_id={{ c['id'] }}">waitlist</a></td>
       <td>{{ c['name'] }}</td>
       <td>
         {% for s in c['schedule'] %}
           {{ s['daypart'] }}
         {% endfor %}</td>
       <td>{{ c['instructor'] }}</td>
+      <td style="text-align:right">{{ c['max_enrollment'] }}</td>
+      <td style="text-align:right">{{ c['num_enrolled'] }}</td>
+      <td style="text-align:right">{{ c['num_waitlist'] }}</td>
+      {% if c['num_enrolled'] > c['max_enrollment'] %}
+        <td><button onclick="return RunLottery('{{ c['id'] }}');">lottery</button></td>
+      {% endif %}
     </tr>
   {% endfor %}
 </table>
+</form>
 
 {% else %}
 There are no classes to display.<br>

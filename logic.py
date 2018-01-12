@@ -1,6 +1,8 @@
 import models
 import yaml
 import logging
+import random
+import schemas
 try:
   from google.appengine.ext import ndb
 except:
@@ -38,7 +40,7 @@ def GetHoverText(full_text, c):
   class_desc = class_desc[:-2] # Remove last comma
   if full_text:
     class_desc += '\nEligible: '
-    if c['prerequisites']:
+    if 'prerequisites' in c:
       for p in c['prerequisites']:
         for k in p.keys():
           class_desc += '\n - ' + k + ': '
@@ -90,7 +92,7 @@ def StudentAllowedPageTypes(institution, session, student, serving_rules):
   return pt
 
 def StudentIsEligibleForClass(institution, session, student, c):
-  """returns True is student is eligible for class c."""
+  """returns True if student is eligible for class c."""
   if not c['prerequisites']:
     return True
   for prereq in c['prerequisites']:
@@ -152,6 +154,8 @@ class _ClassRoster(object):
     self.emails = roster['emails']
 
   def SpotsAvailable(self):
+    if 'open_enrollment' in self.class_obj:
+      return self.class_obj['open_enrollment'] - len(self.emails)
     return self.class_obj['max_enrollment'] - len(self.emails)
 
   def add(self, student_email):
@@ -275,3 +279,69 @@ def RemoveStudentFromClass(institution, session, student_email, old_class_id):
   r.remove(student_email)
   s = _StudentSchedule(institution, session, student_email, class_info)
   s.remove(old_class_id)
+
+@ndb.transactional(retries=3, xg=True)
+def AddStudentToWaitlist(institution, session, student_email, class_id):
+  # No need to check SpotsAvailable or add to StudentSchedule
+  # Just make sure student is not already in waitlist
+  w = models.ClassWaitlist.FetchEntity(institution, session, class_id)
+  if student_email in w['emails']:
+    pass
+  else:
+    w['emails'].append(student_email)
+    emails = list(set(w['emails']))
+    emails = ','.join(emails)
+    models.ClassWaitlist.Store(institution, session, class_id, emails)
+
+@ndb.transactional(retries=3, xg=True)
+def RemoveStudentFromWaitlist(institution, session, student_email, class_id):
+  w = models.ClassWaitlist.FetchEntity(institution, session, class_id)
+  emails = [s for s in w['emails'] if s != student_email]
+  emails = ','.join(emails)
+  models.ClassWaitlist.Store(institution, session, class_id, emails)
+
+
+def RunLottery(institution, session, cid):
+  r = models.ClassRoster.FetchEntity(institution, session, cid)
+  random.shuffle(r['emails'])
+  # remove students from end of list
+  for s in r['emails'][r['max_enrollment']:]:
+    AddStudentToWaitlist(institution, session, s, cid)
+    RemoveStudentFromClass(institution, session, s, cid)
+
+  # put winners into StudentGroup
+  group_name = r['class_name'] + '_' + str(r['class_id'])
+  winners = [s for s in r['emails'][:r['max_enrollment']]]
+  sgroup = models.GroupsStudents.FetchJson(institution, session)
+  if sgroup:
+    if not any(g['group_name'] == group_name for g in sgroup):
+      # group_name doesn't exist in StudentGroup
+      sgroup.append({'group_name': group_name,
+                     'emails': winners})
+    else:
+      # group_name exists, overwrite existing email list
+      for g in sgroup:
+        if group_name == g['group_name']:
+          g['emails'] = winners
+  else:
+    # Entire StudentGroup list is empty, create new list
+    sgroup = [{'group_name': group_name,
+               'emails': winners}]
+  sgroup = schemas.StudentGroups().Update(yaml.safe_dump(sgroup, default_flow_style=False))
+  models.GroupsStudents.store(institution, session, sgroup)
+
+  class_list = models.Classes.FetchJson(institution, session)
+  for c in class_list:
+    if c['id'] == int(cid):
+      # Replace existing prerequisites with the new StudentGroup.
+      # Only winners from lottery are allowed in this class.
+      c['prerequisites'] = [{'group':group_name}]
+      # Remove open_enrollment field
+      result = c.pop('open_enrollment', None)
+      if (result == None):
+        logging.fatal("Extra students found while class is not in open enrollment")
+      # Update roster class_obj to match above class changes
+      r = models.ClassRoster.FetchEntity(institution, session, c['id'])
+      models.ClassRoster.Store(institution, session, c, ','.join(r['emails']))
+  class_list = schemas.Classes().Update(yaml.safe_dump(class_list, default_flow_style=False))
+  models.Classes.store(institution, session, class_list)

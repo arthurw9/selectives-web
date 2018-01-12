@@ -579,7 +579,7 @@ class GroupsStudents(ndb.Model):
     if groups_students:
       return groups_students.jdata
     else:
-      return ''
+      return []
 
   @classmethod
   @timed
@@ -782,7 +782,11 @@ class ClassRoster(ndb.Model):
       r['schedule'] = c['schedule']
       r['class_details'] = roster.jclass_obj
       r['max_enrollment'] = c['max_enrollment']
-      r['remaining_space'] = c['max_enrollment'] - len(r['emails'])
+      if 'open_enrollment' in c:
+        r['open_enrollment'] = c['open_enrollment']
+        r['remaining_space'] = c['open_enrollment'] - len(r['emails'])
+      else:
+        r['remaining_space'] = c['max_enrollment'] - len(r['emails'])
       if (roster.last_modified):
         r['last_modified'] = roster.last_modified
       else:
@@ -801,6 +805,44 @@ class ClassRoster(ndb.Model):
     r['last_modified'] = None
     return r
 
+class ClassWaitlist(ndb.Model):
+  # comma separated list of student emails
+  student_emails = ndb.TextProperty()
+  last_modified = ndb.DateTimeProperty()
+
+  @classmethod
+  @timed
+  def class_waitlist_key(cls, institution, session, class_id):
+    class_id = str(class_id)
+    return ndb.Key("InstitutionKey", institution,
+                   Session, session,
+                   ClassWaitlist, class_id)
+
+  @classmethod
+  @timed
+  def Store(cls, institution, session, class_id, student_emails):
+    student_emails = student_emails.strip()
+    if len(student_emails) and student_emails[-1] == ',':
+      student_emails = student_emails[:-1]
+    waitlist = ClassWaitlist()
+    waitlist.key = ClassWaitlist.class_waitlist_key(institution, session, class_id)
+    waitlist.student_emails = student_emails
+    waitlist.last_modified = datetime.datetime.now() - datetime.timedelta(hours=8)
+    waitlist.put()
+
+  @classmethod
+  @timed
+  def FetchEntity(cls, institution, session, class_id):
+    class_id = str(class_id)
+    waitlist = ClassWaitlist.class_waitlist_key(institution, session, class_id).get()
+    if waitlist:
+      w = {}
+      w['emails'] = waitlist.student_emails.split(",")
+      if w['emails'][0] == "":
+        w['emails'] = w['emails'][1:]
+      return w
+    else:
+      return {'emails': []}
 
 class ErrorCheck(ndb.Model):
   data = ndb.StringProperty(choices=['OK', 'FAIL', 'UNKNOWN'])

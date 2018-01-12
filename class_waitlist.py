@@ -3,6 +3,9 @@ import urllib
 import jinja2
 import webapp2
 import logging
+import yaml
+import itertools
+import random
 
 import models
 import authorizer
@@ -13,24 +16,21 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
 
-dayOrder = ['Mon A', 'Mon B', 'Tues A', 'Tues B',
-            'Thurs A', 'Thurs B', 'Fri A', 'Fri B']
+def addStudentData(class_roster, students):
+  class_roster['students'] = []
+  for e in class_roster['emails']:
+    for s in students:
+      if (s['email'] == e):
+        class_roster['students'].append(s)
 
-def listOrder(c):
-  if 'instructor' in c:
-    return (c['name'],
-            dayOrder.index(c['schedule'][0]['daypart']),
-            c['instructor'])
-  else:
-    return (c['name'],
-            dayOrder.index(c['schedule'][0]['daypart']))
+class ClassWaitlist(webapp2.RequestHandler):
 
-class ClassList(webapp2.RequestHandler):
-  def RedirectToSelf(self, institution, session, message):
-    self.redirect("/class_list?%s" % urllib.urlencode(
+  def RedirectToSelf(self, institution, session, class_id, message):
+    self.redirect("/class_waitlist?%s" % urllib.urlencode(
         {'message': message,
          'institution': institution,
-         'session': session}))
+         'session': session,
+         'class_id': class_id}))
 
   def post(self):
     auth = authorizer.Authorizer(self)
@@ -44,18 +44,19 @@ class ClassList(webapp2.RequestHandler):
     session = self.request.get("session")
     if not session:
       logging.fatal("no session")
+    class_id = self.request.get("class_id")
+    if not class_id:
+      logging.fatal("no class_id")
     action = self.request.get("action")
     if not action:
       logging.fatal("no action")
 
-    if action == "run lottery":
-      cid = self.request.get("cid")
-      if not cid:
-        logging.fatal("no class id")
-      logic.RunLottery(institution, session, cid)
-      self.RedirectToSelf(institution, session, "lottery %s" % cid)
+    if action == "remove student":
+      email = self.request.get("email")
+      logic.RemoveStudentFromWaitlist(institution, session, email, class_id)
+      self.RedirectToSelf(institution, session, class_id, "removed %s" % email)
 
-    self.RedirectToSelf(institution, session, "Unknown action")
+    self.RedirectToSelf(institution, session, class_id, "Unknown action")
 
   def get(self):
     auth = authorizer.Authorizer(self)
@@ -69,26 +70,33 @@ class ClassList(webapp2.RequestHandler):
     session = self.request.get("session")
     if not session:
       logging.fatal("no session")
+    class_id = self.request.get("class_id")
+    if not session:
+      logging.fatal("no class id")
 
     message = self.request.get('message')
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
 
+    waitlist = models.ClassWaitlist.FetchEntity(institution, session, class_id)
+    waitlist['emails'].sort()
+    students = models.Students.FetchJson(institution, session)
+    addStudentData(waitlist, students)
     classes = models.Classes.FetchJson(institution, session)
-    if classes:
-      classes.sort(key=listOrder)
+    class_details = ''
     for c in classes:
-      r = models.ClassRoster.FetchEntity(institution, session, c['id'])
-      c['num_enrolled'] = len(r['emails'])
-      w = models.ClassWaitlist.FetchEntity(institution, session, c['id'])
-      c['num_waitlist'] = len(w['emails'])
+      if (str(c['id']) == class_id):
+        class_details = c
+        break
     template_values = {
       'user_email' : auth.email,
       'institution' : institution,
       'session' : session,
       'message': message,
       'session_query': session_query,
-      'classes': classes,
+      'class_waitlist': waitlist,
+      'students': students,
+      'class_details': class_details
     }
-    template = JINJA_ENVIRONMENT.get_template('class_list.html')
+    template = JINJA_ENVIRONMENT.get_template('class_waitlist.html')
     self.response.write(template.render(template_values))

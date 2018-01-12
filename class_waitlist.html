@@ -1,0 +1,68 @@
+{% extends 'menu.html' %}
+{% block session_body %}
+
+<script>
+function RemoveStudent(email) {
+  // save the new class id in the form's hidden field
+  form_element = document.forms[0];
+  form_element.action.value = "remove student";
+  form_element.email.value = email;
+  console.log(form_element);
+  // submit the form
+  form_element.submit();
+  return false;
+}
+</script>
+<h3 style="height:3px">{{ class_details['name'] }} Class Waitlist</h3>
+<br><b>Schedule:</b>
+{{ class_details['schedule'] | join(' / ', attribute='daypart') }}
+<br><b>Location:</b>
+{{ class_details['schedule'] | join(' / ', attribute='location') }}
+<br><b>Instructor:</b>
+{{ class_details['instructor'] }}
+<br><b>Max Enrollment:</b>
+{{ class_details['max_enrollment'] }}
+<br><b>Waitlisted:</b>
+{{ class_waitlist['emails']|length }}
+{% if 'prerequisites' in class_details 
+   and class_details['prerequisites'] != [] %}
+  <br><b>Prerequisites:</b>
+  {% for p in class_details['prerequisites'] %}
+    <br> - {{ p }}
+  {% endfor %}
+{% endif %}
+{% if 'exclude_from_catalog' in class_details %}
+  <br><b>Exclude From Catalog:</b>
+  {{ class_details['exclude_from_catalog'] }}
+{% endif %}
+<br>
+<br>
+<form method=post>
+<input type=hidden name="institution" value="{{ institution }}" />
+<input type=hidden name="session" value="{{ session }}" />
+<input type=hidden name="class_id" value = "{{ class_waitlist['class_id'] }}" />
+<input type=hidden name="action" />
+<input type=hidden name="email" />
+<table>
+  <tr class=highlight>
+    <th></th>
+    <th>Student</th>
+    <th>Grade</th>
+    <th>Homeroom</th>
+  </tr>
+  {% for e in class_waitlist['students'] %}
+    {% if e|length > 1 %}
+    <tr class=highlight>
+      <td><button onclick="return RemoveStudent('{{ e['email'] }}');">remove</button></td>
+      <td>{{ e['first'] }} {{ e['last'] }}</td>
+      <td> {{ e['current_grade'] }}</td>
+      <td> {{ e['current_homeroom'] }}</td>
+    </tr>
+    {% endif %}
+  {% endfor %}
+</table>
+<br>
+TODO: Make the Add button work.
+<button>Add</button>
+</form>
+{% endblock %}
