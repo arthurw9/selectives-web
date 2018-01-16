@@ -14,15 +14,15 @@ except:
 
 # Students do not need to see class ID, eligibility, locations.
 # Students should not see individual emails which may be on the eligibility list.
-# Room numbers may change during registration as we finalize the schedule.
+# Room numbers may change during registration as we finalize the schedule, so don't display room numbers to students.
 # TODO: add proper class_desc instead of just dumping the yaml
-def GetHoverText(full_text, c):
+def GetHoverText(institution, session, admin_view, c):
   """args:
-       full_text: boolean false if we should censor some details.
+       admin_view: boolean to hide certain fields from students
        c: dict class object to get description of."""
   
   class_desc = ''
-  if full_text:
+  if admin_view:
     class_desc += 'Id: ' + str(c['id']) + ' '*12
   class_desc += c['name']
   if 'instructor' in c and c['instructor']:
@@ -31,14 +31,14 @@ def GetHoverText(full_text, c):
   class_desc += '\nMeets: '
   for s in c['schedule']:
     class_desc += s['daypart']
-    if full_text:
+    if admin_view:
       if isinstance(s['location'], int):
         class_desc += ' (Rm ' + str(s['location']) + ')'
       else:
         class_desc += ' (' + s['location'] + ')'
     class_desc += ', '
   class_desc = class_desc[:-2] # Remove last comma
-  if full_text:
+  if admin_view:
     class_desc += '\nEligible: '
     if 'prerequisites' in c:
       for p in c['prerequisites']:
@@ -54,8 +54,23 @@ def GetHoverText(full_text, c):
     class_desc += '\nSuggested donation: ' + c['donation']
   if 'description' in c and c['description']:
     class_desc += '\n\n' + c['description']
+  r = models.ClassRoster.FetchEntity(institution, session, c['id'])
+  if (r['emails']):
+    students = models.Students.FetchJson(institution, session)
+    class_desc += '\n\nNumber Enrolled: ' + str(len(r['emails']))
+    for s in r['emails']:
+      class_desc += '\n   ' + GetStudentInfo(students, s)
   return class_desc
 
+def GetStudentInfo(student_list, s_email):
+  if not student_list:
+    return None
+  for s in student_list:
+    if s['email'] == s_email:
+      return s['first'] + ' ' + s['last'] + ' ' + str(s['current_homeroom'])
+  # Shouldn't get here!
+  # Student exists in roster, but not in student list.
+  return 'Student not found! Please inform selective team if this error occurs.'
 
 def FindUser(user_email, user_list):
   # is user_list iterable?

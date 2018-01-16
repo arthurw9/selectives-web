@@ -112,7 +112,7 @@ class Schedule(webapp2.RequestHandler):
         if class_id not in eligible_classes:
           continue
         classes_by_id[class_id] = c
-        hover_text = logic.GetHoverText(use_full_description, c)
+        hover_text = logic.GetHoverText(institution, session, use_full_description, c)
         c['hover_text'] = hover_text
         for daypart in [s['daypart'] for s in c['schedule']]:
           if daypart in classes_by_daypart:
