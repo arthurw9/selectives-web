@@ -132,7 +132,7 @@ class Schedule(webapp2.RequestHandler):
         'message': message,
         'session_query': session_query,
         'student': auth.student_entity,
-        'dayparts': dayparts,
+        #'dayparts': dayparts,
         'classes_by_daypart': classes_by_daypart,
         'dayparts_ordered': dayparts_ordered,
         'schedule': json.dumps(schedule),

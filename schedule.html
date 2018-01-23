@@ -2,14 +2,18 @@
 {% block session_body %}
 
 <script>
-var spots_available_timer_object;
+var refresh_data_timer_object;
 
-function ResetSpotsAvailableTimer(seconds) {
-  if (spots_available_timer_object) {
-    clearTimeout(spots_available_timer_object);
+function ResetRefreshDataTimer(seconds) {
+  if (refresh_data_timer_object) {
+    clearTimeout(refresh_data_timer_object);
   }
-  spots_available_timer_object = setTimeout(RefreshSpotsAvailable,
-                                            seconds * 1000);
+  refresh_data_timer_object = setTimeout(RefreshData, seconds * 1000);
+}
+
+function RefreshData() {
+  RefreshSpotsAvailable();
+  RefreshHoverText();
 }
 
 function RefreshSpotsAvailable() {
@@ -17,17 +21,16 @@ function RefreshSpotsAvailable() {
   request.open("POST", "/spots_available");
   request.onreadystatechange = function() {
     if(request.readyState == 4 && request.status == 200) {
-      result = JSON.parse(request.responseText)
+      var result = JSON.parse(request.responseText);
       WriteSpotsAvailableToGui(result);
       // TODO: How fast can we refresh before Google imposes
       // limits and starts demanding money?
-      ResetSpotsAvailableTimer(7);
+      ResetRefreshDataTimer(7);
     }
   }
   var params = new FormData();
   params.append("institution", "{{ institution }}");
   params.append("session", "{{ session }}");
-  params.append("student", "{{ student['email'] }}");
   var class_ids = Object.keys(classes_by_id);
   class_ids = JSON.stringify(class_ids);
   params.append("class_ids", class_ids);
@@ -42,6 +45,39 @@ function WriteSpotsAvailableToGui(class_availability) {
       var dom_element_id = "spots_left_" + daypart + "_" + c_id;
       e = document.getElementById(dom_element_id);
       e.innerHTML = class_availability[c_id];
+    }
+  }
+}
+
+function RefreshHoverText() {
+  var request = new XMLHttpRequest();
+  request.open("POST", "/hover_text");
+  request.onreadystatechange = function() {
+    if (request.readyState == 4 && request.status == 200) {
+      var hov_texts = JSON.parse(request.responseText);
+      WriteHoverTextToGui(hov_texts);
+      // TODO: How fast can we refresh before Google imposes
+      // limits and starts demanding money?
+      ResetRefreshDataTimer(7);
+    }
+  }
+  var params = new FormData();
+  params.append("institution", "{{ institution }}");
+  params.append("session", "{{ session }}");
+  var class_ids = Object.keys(classes_by_id);
+  class_ids = JSON.stringify(class_ids);
+  params.append("class_ids", class_ids);
+  request.send(params);
+}
+
+function WriteHoverTextToGui(hover_texts) {
+  for(c_id in hover_texts) {
+    dayparts = classes_by_id[c_id]['dayparts'];
+    for(idx in dayparts) {
+      var daypart = dayparts[idx];
+      var dom_element_id = daypart + "_" + c_id;
+      e = document.getElementById(dom_element_id);
+      e.title = hover_texts[c_id];
     }
   }
 }
@@ -62,6 +98,12 @@ function confirmOnPageExit(e) {
   return msg;
 }
 
+//Example classes_by_id objects
+//classes_by_id = {
+//59 : { 'name' : 'Circuit Training', 'dayparts': ['Fri B',]},
+//58 : { 'name' : 'Yearbook', 'dayparts': ['Thurs B',]},
+//50 : { 'name' : 'Dance', 'dayparts': ['Thurs B','Fri B',]},
+//};
 classes_by_id = {
 {% for class_id in classes_by_id -%}
 {{ class_id }} : { 'name' : '{{ classes_by_id[class_id]['name'] }}', 'dayparts': [{% for s in classes_by_id[class_id]['schedule'] -%}
@@ -151,11 +193,11 @@ function AddClassToBackend(class_id, loading_gif) {
       return;
     }
     if (request.status == 200) {
-      result = JSON.parse(request.responseText)
+      var result = JSON.parse(request.responseText)
       SetScheduleInGui(result);
     }
     loading_gif.style.visibility = "hidden";
-    RefreshSpotsAvailable();
+    RefreshData();
   }
   var params = new FormData();
   params.append("institution", "{{ institution }}");
@@ -268,6 +310,6 @@ function SetScheduleInGui(schedule) {
 </form>
 <script>
 SetScheduleInGui({{ schedule|safe }});
-RefreshSpotsAvailable();
+RefreshData();
 </script>
 {% endblock %}
