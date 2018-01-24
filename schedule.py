@@ -30,9 +30,7 @@ class Schedule(webapp2.RequestHandler):
       # TODO: support removing a class
       auth = authorizer.Authorizer(self)
       if not auth.HasStudentAccess():
-        # TODO: This is now an API so we should return an error
-        # instead of redirecting. 
-        auth.Redirect()
+        self.response.status = 403 # Forbidden
         return
 
       institution = self.request.get("institution")
@@ -41,6 +39,11 @@ class Schedule(webapp2.RequestHandler):
       session = self.request.get("session")
       if not session:
         logging.fatal("no session")
+
+      if not auth.HasPageAccess(institution, session, "schedule"):
+        self.response.status = 403 # Forbidden
+        return
+
       email = auth.student_email
       new_class_id = self.request.get("class_id")
 

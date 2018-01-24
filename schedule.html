@@ -20,6 +20,9 @@ function RefreshSpotsAvailable() {
   var request = new XMLHttpRequest();
   request.open("POST", "/spots_available");
   request.onreadystatechange = function() {
+    if (request.status == 403) {
+      window.location.replace("/postregistration?institution={{institution}}&session={{session}}");
+    }
     if(request.readyState == 4 && request.status == 200) {
       var result = JSON.parse(request.responseText);
       WriteSpotsAvailableToGui(result);
@@ -31,6 +34,7 @@ function RefreshSpotsAvailable() {
   var params = new FormData();
   params.append("institution", "{{ institution }}");
   params.append("session", "{{ session }}");
+  params.append("student", "{{ student['email'] }}");
   var class_ids = Object.keys(classes_by_id);
   class_ids = JSON.stringify(class_ids);
   params.append("class_ids", class_ids);
@@ -53,6 +57,9 @@ function RefreshHoverText() {
   var request = new XMLHttpRequest();
   request.open("POST", "/hover_text");
   request.onreadystatechange = function() {
+    if (request.status == 403) {
+      window.location.replace("/postregistration?institution={{institution}}&session={{session}}");
+    }
     if (request.readyState == 4 && request.status == 200) {
       var hov_texts = JSON.parse(request.responseText);
       WriteHoverTextToGui(hov_texts);
@@ -64,6 +71,7 @@ function RefreshHoverText() {
   var params = new FormData();
   params.append("institution", "{{ institution }}");
   params.append("session", "{{ session }}");
+  params.append("student", "{{ student['email'] }}");
   var class_ids = Object.keys(classes_by_id);
   class_ids = JSON.stringify(class_ids);
   params.append("class_ids", class_ids);
@@ -191,6 +199,9 @@ function AddClassToBackend(class_id, loading_gif) {
     if(request.readyState != 4) {
       // if the request is not finished then keep waiting.
       return;
+    }
+    if (request.status == 403) {
+      window.location.replace("/postregistration?institution={{institution}}&session={{session}}");
     }
     if (request.status == 200) {
       var result = JSON.parse(request.responseText)
