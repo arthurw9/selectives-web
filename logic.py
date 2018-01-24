@@ -20,15 +20,14 @@ def GetHoverText(institution, session, admin_view, c):
   """args:
        admin_view: boolean to hide certain fields from students
        c: dict class object to get description of."""
-  
   class_desc = ''
   if admin_view:
-    class_desc += 'Id: ' + str(c['id']) + ' '*12
+    class_desc += 'Id: ' + str(c['id']) + ' '*6
   class_desc += c['name']
   if 'instructor' in c and c['instructor']:
-    class_desc += '\nInstructor: ' + c['instructor']
-  class_desc += ' '*12 + 'Max Enrollment: ' + str(c['max_enrollment'])
-  class_desc += '\nMeets: '
+    class_desc += ' '*6 + 'Instructor: ' + c['instructor']
+  class_desc += '\nMax Enrollment: ' + str(c['max_enrollment'])
+  class_desc += ' '*6 + 'Meets: '
   for s in c['schedule']:
     class_desc += s['daypart']
     if admin_view:
@@ -50,10 +49,6 @@ def GetHoverText(institution, session, admin_view, c):
             class_desc += p[k]
     else:
       class_desc += 'All'
-  if 'donation' in c and c['donation']:
-    class_desc += '\nSuggested donation: ' + c['donation']
-  if 'description' in c and c['description']:
-    class_desc += '\n\n' + c['description']
   r = models.ClassRoster.FetchEntity(institution, session, c['id'])
   if (r['emails']):
     students = models.Students.FetchJson(institution, session)

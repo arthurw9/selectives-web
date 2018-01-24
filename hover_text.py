@@ -25,6 +25,8 @@ class HoverText(webapp2.RequestHandler):
       self.response.status = 403 # Forbidden
       return
 
+    use_full_description = auth.CanAdministerInstitutionFromUrl()
+
     class_ids = self.request.get("class_ids")
     class_ids = json.loads(class_ids)
     results = {}
@@ -33,5 +35,5 @@ class HoverText(webapp2.RequestHandler):
     for c in classes:
       classes_by_id[c['id']] = c
     for class_id in class_ids:
-      results[str(class_id)] = logic.GetHoverText(institution, session, False, classes_by_id[int(class_id)])
+      results[str(class_id)] = logic.GetHoverText(institution, session, use_full_description, classes_by_id[int(class_id)])
     self.response.write(json.dumps(results))
