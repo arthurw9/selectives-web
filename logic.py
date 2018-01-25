@@ -50,22 +50,33 @@ def GetHoverText(institution, session, admin_view, c):
     else:
       class_desc += 'All'
   r = models.ClassRoster.FetchEntity(institution, session, c['id'])
+  students = models.Students.FetchJson(institution, session)
   if (r['emails']):
-    students = models.Students.FetchJson(institution, session)
     class_desc += '\n\nNumber Enrolled: ' + str(len(r['emails']))
-    for s in r['emails']:
-      class_desc += '\n   ' + GetStudentInfo(students, s)
+    student_names = GetStudentNamesSorted(students, r['emails'])
+    for s in student_names:
+      class_desc += '\n   ' + s
   return class_desc
 
-def GetStudentInfo(student_list, s_email):
-  if not student_list:
-    return None
-  for s in student_list:
-    if s['email'] == s_email:
-      return s['first'] + ' ' + s['last'] + ' ' + str(s['current_homeroom'])
-  # Shouldn't get here!
-  # Student exists in roster, but not in student list.
-  return 'Student not found! Please inform selective team if this error occurs.'
+def GetStudentNamesSorted(students, roster_emails):
+  if not students:
+    return []
+  roster_names = []
+  students_by_email = {}
+  for s in students:
+    students_by_email[s['email']] = s
+  for roster_email in roster_emails:
+    try:
+      s = students_by_email[roster_email]
+    except KeyError:
+      logging.fatal("HoverText - invalid student in roster!")
+      roster_names.append(roster_email)
+    else:
+      roster_names.append(s['first'] + ' ' +
+                          s['last'] + ' ' +
+                          str(s['current_homeroom']))
+  roster_names.sort()
+  return roster_names
 
 def FindUser(user_email, user_list):
   # is user_list iterable?
