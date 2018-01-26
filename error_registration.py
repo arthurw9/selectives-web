@@ -46,7 +46,7 @@ class ErrorRegistration(webapp2.RequestHandler):
     for s in students:
       s['email'] = s['email'].lower()
       sched_obj = models.Schedule.FetchEntity(institution, session, s['email'])
-      if (sched_obj):
+      if sched_obj and sched_obj.class_ids:
         dayparts = []
         s['sched'] = sched_obj.class_ids
         s['sched'] = s['sched'].split(',')
