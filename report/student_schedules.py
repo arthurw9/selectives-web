@@ -60,6 +60,8 @@ class StudentSchedules(webapp2.RequestHandler):
     for s in students:
       s['email'] = s['email'].lower()
       sched_obj = models.Schedule.FetchEntity(institution, session, s['email'])
+      if not sched_obj:
+        continue
       s['sched'] = sched_obj.class_ids
       s['last_modified'] = sched_obj.last_modified
       if sched_obj.last_modified:
