@@ -56,6 +56,15 @@ class ClassRoster(webapp2.RequestHandler):
       logic.RemoveStudentFromClass(institution, session, email, class_id)
       self.RedirectToSelf(institution, session, class_id, "removed %s" % email)
 
+    if action == "run lottery":
+      cid = self.request.get("cid")
+      if not cid:
+        logging.fatal("no class id")
+      candidates = self.request.get("candidates")
+      candidates = candidates.split(",")
+      logic.RunLottery(institution, session, cid, candidates)
+      self.RedirectToSelf(institution, session, cid, "lottery %s" % cid)
+
     self.RedirectToSelf(institution, session, class_id, "Unknown action")
 
   def get(self):

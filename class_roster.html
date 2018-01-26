@@ -7,45 +7,95 @@ function RemoveStudent(email) {
   form_element = document.forms[0];
   form_element.action.value = "remove student";
   form_element.email.value = email;
-  console.log(form_element);
   // submit the form
   form_element.submit();
   return false;
 }
+
+function RunLottery() {
+  form_element = document.forms[0];
+  form_element.action.value = "run lottery";
+  form_element.cid.value = "{{class_roster['class_id']}}";
+  var candidate_list = [];
+  {% for s in class_roster['students'] %}
+    if (document.getElementById("selectStudent{{s['email']}}").checked) {
+      candidate_list.push("{{s['email']}}");
+    }
+  {% endfor %}
+  form_element.candidates.value = candidate_list;
+  form_element.submit();
+  return false;
+}
+
+window.onload = function() {
+  var selectAll = document.getElementById("selectAll");
+  var unselectAll = document.getElementById("unselectAll");
+
+  selectAll.onclick = function() {
+    {% for s in class_roster['students'] %}
+      document.getElementById("selectStudent{{s['email']}}").checked = true;
+    {% endfor %}
+  }
+  unselectAll.onclick = function() {
+    {% for s in class_roster['students'] %}
+      document.getElementById("selectStudent{{s['email']}}").checked = false;
+    {% endfor %}
+  }
+}
 </script>
 <h3 style="height:3px">{{ class_details['name'] }} Class Roster</h3>
-<br><b>Schedule:</b>
-{{ class_details['schedule'] | join(' / ', attribute='daypart') }}
-<br><b>Location:</b>
-{{ class_details['schedule'] | join(' / ', attribute='location') }}
-<br><b>Instructor:</b>
-{{ class_details['instructor'] }}
-<br><b>Max Enrollment:</b>
-{{ class_details['max_enrollment'] }}
-<br><b>Actual Enrollment:</b>
-{{ class_roster['emails']|length }}
-{% if 'prerequisites' in class_details 
+<table>
+  <tr>
+    <td><b>Schedule:</b>
+      {{ class_details['schedule'] | join(' / ', attribute='daypart') }}</td>
+    <td><b>Location:</b>
+      {{ class_details['schedule'] | join(' / ', attribute='location') }}</td>
+    <td><b>Instructor:</b>
+      {{ class_details['instructor'] }}</td>
+  </tr>
+  <tr>
+    <td><b>Max Enrollment:</b>
+      {{ class_details['max_enrollment'] }}</td>
+    <td><b>Actual Enrollment:</b>
+      {{ class_roster['emails']|length }}</td>
+  </tr>
+  {% if 'prerequisites' in class_details
    and class_details['prerequisites'] != [] %}
-  <br><b>Prerequisites:</b>
-  {% for p in class_details['prerequisites'] %}
-    <br> - {{ p }}
-  {% endfor %}
+    <tr><td><b>Prerequisites:</b>
+      {% for p in class_details['prerequisites'] %}
+      <br> - {{ p }}
+      {% endfor %}</td>
+    </tr>
+  {% endif %}
+  {% if 'exclude_from_catalog' in class_details %}
+    <tr><td><b>Exclude From Catalog:</b>
+      {{ class_details['exclude_from_catalog'] }}</td>
+    </tr>
 {% endif %}
-{% if 'exclude_from_catalog' in class_details %}
-  <br><b>Exclude From Catalog:</b>
-  {{ class_details['exclude_from_catalog'] }}
-{% endif %}
-<br>
-<br>
+</table>
+<ul style="background-color: bisque">
+  <lh><b>Important instructions - please read!</b></lh>
+  <li>Select students to enter in the lottery. To select all students, click the Select All button.</li>
+  <li>To start the lottery, click the Run Lottery button.</li>
+  <li>DO NOT select students who should remain in this class. For instance, during 6th grade registration, do not select 7th or 8th graders for the lottery. Do not select students who are guaranteed a spot by prior arrangement.</li>
+  <li>The lottery and selection buttons will display only if Actual Enrollment > Max Enrollment.</li>
+</ul>
 <form method=post>
 <input type=hidden name="institution" value="{{ institution }}" />
 <input type=hidden name="session" value="{{ session }}" />
 <input type=hidden name="class_id" value = "{{ class_roster['class_id'] }}" />
 <input type=hidden name="action" />
 <input type=hidden name="email" />
+<input type=hidden name="cid" />
+<input type=hidden name="candidates" />
+{% if class_roster['emails']|length > class_roster['max_enrollment'] %}
+<input type="button" id="selectAll" value="Select All">
+<input type="button" id="unselectAll" value="Unselect All">
+{% endif %}
 <table>
   <tr class=highlight>
     <th></th>
+    <th>Lottery</th>
     <th>Student</th>
     <th>Grade</th>
     <th>Homeroom</th>
@@ -54,6 +104,7 @@ function RemoveStudent(email) {
     {% if e|length > 1 %}
     <tr class=highlight>
       <td><button onclick="return RemoveStudent('{{ e['email'] }}');">remove</button></td>
+      <td><input type="checkBox" id="selectStudent{{e['email']}}" value="{{e['email']}}"></td>
       <td>{{ e['first'] }} {{ e['last'] }}</td>
       <td> {{ e['current_grade'] }}</td>
       <td> {{ e['current_homeroom'] }}</td>
@@ -62,6 +113,10 @@ function RemoveStudent(email) {
   {% endfor %}
 </table>
 <br>
+{% if class_roster['emails']|length > class_roster['max_enrollment'] %}
+  <button onclick="return RunLottery();">Run Lottery</button>
+{% endif %}
+<br><br>
 TODO: Make the Add button work.
 <button>Add</button>
 </form>

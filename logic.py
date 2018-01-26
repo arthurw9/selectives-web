@@ -322,17 +322,31 @@ def RemoveStudentFromWaitlist(institution, session, student_email, class_id):
   models.ClassWaitlist.Store(institution, session, class_id, emails)
 
 
-def RunLottery(institution, session, cid):
+def RunLottery(institution, session, cid, candidates):
   r = models.ClassRoster.FetchEntity(institution, session, cid)
-  random.shuffle(r['emails'])
-  # remove students from end of list
-  for s in r['emails'][r['max_enrollment']:]:
-    AddStudentToWaitlist(institution, session, s, cid)
-    RemoveStudentFromClass(institution, session, s, cid)
+
+  # Put people who aren't part of this lottery in the class
+  winners = []
+  for s in r['emails']:
+    if s not in candidates:
+      winners.append(s)
+  # max_enrollment exceeded just from the non-lottery people!
+  # Either admin didn't select enough people or admin allowed
+  # open enrollment when there weren't enough spots.
+  if len(winners) >= r['max_enrollment']:
+    logging.error("Too many non-lottery students. This should not happen. Try selecting more students for the lottery.")
+
+  random.shuffle(candidates)
+  # Add lottery candidates into the class until max_enrollment reached
+  for c in candidates:
+    if len(winners) >= r['max_enrollment']:
+      AddStudentToWaitlist(institution, session, c, cid)
+      RemoveStudentFromClass(institution, session, c, cid)
+    else:
+      winners.append(c)
 
   # put winners into StudentGroup
   group_name = r['class_name'] + '_' + str(r['class_id'])
-  winners = [s for s in r['emails'][:r['max_enrollment']]]
   sgroup = models.GroupsStudents.FetchJson(institution, session)
   if sgroup:
     if not any(g['group_name'] == group_name for g in sgroup):
@@ -360,7 +374,7 @@ def RunLottery(institution, session, cid):
       # Remove open_enrollment field
       result = c.pop('open_enrollment', None)
       if (result == None):
-        logging.fatal("Extra students found while class is not in open enrollment")
+        logging.error("Extra students found while class is not in open enrollment")
       # Update roster class_obj to match above class changes
       r = models.ClassRoster.FetchEntity(institution, session, c['id'])
       models.ClassRoster.Store(institution, session, c, ','.join(r['emails']))

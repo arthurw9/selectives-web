@@ -26,37 +26,6 @@ def listOrder(c):
             dayOrder.index(c['schedule'][0]['daypart']))
 
 class ClassList(webapp2.RequestHandler):
-  def RedirectToSelf(self, institution, session, message):
-    self.redirect("/class_list?%s" % urllib.urlencode(
-        {'message': message,
-         'institution': institution,
-         'session': session}))
-
-  def post(self):
-    auth = authorizer.Authorizer(self)
-    if not auth.CanAdministerInstitutionFromUrl():
-      auth.Redirect()
-      return
-
-    institution = self.request.get("institution")
-    if not institution:
-      logging.fatal("no institution")
-    session = self.request.get("session")
-    if not session:
-      logging.fatal("no session")
-    action = self.request.get("action")
-    if not action:
-      logging.fatal("no action")
-
-    if action == "run lottery":
-      cid = self.request.get("cid")
-      if not cid:
-        logging.fatal("no class id")
-      logic.RunLottery(institution, session, cid)
-      self.RedirectToSelf(institution, session, "lottery %s" % cid)
-
-    self.RedirectToSelf(institution, session, "Unknown action")
-
   def get(self):
     auth = authorizer.Authorizer(self)
     if not auth.CanAdministerInstitutionFromUrl():
