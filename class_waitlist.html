@@ -12,30 +12,62 @@ function RemoveStudent(email) {
   form_element.submit();
   return false;
 }
+
+window.onload = function() {
+  var luckyWinner = document.getElementById("luckyWinner");
+  luckyWinner.onclick = function() {
+    var spanOutput = document.getElementById("winningStudent");
+    spanOutput.textContent = getRandomWaitlistedStudent();
+  }
+}
+
+class_waitlist = [
+{% for s in class_waitlist['students'] %}
+  "{{s['first']}}" + " " + "{{s['last']}}",
+{% endfor %}
+]
+
+function getRandomWaitlistedStudent() {
+  for (var i = class_waitlist.length-1; i > 0; i--) {
+    var n = Math.floor(Math.random()*(i+1));
+    var temp = class_waitlist[i];
+    class_waitlist[i] = class_waitlist[n];
+    class_waitlist[n] = temp;
+  }
+  return class_waitlist[1];
+}
 </script>
+
 <h3 style="height:3px">{{ class_details['name'] }} Class Waitlist</h3>
-<br><b>Schedule:</b>
-{{ class_details['schedule'] | join(' / ', attribute='daypart') }}
-<br><b>Location:</b>
-{{ class_details['schedule'] | join(' / ', attribute='location') }}
-<br><b>Instructor:</b>
-{{ class_details['instructor'] }}
-<br><b>Max Enrollment:</b>
-{{ class_details['max_enrollment'] }}
-<br><b>Waitlisted:</b>
-{{ class_waitlist['emails']|length }}
-{% if 'prerequisites' in class_details 
+<table>
+  <tr>
+    <td><b>Schedule:</b>
+      {{ class_details['schedule'] | join(' / ', attribute='daypart') }}</td>
+    <td><b>Location:</b>
+      {{ class_details['schedule'] | join(' / ', attribute='location') }}</td>
+    <td><b>Instructor:</b>
+      {{ class_details['instructor'] }}</td>
+  </tr>
+  <tr>
+    <td><b>Max Enrollment:</b>
+      {{ class_details['max_enrollment'] }}</td>
+    <td><b>Waitlisted:</b>
+      {{ class_waitlist['emails']|length }}</td>
+  </tr>
+  {% if 'prerequisites' in class_details
    and class_details['prerequisites'] != [] %}
-  <br><b>Prerequisites:</b>
-  {% for p in class_details['prerequisites'] %}
-    <br> - {{ p }}
-  {% endfor %}
-{% endif %}
-{% if 'exclude_from_catalog' in class_details %}
-  <br><b>Exclude From Catalog:</b>
-  {{ class_details['exclude_from_catalog'] }}
-{% endif %}
-<br>
+    <tr><td><b>Prerequisites:</b>
+      {% for p in class_details['prerequisites'] %}
+      <br> - {{ p }}
+      {% endfor %}</td>
+    </tr>
+  {% endif %}
+  {% if 'exclude_from_catalog' in class_details %}
+    <tr><td><b>Exclude From Catalog:</b>
+      {{ class_details['exclude_from_catalog'] }}</td>
+    </tr>
+  {% endif %}
+</table>
 <br>
 <form method=post>
 <input type=hidden name="institution" value="{{ institution }}" />
@@ -43,7 +75,9 @@ function RemoveStudent(email) {
 <input type=hidden name="class_id" value = "{{ class_waitlist['class_id'] }}" />
 <input type=hidden name="action" />
 <input type=hidden name="email" />
-<table>
+<input type="button" id="luckyWinner" value="Random Student">
+<span id="winningStudent" style="border:1px solid; padding:5px"></span><br><br>
+<table id="StudentTable">
   <tr class=highlight>
     <th></th>
     <th>Student</th>
