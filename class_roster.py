@@ -20,7 +20,7 @@ def addStudentData(class_roster, students):
   class_roster['students'] = []
   for e in class_roster['emails']:
     for s in students:
-      if (s['email'] == e):
+      if (s['email'].lower() == e):
         class_roster['students'].append(s)
 
 class ClassRoster(webapp2.RequestHandler):
