@@ -1,0 +1,174 @@
+{% extends 'menu.html' %}
+{% block session_body %}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.4/jspdf.debug.js">
+// Using jsPDF. To learn more:
+//   http://rawgit.com/MrRio/jsPDF/master/#
+//   http://rawgit.com/MrRio/jsPDF/master/docs/jspdf.js.html#line1158
+</script>
+<script>
+var CLASS_NAME_MAX = 30;
+var NAME_FONT_SIZE = 24;
+var DETAIL_FONT_SIZE = 14;
+var NAME_X = 100;
+var NAME_Y = 22;
+var DETAIL_X = NAME_X-79;
+var DETAIL_Y = 30;
+
+var BOXSTARTX = 11;
+var BOXSTARTY = 9;
+var BOXSIZEX = 185;
+var BOXSIZEY = 24;
+
+var LINESTARTX = 20;
+var LINEENDX = 192;
+var LINESTARTY = 41;
+
+var MAXLINES = 36;
+
+// This form prints no more than MAXLINES lines per page. Students
+// beyond MAXLINES in a class will simply not be printed. We're not
+// doing the calculations to print a second page because this is a
+// throw-away form anyway. It's only purpose is in case we need
+// to go back to the manual registration process. Once online
+// registration has been proven to work, this form can be deleted.
+function downloadForm(includeStudents) {
+  var doc = new jsPDF();
+  var pgCnt = 0;
+  {% for c in classes %}
+    if (document.getElementById("selectPDF{{c['id']}}").checked) {
+      var classInfo = new Object();
+      classInfo.name = "{{c['name'] | safe}}";
+      classInfo.name = classInfo.name.slice(0,CLASS_NAME_MAX);
+      classInfo.daypart = '{{c['schedule'] | join(' / ', attribute='daypart')}}';
+      {% if c['num_locations'] == 1 %}
+        classInfo.location = '{{c['schedule'][0]['location']}}';
+      {% else %}
+        classInfo.location = '{{c['schedule'] | join(' / ', attribute='location')}}';
+      {% endif %}
+      classInfo.instructor = '{{ c['instructor'] }}';
+      classInfo.maximum = '{{ c['max_enrollment'] }}';
+      doc.setFont('times');
+      doc.setFontType('bold');
+      doc.setFontSize(NAME_FONT_SIZE);
+      doc.text(classInfo.name, NAME_X, NAME_Y, null, null, 'center');
+      if (classInfo.name.includes('PE')) {
+        doc.setFontSize(DETAIL_FONT_SIZE-3);
+        doc.setFontType('normal');
+        doc.setTextColor(255,0,0);
+        doc.text("You will be assigned to a PE teacher. You might not be with all your friends.", NAME_X, NAME_Y-8, null, null, 'center');
+      }
+      else {
+        doc.setFontSize(DETAIL_FONT_SIZE);
+        doc.setFontType('normal');
+        doc.text('Instructor', DETAIL_X, DETAIL_Y);
+        doc.setFontType('bold');
+        doc.text(classInfo.instructor, DETAIL_X+22, DETAIL_Y);
+      }
+      doc.setTextColor(0);
+      doc.setFontSize(DETAIL_FONT_SIZE+2);
+      doc.text(classInfo.daypart, DETAIL_X+77, DETAIL_Y, null, null, 'center');
+      doc.setFontType('normal');
+      doc.setFontSize(DETAIL_FONT_SIZE);
+      doc.text('Max Enrollment', DETAIL_X+119, DETAIL_Y);
+      doc.setFontType('bold');
+      doc.text(classInfo.maximum, DETAIL_X+154, DETAIL_Y);
+      doc.rect(BOXSTARTX, BOXSTARTY, BOXSIZEX, BOXSIZEY);
+
+      doc.setFontSize(DETAIL_FONT_SIZE-2);
+      doc.text('First Name', LINESTARTX+6, LINESTARTY-1);
+      doc.text('Last Name', LINESTARTX+37, LINESTARTY-1);
+      doc.text('Homeroom #', LINESTARTX+80, LINESTARTY-1);
+
+      var students = [];
+      if (includeStudents && ({{class_rosters[c['id']]['students']|length}} > 0)) {
+        students = [
+        {% for s in class_rosters[c['id']]['students'] %}
+          {'first': "{{s['first']}}",
+           'last': "{{s['last']}}",
+           'current_homeroom': {{s['current_homeroom']}}},
+        {% endfor %}
+        ];
+      }
+      for (var i=1; i<MAXLINES+1; i++) {
+        if (i<=classInfo.maximum) {
+          doc.text(i.toString(), LINESTARTX-6, i*7+LINESTARTY, null, null, 'right');
+        }
+        if (includeStudents && students.length > i-1) {
+          //  var s = {{class_rosters[c['id']]['students']}}[i-1];
+            //var s_info = s['first']
+          var output_name = students[i-1]['first'] + ' ' + students[i-1]['last'];
+          var output_hr = students[i-1]['current_homeroom'].toString();
+          doc.text(output_name, LINESTARTX+8, i*7+LINESTARTY-1);
+          doc.text(output_hr, LINESTARTX+87, i*7+LINESTARTY-1)
+        }
+        doc.line(LINESTARTX, i*7+LINESTARTY, LINEENDX, i*7+LINESTARTY);
+      }
+  
+      pgCnt += 1;
+      doc.addPage();
+    }
+  {% endfor %}
+  doc.deletePage(pgCnt+1); // delete extra last page
+  doc.save('selectives_signupform.pdf');
+
+  // Prevent redirect and event bubbling.
+  return false;
+}
+
+window.onload = function() {
+  var selectAll = document.getElementById("selectAll");
+  var unselectAll = document.getElementById("unselectAll");
+  var downloadPDF = document.getElementById("downloadPDF");
+  var downloadFilledPDF = document.getElementById("downloadFilledPDF");
+
+  selectAll.onclick = function() {
+    {% for c in classes %}
+      document.getElementById("selectPDF{{c['id']}}").checked = true;
+    {% endfor %}
+  };
+  unselectAll.onclick = function() {
+    {% for c in classes %}
+      document.getElementById("selectPDF{{c['id']}}").checked = false;
+    {% endfor %}
+  };
+
+  downloadPDF.onclick = function() {
+    downloadForm(false); // empty form
+  };
+  downloadFilledPDF.onclick = function() {
+    downloadForm(true); // filled form
+  };
+};
+</script>
+
+<h3>Signup Form Main</h3>
+<br>
+<br>
+
+{% if classes %}
+<form>
+<input type="button" id="selectAll" value="Select All">
+<input type="button" id="unselectAll" value="Unselect All">
+<input type="button" id="downloadPDF" value="Download Empty">
+<input type="button" id="downloadFilledPDF" value="Download Filled">
+<table>
+  {% for c in classes %}
+    <tr class=highlight>
+      <td><input type="checkBox" id="selectPDF{{c['id']}}" value="c"+{{c['id']}}></td>
+      <td>{{ c['name'] }}</td>
+      <td>
+        {% for s in c['schedule'] %}
+          {{ s['daypart'] }}
+        {% endfor %}</td>
+      <td>{{ c['instructor'] }}</td>
+    </tr>
+  {% endfor %}
+</table>
+</form>
+{% else %}
+There are no classes to display.<br>
+Go to Setup >> Classes and add some classes.
+{% endif %}
+
+{% endblock %}

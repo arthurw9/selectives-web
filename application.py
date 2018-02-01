@@ -33,7 +33,6 @@ import report.attendance_list
 import report.student_schedules
 import report.signup_card
 import report.signup_main
-import report.signup_pe
 import report.homeroom
 import report.label
 import error_registration
@@ -84,7 +83,6 @@ application = webapp2.WSGIApplication([
   ('/report/student_schedules', report.student_schedules.StudentSchedules),
   ('/report/signup_card', report.signup_card.SignupCard),
   ('/report/signup_main', report.signup_main.SignupMain),
-  ('/report/signup_pe', report.signup_pe.SignupPE),
   ('/report/homeroom', report.homeroom.Homeroom),
   ('/report/label', report.label.Label),
   ('/error_registration', error_registration.ErrorRegistration),
