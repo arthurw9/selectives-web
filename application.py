@@ -48,6 +48,8 @@ import teacher.attendance_today
 import teacher.attendance_historical
 import class_waitlist
 import hover_text
+import links
+import view_links
 
 application = webapp2.WSGIApplication([
   ('/', index.Index),
@@ -98,4 +100,6 @@ application = webapp2.WSGIApplication([
   ('/teacher/attendance_historical', teacher.attendance_historical.AttendanceHistorical),
   ('/class_waitlist', class_waitlist.ClassWaitlist),
   ('/hover_text', hover_text.HoverText),
+  ('/links', links.Links),
+  ('/view_links', view_links.ViewLinks),
 ], debug=True)

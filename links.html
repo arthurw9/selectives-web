@@ -1,0 +1,23 @@
+{% extends 'menu.html' %}
+{% block session_body %}
+
+<h3>Document Links</h3>
+<table width='60%'><tr><td>
+Sample data:<br>
+- name: 7th Grade Schedule<br>
+&nbsp;&nbsp;url: https://drive.google.com/file/d/1auE5BtkPtSuC/view?usp=sharing
+<br>
+- name: 8th Grade Schedule,<br>
+&nbsp;&nbsp;url: https://drive.google.com/file/d/1CAVz6F6ETbA/view?usp=sharing
+<br><br>
+</td></tr></table>
+<form method=post>
+<input type=hidden name="institution" value="{{ institution }}" />
+<input type=hidden name="session" value="{{ session }}" />
+<textarea name=links>
+{{ links }}
+</textarea>
+<br />
+<input type=submit />
+</form>
+{% endblock %}

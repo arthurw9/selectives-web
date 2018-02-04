@@ -925,3 +925,40 @@ class Attendance(ndb.Model):
     attendance = Attendance(jdata = attendance_obj)
     attendance.key = Attendance.attendance_key(institution, session_name, c_id)
     attendance.put()
+
+class Links(ndb.Model):
+  data = ndb.TextProperty()
+  jdata = ndb.JsonProperty()
+
+  @classmethod
+  @timed
+  def links_key(cls, institution, session):
+    return ndb.Key("InstitutionKey", institution,
+                   Session, session,
+                   Links, "links")
+
+  @classmethod
+  @timed
+  def FetchJson(cls, institution, session):
+    links = Links.links_key(institution, session).get()
+    if links:
+      return links.jdata
+    else:
+      return ''
+
+  @classmethod
+  @timed
+  def Fetch(cls, institution, session):
+    links = Links.links_key(institution, session).get()
+    if links:
+      return links.data
+    else:
+      return ''
+
+  @classmethod
+  @timed
+  def store(cls, institution, session_name, links_data):
+    links = Links(data = links_data,
+                        jdata = yaml.load(links_data))
+    links.key = Links.links_key(institution, session_name)
+    links.put()

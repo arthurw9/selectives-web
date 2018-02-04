@@ -91,3 +91,8 @@ def ServingRules():
         "    - current_grade: OPTIONAL\n"
         "      current_homeroom: OPTIONAL\n"
         "      email: OPTIONAL\n")
+
+def Links():
+  return yayv.ByExample(
+        "- name: REQUIRED\n"
+        "  url: REQUIRED\n")
