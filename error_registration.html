@@ -1,11 +1,53 @@
 {% extends 'menu.html' %}
 {% block session_body %}
 
+<script>
+
+window.onload = function() {
+  var showAll = document.getElementById("showAll");
+  var show8th = document.getElementById("show8th");
+  var show7th = document.getElementById("show7th");
+  var show6th = document.getElementById("show6th");
+
+  showAll.onclick = function() {
+    var displayArea = document.getElementById("displayArea");
+    displayArea.innerHTML = "";
+    {% for line in errors_all.splitlines() %}
+      displayArea.innerHTML += "{{ line }}<br>"
+    {% endfor %}
+  }
+  show8th.onclick = function() {
+    var displayArea = document.getElementById("displayArea");
+    displayArea.innerHTML = "";
+    {% for line in errors_8th.splitlines() %}
+      displayArea.innerHTML += "{{ line }}<br>"
+    {% endfor %}
+  }
+  show7th.onclick = function() {
+    var displayArea = document.getElementById("displayArea");
+    displayArea.innerHTML = "";
+    {% for line in errors_7th.splitlines() %}
+      displayArea.innerHTML += "{{ line }}<br>"
+    {% endfor %}
+  }
+  show6th.onclick = function() {
+    var displayArea = document.getElementById("displayArea");
+    displayArea.innerHTML = "";
+    {% for line in errors_6th.splitlines() %}
+      displayArea.innerHTML += "{{ line }}<br>"
+    {% endfor %}
+  }
+}
+</script>
 <h3>Validate Registration</h3>
+<form>
 <input type=hidden name="institution" value="{{ institution }}" />
 <input type=hidden name="session" value="{{ session }}" />
-{% for line in registration_detail.splitlines() %}
-  {{ line }}<br>
-{% endfor %}
-
+<input type="button" id="showAll" value="Show All">
+<input type="button" id="show8th" value="Show 8th">
+<input type="button" id="show7th" value="Show 7th">
+<input type="button" id="show6th" value="Show 6th">
+<div id="displayArea">
+</div>
+</form>
 {% endblock %}

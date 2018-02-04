@@ -35,8 +35,16 @@ class ErrorRegistration(webapp2.RequestHandler):
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
 
-    registration_detail = 'Schedule Errors:\n\n'
-    foundError = False
+    errors_8th = 'Schedule Errors 8th Grade:\n\n'
+    errors_7th = 'Schedule Errors 7th Grade:\n\n'
+    errors_6th = 'Schedule Errors 6th Grade:\n\n'
+    errors_all = 'Schedule Errors:\n\n'
+    found_error_8th = False
+    found_error_7th = False
+    found_error_6th = False
+    num_8th = 0
+    num_7th = 0
+    num_6th = 0
     num_students = 0
     classes_by_id = {}
     classes = models.Classes.FetchJson(institution, session)
@@ -59,35 +67,69 @@ class ErrorRegistration(webapp2.RequestHandler):
             dp_obj['location'] = dp['location']
             dayparts.append(dp_obj)
         if (len(dayparts) != 8):
-          registration_detail += s['first'] + ' ' +\
-                                 s['last'] + ' ' +\
-                                 str(s['current_grade']) + ' ' +\
-                                 str(s['current_homeroom']) + '\n'
+          registration_detail = s['first'] + ' ' +\
+                                s['last'] + ' ' +\
+                                str(s['current_grade']) + ' ' +\
+                                str(s['current_homeroom']) + '\n'
           dayparts.sort(key=listOrder)
           for dp_obj in dayparts:
             registration_detail += dp_obj['daypart'] + ' ' +\
                                    dp_obj['name'] + ' ' +\
                                    dp_obj['location'] + '\n'
           registration_detail += '\n'
+          errors_all += registration_detail
+          if (s['current_grade'] == 8):
+            errors_8th += registration_detail
+          if (s['current_grade'] == 7):
+            errors_7th += registration_detail
+          if (s['current_grade'] == 6):
+            errors_6th += registration_detail
           foundError = True
       else:
-        registration_detail += 'Missing schedule: ' +\
-                                s['first'] + ' ' +\
-                                s['last'] + ' ' +\
-                                str(s['current_grade']) + ' ' +\
-                                str(s['current_homeroom']) + '\n'
+        registration_detail = 'Missing schedule: ' +\
+                              s['first'] + ' ' +\
+                              s['last'] + ' ' +\
+                              str(s['current_grade']) + ' ' +\
+                              str(s['current_homeroom']) + '\n'
+        errors_all += registration_detail
+        if (s['current_grade'] == 8):
+          errors_8th += registration_detail
+        if (s['current_grade'] == 7):
+          errors_7th += registration_detail
+        if (s['current_grade'] == 6):
+          errors_6th += registration_detail
         foundError = True
       num_students += 1
+      if (s['current_grade'] == 8):
+        num_8th += 1
+      if (s['current_grade'] == 7):
+        num_7th += 1
+      if (s['current_grade'] == 6):
+        num_6th += 1
+
     if (foundError == False):
-      registration_detail += 'All schedules look good!\n'
-      registration_detail += 'Total students processed: ' +\
-                             str(num_students) + '\n'
+      registration_detail = 'All schedules look good!\n'
+      registration_detail += 'Total students processed: '
+      errors_all += registration_detail
+      errors_all += str(num_students) + '\n'
+      if (s['current_grade'] == 8):
+        errors_8th += registration_detail
+        errors_8th += str(num_8th) + '\n'
+      if (s['current_grade'] == 7):
+        errors_7th += registration_detail
+        errors_7th += str(num_7th) + '\n'
+      if (s['current_grade'] == 6):
+        errors_6th += registration_detail
+        errors_6th += str(num_6th) + '\n'
     template_values = {
       'user_email' : auth.email,
       'institution' : institution,
       'session' : session,
       'message': message,
-      'registration_detail': registration_detail,
+      'errors_all': errors_all,
+      'errors_8th': errors_8th,
+      'errors_7th': errors_7th,
+      'errors_6th': errors_6th,
       'session_query': session_query,
     }
     template = JINJA_ENVIRONMENT.get_template('error_registration.html')
