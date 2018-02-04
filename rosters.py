@@ -189,11 +189,14 @@ class Rosters(webapp2.RequestHandler):
       else:
         rosters += '\n'
       for s in roster_students[1:]:
-        rosters += '"","","","","","","' + s[0] + '"'
-        rosters += ',"' + s[1] + '"'
-        rosters += ',"' + s[2] + '"'
-        rosters += ',"' + s[3] + '"'
-        rosters += ',"' + s[4] + '"\n'
+        if s:
+          rosters += '"","","","","","","' + s[0] + '"'
+          rosters += ',"' + s[1] + '"'
+          rosters += ',"' + s[2] + '"'
+          rosters += ',"' + s[3] + '"'
+          rosters += ',"' + s[4] + '"\n'
+        else:
+          logging.error("Student in roster_students is empty string!")
 
     template_values = {
       'user_email' : auth.email,
