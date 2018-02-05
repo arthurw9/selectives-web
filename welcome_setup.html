@@ -1,0 +1,37 @@
+{% extends 'menu.html' %}
+{% block session_body %}
+
+<script>
+function reload_view() {
+  var input = document.getElementById("input_area").value;
+  document.getElementById("view_area").innerHTML = input;  
+}
+
+window.onload = function() {
+  reload_view();
+  var view = document.getElementById("view");
+
+  view.onclick = function() {
+    reload_view();
+  }
+}
+</script>
+
+<h3>Welcome Message</h3>
+Caution: the Welcome Message is shared across all institutions and sessions.<br><br>
+<table width='100%'><tr><td width='30%'>
+<form method=post>
+<input type=hidden name="institution" value="{{ institution }}" />
+<input type=hidden name="session" value="{{ session }}" />
+<textarea id="input_area" name=welcome_msg>
+{{ welcome_msg }}
+</textarea>
+<br />
+<input type="button" id="view" value="View">
+<input type="submit" />
+</form>
+<td>
+<div id="view_area"></div>
+</td>
+</td></tr></table>
+{% endblock %}

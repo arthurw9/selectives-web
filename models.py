@@ -962,3 +962,38 @@ class Links(ndb.Model):
                         jdata = yaml.load(links_data))
     links.key = Links.links_key(institution, session_name)
     links.put()
+
+class Welcome(ndb.Model):
+  data = ndb.TextProperty()
+  jdata = ndb.JsonProperty()
+
+  @classmethod
+  @timed
+  def welcome_key(cls):
+    return ndb.Key(Welcome, "welcome")
+
+  @classmethod
+  @timed
+  def FetchJson(cls):
+    welcome = Welcome.welcome_key().get()
+    if welcome:
+      return welcome.jdata
+    else:
+      return ''
+
+  @classmethod
+  @timed
+  def Fetch(cls):
+    welcome = Welcome.welcome_key().get()
+    if welcome:
+      return welcome.data
+    else:
+      return ''
+
+  @classmethod
+  @timed
+  def store(cls, welcome_data):
+    welcome = Welcome(data = welcome_data,
+                      jdata = yaml.load(welcome_data))
+    welcome.key = Welcome.welcome_key()
+    welcome.put()

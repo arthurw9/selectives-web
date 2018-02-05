@@ -50,6 +50,7 @@ import class_waitlist
 import hover_text
 import links
 import view_links
+import welcome_setup
 
 application = webapp2.WSGIApplication([
   ('/', index.Index),
@@ -102,4 +103,5 @@ application = webapp2.WSGIApplication([
   ('/hover_text', hover_text.HoverText),
   ('/links', links.Links),
   ('/view_links', view_links.ViewLinks),
+  ('/welcome_setup', welcome_setup.WelcomeSetup),
 ], debug=True)

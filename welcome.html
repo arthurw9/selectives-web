@@ -1,19 +1,4 @@
 {% extends 'base_user.html' %}
 {% block body %}
-<h1>Welcome to Discovery Charter School Selectives!</h1>
-
-<h3>To Log In</h3>
-<ol>
-  <li>First make sure you are signed into your google account.
-    <ul>
-      <li>Students should use their school account <em>first.last##mydiscoveryk8.org</em></li>
-      <li>Instructors and parents, please contact the selectives team for access.</li>
-    </ul></li>
-  <li>Click on the <b>Log In</b> button in the top right corner.</li>
-  <li>If prompted for permission to access your Google Account, click <b>Allow</b>.</li>
-</ol>
-<p>Questions or feedback? Please contact the selectives team or email discovery.selectives@gmail.com</p>
-
-<a href="https://www.google.com/search?tbm=isch&q=smiley+face">Have a smiley face</a>
-
+{{ welcome_msg|safe }}
 {% endblock body %}
