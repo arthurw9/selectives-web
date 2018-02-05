@@ -46,6 +46,7 @@ class ViewLinks(webapp2.RequestHandler):
       'message': message,
       'session_query': session_query,
       'view_links': view_links,
+      'self': self.request.uri,
     }
     template = JINJA_ENVIRONMENT.get_template('view_links.html')
     self.response.write(template.render(template_values))
