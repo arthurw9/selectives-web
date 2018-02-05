@@ -42,6 +42,7 @@ class ErrorRegistration(webapp2.RequestHandler):
     found_error_8th = False
     found_error_7th = False
     found_error_6th = False
+    found_error_all = False
     num_8th = 0
     num_7th = 0
     num_6th = 0
@@ -80,11 +81,14 @@ class ErrorRegistration(webapp2.RequestHandler):
           errors_all += registration_detail
           if (s['current_grade'] == 8):
             errors_8th += registration_detail
+            found_error_8th = True
           if (s['current_grade'] == 7):
             errors_7th += registration_detail
+            found_error_7th = True
           if (s['current_grade'] == 6):
             errors_6th += registration_detail
-          foundError = True
+            found_error_6th = True
+          found_error_all = True
       else:
         registration_detail = 'Missing schedule: ' +\
                               s['first'] + ' ' +\
@@ -94,11 +98,14 @@ class ErrorRegistration(webapp2.RequestHandler):
         errors_all += registration_detail
         if (s['current_grade'] == 8):
           errors_8th += registration_detail
+          found_error_8th = True
         if (s['current_grade'] == 7):
           errors_7th += registration_detail
+          found_error_7th = True
         if (s['current_grade'] == 6):
           errors_6th += registration_detail
-        foundError = True
+          found_error_6th = True
+        found_error_all = True
       num_students += 1
       if (s['current_grade'] == 8):
         num_8th += 1
@@ -107,20 +114,20 @@ class ErrorRegistration(webapp2.RequestHandler):
       if (s['current_grade'] == 6):
         num_6th += 1
 
-    if (foundError == False):
-      registration_detail = 'All schedules look good!\n'
-      registration_detail += 'Total students processed: '
+    registration_detail = 'All schedules look good!\n'
+    registration_detail += 'Total students processed: '
+    if (found_error_all == False):
       errors_all += registration_detail
       errors_all += str(num_students) + '\n'
-      if (s['current_grade'] == 8):
-        errors_8th += registration_detail
-        errors_8th += str(num_8th) + '\n'
-      if (s['current_grade'] == 7):
-        errors_7th += registration_detail
-        errors_7th += str(num_7th) + '\n'
-      if (s['current_grade'] == 6):
-        errors_6th += registration_detail
-        errors_6th += str(num_6th) + '\n'
+    if (found_error_8th == False):
+      errors_8th += registration_detail
+      errors_8th += str(num_8th) + '\n'
+    if (found_error_7th == False):
+      errors_7th += registration_detail
+      errors_7th += str(num_7th) + '\n'
+    if (found_error_6th == False):
+      errors_6th += registration_detail
+      errors_6th += str(num_6th) + '\n'
     template_values = {
       'user_email' : auth.email,
       'institution' : institution,
