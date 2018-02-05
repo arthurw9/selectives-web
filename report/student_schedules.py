@@ -84,6 +84,7 @@ class StudentSchedules(webapp2.RequestHandler):
     if students:
       students.sort(key=lambda(s): s['last'])
     template_values = {
+      'user_email' : auth.email,
       'user_type': user_type,
       'institution' : institution,
       'session' : session,

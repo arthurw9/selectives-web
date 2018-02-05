@@ -40,6 +40,7 @@ class ViewLinks(webapp2.RequestHandler):
       view_links = ''
 
     template_values = {
+      'user_email' : auth.email,
       'institution' : institution,
       'session' : session,
       'message': message,

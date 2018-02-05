@@ -71,6 +71,7 @@ class Links(webapp2.RequestHandler):
           "  url: https://drive.google.com/drive/folders/0B16740tCYESsUHd3T3NIY00wcWc",])
 
     template_values = {
+      'user_email' : auth.email,
       'institution' : institution,
       'session' : session,
       'message': message,
