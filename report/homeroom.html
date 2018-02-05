@@ -1,0 +1,80 @@
+{% extends 'menu.html' %}
+{% block session_body %}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.4/jspdf.debug.js">
+// Using jsPDF. To learn more:
+//   http://rawgit.com/MrRio/jsPDF/master/#
+//   http://rawgit.com/MrRio/jsPDF/master/docs/jspdf.js.html#line1158
+</script>
+<script>
+var CLASS_NAME_MAX = 30;
+
+window.onload = function() {
+  var selectAll = document.getElementById("selectAll");
+  var unselectAll = document.getElementById("unselectAll");
+  var viewPDF = document.getElementById("viewPDF");
+
+  selectAll.onclick = function() {
+    {% for c in classes %}
+      document.getElementById("viewPDF{{c['id']}}").checked = true;
+    {% endfor %}
+  }
+  unselectAll.onclick = function() {
+    {% for c in classes %}
+      document.getElementById("viewPDF{{c['id']}}").checked = false;
+    {% endfor %}
+  }
+
+  viewPDF.onclick = function() {
+    var doc = new jsPDF();
+    {% for c in classes %}
+      if (document.getElementById("viewPDF{{c['id']}}").checked) {
+        var classInfo = new Object();
+        classInfo.name = '{{c['name']}}';
+        classInfo.name = classInfo.name.slice(0,CLASS_NAME_MAX);
+        classInfo.daypart = '{{c['schedule'] | join(' / ', attribute='daypart')}}';
+        {% if c['num_locations'] == 1 %}
+          classInfo.location = '{{c['schedule'][0]['location']}}';
+        {% else %}
+          classInfo.location = '{{c['schedule'] | join(' / ', attribute='location')}}';
+        {% endif %}
+        classInfo.instructor = '{{ c['instructor'] }}';
+      }
+    {% endfor %}
+    doc.output('dataurl');
+
+    // Prevent redirect and event bubbling.
+    return false;
+  };
+};
+</script>
+
+<h3>Homeroom List</h3>
+<br>
+<br>
+
+{% if classes %}
+<form>
+<input type="button" id="selectAll" value="Select All">
+<input type="button" id="unselectAll" value="Unselect All">
+<input type="button" id="viewPDF" value="View PDF">
+<table>
+  {% for c in classes %}
+    <tr class=highlight>
+      <td><input type="checkBox" id="viewPDF{{c['id']}}" name="download" value="c"+{{c['id']}}></td>
+      <td>{{ c['name'] }}</td>
+      <td>
+        {% for s in c['schedule'] %}
+          {{ s['daypart'] }}
+        {% endfor %}</td>
+      <td>{{ c['instructor'] }}</td>
+    </tr>
+  {% endfor %}
+</table>
+</form>
+{% else %}
+There are no classes to display.<br>
+Go to Setup >> Classes and add some classes.
+{% endif %}
+
+{% endblock %}
