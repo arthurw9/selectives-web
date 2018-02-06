@@ -31,15 +31,19 @@ window.onload = function() {
   var selectAll = document.getElementById("selectAll");
   var unselectAll = document.getElementById("unselectAll");
 
-  selectAll.onclick = function() {
+  if (selectAll) {
+    selectAll.onclick = function() {
     {% for s in class_roster['students'] %}
       document.getElementById("selectStudent{{s['email']}}").checked = true;
     {% endfor %}
+    }
   }
-  unselectAll.onclick = function() {
+  if (unselectAll) {
+    unselectAll.onclick = function() {
     {% for s in class_roster['students'] %}
       document.getElementById("selectStudent{{s['email']}}").checked = false;
     {% endfor %}
+    }
   }
 }
 </script>
