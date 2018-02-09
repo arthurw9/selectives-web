@@ -18,10 +18,22 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
 
-class StudentSchedules(webapp2.RequestHandler):
+dayOrder = ['Mon A', 'Mon B', 'Tues A', 'Tues B',
+            'Thurs A', 'Thurs B', 'Fri A', 'Fri B']
+
+def listOrder(c):
+  if 'instructor' in c:
+    return (c['name'],
+            dayOrder.index(c['schedule'][0]['daypart']),
+            c['instructor'])
+  else:
+    return (c['name'],
+            dayOrder.index(c['schedule'][0]['daypart']))
+
+class StudentSchedulesMarked(webapp2.RequestHandler):
 
   def RedirectToSelf(self, institution, session, message):
-    self.redirect("/report/student_schedules?%s" % urllib.urlencode(
+    self.redirect("/report/student_schedules_marked?%s" % urllib.urlencode(
         {'message': message,
          'institution': institution,
          'session': session}))
@@ -52,6 +64,8 @@ class StudentSchedules(webapp2.RequestHandler):
 
     classes_by_id = {}
     classes = models.Classes.FetchJson(institution, session)
+    if classes:
+      classes.sort(key=listOrder)
     for c in classes:
       classes_by_id[c['id']] = c
     students = models.Students.FetchJson(institution, session)
@@ -82,11 +96,7 @@ class StudentSchedules(webapp2.RequestHandler):
         for cId in s['sched']:
           cId_class = classes_by_id[int(cId)]
           for dp in cId_class['schedule']:
-            if dp['location'] == 'Homeroom':
-              s[dp['daypart']] = 'Core'
-            else:
-              s[dp['daypart']] = dp['location'] + ', ' + cId_class['name']
-            s[dp['daypart']] = s[dp['daypart']][0:26]
+            s[dp['daypart']] = cId
     if students:
       students.sort(key=lambda(s): s['last'])
     template_values = {
@@ -96,10 +106,11 @@ class StudentSchedules(webapp2.RequestHandler):
       'session' : session,
       'message': message,
       'session_query': session_query,
+      'classes': classes,
       'students': students,
       'last_modified': last_modified_overall_str,
       'homerooms': sorted(homerooms_by_grade, reverse=True),
       'homerooms_by_grade': homerooms_by_grade,
     }
-    template = JINJA_ENVIRONMENT.get_template('report/student_schedules.html')
+    template = JINJA_ENVIRONMENT.get_template('report/student_schedules_marked.html')
     self.response.write(template.render(template_values))

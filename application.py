@@ -51,6 +51,7 @@ import hover_text
 import links
 import view_links
 import welcome_setup
+import report.student_schedules_marked
 
 application = webapp2.WSGIApplication([
   ('/', index.Index),
@@ -104,4 +105,5 @@ application = webapp2.WSGIApplication([
   ('/links', links.Links),
   ('/view_links', view_links.ViewLinks),
   ('/welcome_setup', welcome_setup.WelcomeSetup),
+  ('/report/student_schedules_marked', report.student_schedules_marked.StudentSchedulesMarked),
 ], debug=True)
