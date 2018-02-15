@@ -66,13 +66,18 @@ class ErrorRegistration(webapp2.RequestHandler):
             dp_obj['daypart'] = dp['daypart']
             dp_obj['name'] = cId_class['name']
             dp_obj['location'] = dp['location']
+            if 'fitness' in cId_class:
+              dp_obj['fitness'] = cId_class['fitness']
+            else:
+              dp_obj['fitness'] = False
             dayparts.append(dp_obj)
+            dayparts.sort(key=listOrder)
         if (len(dayparts) != 8):
-          registration_detail = s['first'] + ' ' +\
+          registration_detail = 'Incomplete schedule: ' +\
+                                s['first'] + ' ' +\
                                 s['last'] + ' ' +\
                                 str(s['current_grade']) + ' ' +\
                                 str(s['current_homeroom']) + '\n'
-          dayparts.sort(key=listOrder)
           for dp_obj in dayparts:
             registration_detail += dp_obj['daypart'] + ' ' +\
                                    dp_obj['name'] + ' ' +\
@@ -89,6 +94,52 @@ class ErrorRegistration(webapp2.RequestHandler):
             errors_6th += registration_detail
             found_error_6th = True
           found_error_all = True
+        else:
+          num_PE = 0
+          num_Dance = 0
+          num_fitness = 0
+          num_PE_MT = 0
+          num_PE_TF = 0
+          for dp_obj in dayparts:
+            if (dp_obj['name'] == 'PE'):
+              num_PE += 1
+              if (dp_obj['daypart'].startswith('Mon') or
+                  dp_obj['daypart'].startswith('Tues')):
+                num_PE_MT += 1
+              if (dp_obj['daypart'].startswith('Thurs') or
+                  dp_obj['daypart'].startswith('Fri')):
+                num_PE_TF += 1
+            if (dp_obj['name'] == 'Dance'):
+              num_Dance += 1
+            if (dp_obj['fitness'] == True):
+              num_fitness += 1
+          if ((num_PE < 1 and num_Dance < 2) or
+              num_PE > 2 or # redundant, but keep
+              num_fitness < 2 or
+              num_fitness > 3 or
+              num_PE_MT > 1 or
+              num_PE_TF > 1):
+            registration_detail = 'PE or PE alternative problem: ' +\
+                                  s['first'] + ' ' +\
+                                  s['last'] + ' ' +\
+                                  str(s['current_grade']) + ' ' +\
+                                  str(s['current_homeroom']) + '\n'
+            for dp_obj in dayparts:
+              registration_detail += dp_obj['daypart'] + ' ' +\
+                                     dp_obj['name'] + ' ' +\
+                                     dp_obj['location'] + '\n'
+            registration_detail += '\n'
+            errors_all += registration_detail
+            if (s['current_grade'] == 8):
+              errors_8th += registration_detail
+              found_error_8th = True
+            if (s['current_grade'] == 7):
+              errors_7th += registration_detail
+              found_error_7th = True
+            if (s['current_grade'] == 6):
+              errors_6th += registration_detail
+              found_error_6th = True
+            found_error_all = True
       else:
         registration_detail = 'Missing schedule: ' +\
                               s['first'] + ' ' +\

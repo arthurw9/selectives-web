@@ -26,7 +26,8 @@ def Classes():
         "  exclude_from_catalog: OPTIONAL\n"
         "  owners:\n"
         "    - OPTIONAL\n"
-        "  open_enrollment: OPTIONAL\n")
+        "  open_enrollment: OPTIONAL\n"
+        "  fitness: OPTIONAL\n")
 
 def Students():
   return yayv.ByExample(
