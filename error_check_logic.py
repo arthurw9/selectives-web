@@ -19,6 +19,12 @@ Student/email                - contains correct graduation year
 Students/current_grade       - output number of students in each grade
 Students/current_homeroom    - output number of students in each homeroom
 
+TODO
+Schedule/email                         --> Student/email
+Roster/email                           --> Student/email
+  Deleted student from Setup or changed student email, but student's
+  email is still in schedule and rosters.
+
 TODO (Only if we get Requirements working and not decide to implement
 it some other way.)
 ClassGroups/classes/name               --> Classes/name
@@ -236,7 +242,7 @@ class Checker(object):
     Student Groups and check if any aren't used in any class schedule.
     StudentGroups/group_name <--> Classes/prerequisite/group
     """
-    self.error_check_detail += '\n\nCheck Class student groups against Student Groups and vice versa: '
+    self.error_check_detail += '\nCheck Class student groups against Student Groups and vice versa: '
     if not (student_groups and isValid_student_groups):
       self.error_check_status = 'FAIL'
       self.error_check_detail += 'invalid Student Groups, unable to run this test.'
@@ -268,7 +274,7 @@ class Checker(object):
     match an existing current_grade level in the student list. And the converse.
     Classes/prerequisite/current_grade <--> Students/current_grade
     """
-    self.error_check_detail += '\n\nCheck Class current_grade against Student current_grade and vice versa: '
+    self.error_check_detail += '\nCheck Class current_grade against Student current_grade and vice versa: '
     if not (students and isValid_students):
       self.error_check_status = 'FAIL'
       self.error_check_detail += 'invalid Students, unable to run this test.'
@@ -300,7 +306,7 @@ class Checker(object):
     match an existing email in the student list.
     Classes/prerequisite/email --> Students/email
     """
-    self.error_check_detail += '\n\nCheck Class student emails against Students: '
+    self.error_check_detail += '\nCheck Class student emails against Students: '
     if not (students and isValid_students):
       self.error_check_status = 'FAIL'
       self.error_check_detail += 'invalid Students, unable to run this test.'
@@ -327,7 +333,7 @@ class Checker(object):
     Student email.
     StudentGroups/emails --> Students/email
     """
-    self.error_check_detail += '\n\nCheck Student Group emails against Students: '
+    self.error_check_detail += '\nCheck Student Group emails against Students: '
     if not (students and isValid_students):
       self.error_check_status = 'FAIL'
       self.error_check_detail += 'invalid Students, unable to run this test.'
@@ -354,7 +360,7 @@ class Checker(object):
     in the applies_to and exempt fields matches an existing Student email.
     AutoRegister/applies_to/email & AutoRegister/exempt --> Students/email
     """
-    self.error_check_detail += '\n\nCheck Auto Register student emails against Students: '
+    self.error_check_detail += '\nCheck Auto Register student emails against Students: '
     if not (students and isValid_students):
       self.error_check_status = 'FAIL'
       self.error_check_detail += 'invalid Students, unable to run this test.'
@@ -386,7 +392,7 @@ class Checker(object):
     in the applies_to field matches an existing student group.
     AutoRegister/applies_to/group --> StudentGroups/group_name
     """
-    self.error_check_detail += '\n\nCheck Auto Register Class student groups against Student Groups: '
+    self.error_check_detail += '\nCheck Auto Register Class student groups against Student Groups: '
     if not (student_groups and isValid_student_groups):
       self.error_check_status = 'FAIL'
       self.error_check_detail += 'invalid Student Groups, unable to run this test.'
@@ -413,7 +419,7 @@ class Checker(object):
     in the applies_to field matches an existing Student current_grade.
     AutoRegister/applies_to/current_grade --> Student/current_grade
     """
-    self.error_check_detail += '\n\nCheck Auto Register current_grade against Students current_grade: '
+    self.error_check_detail += '\nCheck Auto Register current_grade against Students current_grade: '
     if not (students and isValid_students):
       self.error_check_status = 'FAIL'
       self.error_check_detail += 'invalid Students, unable to run this test.'
@@ -441,7 +447,7 @@ class Checker(object):
     AutoRegister/class --> Classes/name
     AutoRegister/class_id --> Classes/id
     """
-    self.error_check_detail += '\n\nCheck Auto Register Class against Classes: '
+    self.error_check_detail += '\nCheck Auto Register Class against Classes: '
     if not (classes and isValid_classes):
       self.error_check_status = 'FAIL'
       self.error_check_detail += 'invalid Classes, unable to run this test.'
@@ -468,7 +474,7 @@ class Checker(object):
     ServingRules/allow/current_homeroom     Students/current_homeroom
     ServingRules/allow/email                Students/email
     """
-    self.error_check_detail += '\n\nCheck Serving Rules against Students: '
+    self.error_check_detail += '\nCheck Serving Rules against Students: '
     if not (students and isValid_students):
       self.error_check_status = 'FAIL'
       self.error_check_detail += 'invalid Students, unable to run this test.'
@@ -513,7 +519,7 @@ class Checker(object):
                 If today is May 2017, eighth grade will be
                 first.last17@mydiscoveryk8.org, and so on.
     """
-    self.error_check_detail += '\n\nCheck graduation year in Student email: '
+    self.error_check_detail += '\nCheck graduation year in Student email: '
     if not (students and isValid_students):
       self.error_check_status = 'FAIL'
       self.error_check_detail += 'invalid Students, unable to run this test.'
@@ -547,7 +553,7 @@ class Checker(object):
     The admin can use this information to check for gross errors.
     For instance, if there is only one student in a grade, there might be a typo.
     """
-    self.error_check_detail += '\n\nGrade level : Students '
+    self.error_check_detail += '\n\nGrade level : No. Students '
     if not (students and isValid_students):
       self.error_check_status = 'FAIL'
       self.error_check_detail += 'invalid Students, unable to run this test.'
@@ -562,7 +568,7 @@ class Checker(object):
     The admin can use this information to check for gross errors.
     For instance, if there is only one student in a homeroom, there might be a typo.
     """
-    self.error_check_detail += '\n\nHomeroom : Students '
+    self.error_check_detail += '\nHomeroom : No. Students '
     if not (students and isValid_students):
       self.error_check_status = 'FAIL'
       self.error_check_detail += 'invalid Students, unable to run this test.'
