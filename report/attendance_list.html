@@ -78,6 +78,13 @@ function printHeader(doc, classInfo) {
   doc.text(h_enr, x, HY);
   doc.setFontType('bold');
   doc.text(classInfo.enrolled, x+4, DY);
+  x += calcSpacing(h_enr, classInfo.enrolled);
+
+  var h_max = 'Max';
+  doc.setFontType('normal');
+  doc.text(h_max, x, HY);
+  doc.setFontType('bold');
+  doc.text(classInfo.max_enrollment, x+2, DY);
 }
 
 function printFooter(doc, X, Y, last_mod, pg) {
@@ -178,6 +185,7 @@ window.onload = function() {
         {% endif %}
         classInfo.instructor = '{{ c['instructor'] }}';
         classInfo.enrolled = String(student_list.length);
+        classInfo.max_enrollment = '{{ c['max_enrollment'] }}';
 
         var n = 0;
         var classPgCnt = new Object();
