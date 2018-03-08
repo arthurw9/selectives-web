@@ -2,8 +2,35 @@
 {% block session_body %}
 
 <h3>Students</h3>
-<table width='50%'><tr><td>
-TIP: Each student must have: email, first, last, current_grade, current_homeroom.
+<table width='60%'>
+<tr><td>
+  Example:
+  <pre style="border: solid; border-width: thin; margin-top: 4px; background-color:#d3d3d3">
+- email: s.chang8@gmail.com
+  first: Shaurya
+  last: Chang
+  current_grade: 8
+  current_homeroom: 26
+- email: a.garcia@gmail.com
+  first: Anders
+  last: Garcia
+  current_grade: 6
+  current_homeroom: 22
+  edtechid: 23343
+  </pre>
+</td><td>
+Required fields:
+<ul style="margin:0">
+  <li>email - must be unique</li>
+  <li>first</li>
+  <li>last</li>
+  <li>current_grade</li>
+  <li>current_homeroom</li>
+</ul>
+Optional field:
+<ul style="margin:0">
+  <li>edtechid</li>
+</ul>
 </td></tr></table>
 <form method=post>
 <input type=hidden name="institution" value="{{ institution }}" />

@@ -2,10 +2,38 @@
 {% block session_body %}
 
 <h3>Serving Rules</h3>
-<table width='50%'>
+<table width='60%'>
+<tr>Use this page to grant and limit student access to certain pages.<br>
+Use "materials" to serve the pre-registration materials. Use "schedule" to serve the schedule page.<br>
+Page types "preferences" and "verification" are not currently in use.
+</tr>
 <tr><td>
-Required field: name
-Optional field: allow
+  Example:
+  <pre style="border: solid; border-width: thin; margin-top: 4px; background-color:#d3d3d3">
+- name: materials
+  allow:
+    - current_grade: 6
+    - current_grade: 7
+    - email: sam.gamgee@gmail.com
+- name: schedule
+  allow:
+    - current_grade: 8
+    - current_homeroom: 19
+  </pre>
+</td><td>
+Required field:
+<ul style="margin:0">
+  <li>name</li>
+</ul>
+Optional field:
+<ul style="margin:0">
+  <li>allow</li>
+  <ul>
+    <li>current_grade specifies one grade level such as 8, 7, or 6</li>
+    <li>current_homeroom</li>
+    <li>email</li>
+  </ul>
+  </ul>
 </td></tr>
 </table>
 

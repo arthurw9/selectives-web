@@ -2,9 +2,25 @@
 {% block session_body %}
 
 <h3>Class Groups</h3>
-<table width='50%'><tr><td>
-TIP: Each class group can have the following fields:
-name, classes.
+<table width='50%'>
+<tr><td style="color:crimson">CLASS GROUPS IS NOT CURRENTLY IN USE.</td></tr>
+<tr><td>
+Required fields:
+<ul style="margin: 0">
+  <li>name</li>
+  <li>classes</li>
+  <ul>
+    <li>id</li>
+  </ul>
+  <li>id (generated)</li>
+</ul>
+Optional field:
+<ul style="margin: 0">
+  <li>classes</li>
+  <ul>
+    <li>name</li>
+  </ul>
+</ul>
 </td></tr></table>
 
 <form method=post>

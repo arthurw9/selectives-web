@@ -2,14 +2,36 @@
 {% block session_body %}
 
 <h3>Dayparts</h3>
-<table width='50%'><tr><td>
-TIP: Each daypart should be separate and not overlap with others.
-Dayparts like M-W-F 8-9am are fine, but then don't also add 
-Friday 8am-9am because it overlaps. When in doubt it's better to keep
-everything separate.<br><br>
-<i>row</i>, <i>col</i>, <i>rowspan</i> and <i>colspan</i> are used for the layout of the schedule.<br>
-<i>rowspan</i> and <i>colspan</i> are optional. If not specified, they default to 1.
+<table width='60%'>
+<tr>
+Each daypart should be separate and not overlap with others.<br>
+Dayparts like M-W-F 8-9am are fine, but then don't also add Friday 8am-9am because it overlaps.</tr>
+<tr><td>
+  Example:
+  <pre style="border: solid; border-width: thin; margin-top: 4px; background-color:#d3d3d3">
+- name: Mon A
+  row: 1
+  col: 1
+  rowspan: 1
+  colspan: 1
+- name: Tues A
+  row: 1
+  col: 2
+  </pre>
+</td><td>
+Required fields:
+<ul style="margin:0">
+  <li>name - must be unique</li>
+  <li>row</li>
+  <li>col</li>
+</ul>
+Optional fields:
+<ul style="margin:0">
+  <li>rowspan - defaults to 1, if not specified</li>
+  <li>colspan - defaults to 1, if not specified</li>
+</ul>
 </td></tr></table>
+
 <form method=post>
 <input type=hidden name="institution" value="{{ institution }}" />
 <input type=hidden name="session" value="{{ session }}" />
