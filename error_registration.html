@@ -10,44 +10,77 @@ window.onload = function() {
   var show6th = document.getElementById("show6th");
 
   showAll.onclick = function() {
-    var displayArea = document.getElementById("displayArea");
-    displayArea.innerHTML = "";
-    {% for line in errors_all.splitlines() %}
-      displayArea.innerHTML += "{{ line }}<br>"
-    {% endfor %}
+    form_element = document.forms[0];
+    form_element.grade_level.value = 100;
+    form_element.submit();
+    return false;
   }
   show8th.onclick = function() {
-    var displayArea = document.getElementById("displayArea");
-    displayArea.innerHTML = "";
-    {% for line in errors_8th.splitlines() %}
-      displayArea.innerHTML += "{{ line }}<br>"
-    {% endfor %}
+    form_element = document.forms[0];
+    form_element.grade_level.value = 8;
+    form_element.submit();
+    return false;
   }
   show7th.onclick = function() {
-    var displayArea = document.getElementById("displayArea");
-    displayArea.innerHTML = "";
-    {% for line in errors_7th.splitlines() %}
-      displayArea.innerHTML += "{{ line }}<br>"
-    {% endfor %}
+    form_element = document.forms[0];
+    form_element.grade_level.value = 7;
+    form_element.submit();
+    return false;
   }
   show6th.onclick = function() {
-    var displayArea = document.getElementById("displayArea");
-    displayArea.innerHTML = "";
-    {% for line in errors_6th.splitlines() %}
-      displayArea.innerHTML += "{{ line }}<br>"
-    {% endfor %}
+    form_element = document.forms[0];
+    form_element.grade_level.value = 6;
+    form_element.submit();
+    return false;
   }
 }
 </script>
 <h3>Validate Registration</h3>
-<form>
+<form method=get>
 <input type=hidden name="institution" value="{{ institution }}" />
 <input type=hidden name="session" value="{{ session }}" />
+<input type=hidden name="grade_level" value="{{ grade_level }}" />
 <input type="button" id="showAll" value="Show All">
 <input type="button" id="show8th" value="Show 8th">
 <input type="button" id="show7th" value="Show 7th">
 <input type="button" id="show6th" value="Show 6th">
+<br>Although schedules may have multiple problems, only one error is identified at a time.
 <div id="displayArea">
+<br>
+  {% for err_obj in err_list %}
+    <table style="border-collapse:collapse; table-layout:fixed; width:80%">
+    <th style="text-align: left">
+    {{err_obj[1]['first']}}
+    {{err_obj[1]['last']}}
+    {{err_obj[1]['current_grade']}}
+    {{err_obj[1]['current_homeroom']}}
+    </th>
+    <th style="text-align: left" colspan="3">{{err_obj[0]}}<br></th>
+    <th></th>
+    <th></th>
+    <tr>
+      {% for dp in ['Mon A', 'Tues A', 'Thurs A', 'Fri A'] %}
+        {% if err_obj[2][dp] is defined %}
+        <td style="border: 1px solid black; background-color:beige">{{err_obj[2][dp]['name']}}</td>
+        {% else %}
+        <td style="border: 1px solid black; background-color:darkgrey"></td>
+        {% endif %}
+      {% endfor %}
+    </tr>
+    <tr>
+      {% for dp in ['Mon B', 'Tues B', 'Thurs B', 'Fri B'] %}
+        {% if err_obj[2][dp] is defined %}
+        <td style="border: 1px solid black; background-color:beige">{{err_obj[2][dp]['name']}}</td>
+        {% else %}
+        <td style="border: 1px solid black; background-color:darkgrey"></td>
+        {% endif %}
+      {% endfor %}
+    </tr>
+    </table>
+    <br>
+  {% else %}
+  All schedules look good!
+  {% endfor %}
 </div>
 </form>
 {% endblock %}

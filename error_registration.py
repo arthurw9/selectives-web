@@ -2,6 +2,7 @@ import os
 import urllib
 import jinja2
 import webapp2
+import logging
 
 import models
 import authorizer
@@ -11,11 +12,39 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
 
-dayOrder = ['Mon A', 'Mon B', 'Tues A', 'Tues B',
-            'Thurs A', 'Thurs B', 'Fri A', 'Fri B']
+ALL_GRADES = 100
 
-def listOrder(d):
-  return dayOrder.index(d['daypart'])
+# Takes a schedule object
+#   {'Mon A': {'name': 'PE',
+#              'fitness': True,},
+#    . . .}
+# Returns 0 if no error, integer error value otherwise
+def checkPE(schedule_by_dp):
+  num_PE = num_Dance = num_fitness = num_PE_MT = num_PE_TF = 0
+  for dp_key, dp_obj in schedule_by_dp.iteritems():
+    if (dp_obj['name'] == 'PE'):
+      num_PE += 1
+      if (dp_key.startswith('Mon') or
+          dp_key.startswith('Tues')):
+        num_PE_MT += 1
+      if (dp_key.startswith('Thurs') or
+          dp_key.startswith('Fri')):
+        num_PE_TF += 1
+    if (dp_obj['name'] == 'Dance'):
+      num_Dance += 1
+    if (dp_obj['fitness'] == True):
+      num_fitness += 1
+  if (num_PE < 1 and num_Dance < 2):
+    return 1 # Must have at least one actual PE or Dance
+  if num_PE > 2:
+    return 2 # Cannot take more than two actual PE classes
+  if num_fitness < 2:
+    return 3 # Must have at least two fitness classes in all
+  if num_fitness > 3:
+    return 4 # Cannot take more than three fitness classes in all
+  if num_PE_MT > 1 or num_PE_TF > 1:
+    return 5 # PE cannot be on same half of the week
+  return 0 # No errors found
 
 class ErrorRegistration(webapp2.RequestHandler):
   def get(self):
@@ -30,164 +59,65 @@ class ErrorRegistration(webapp2.RequestHandler):
     session = self.request.get("session")
     if not session:
       logging.fatal("no session")
-
+    grade_level = self.request.get("grade_level")
+    if not grade_level:
+      grade_level = ALL_GRADES # default
+    grade_level = int(grade_level)
     message = self.request.get('message')
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
 
-    errors_8th = 'Schedule Errors 8th Grade:\n\n'
-    errors_7th = 'Schedule Errors 7th Grade:\n\n'
-    errors_6th = 'Schedule Errors 6th Grade:\n\n'
-    errors_all = 'Schedule Errors:\n\n'
-    found_error_8th = False
-    found_error_7th = False
-    found_error_6th = False
-    found_error_all = False
-    num_8th = 0
-    num_7th = 0
-    num_6th = 0
-    num_students = 0
-    classes_by_id = {}
+    err_list = [] # list of tuples where
+                  #   first element is the error message
+                  #   second element is the student object
+                  #   third element is the student schedule object by daypart
+
     classes = models.Classes.FetchJson(institution, session)
+    classes_by_id = {}
     for c in classes:
       classes_by_id[c['id']] = c
+
     students = models.Students.FetchJson(institution, session)
     for s in students:
-      s['email'] = s['email'].lower()
-      sched_obj = models.Schedule.FetchEntity(institution, session, s['email'])
-      if sched_obj and sched_obj.class_ids:
-        dayparts = []
-        s['sched'] = sched_obj.class_ids
-        s['sched'] = s['sched'].split(',')
-        for cId in s['sched']:
-          cId_class = classes_by_id[int(cId)]
-          for dp in cId_class['schedule']:
-            dp_obj = {}
-            dp_obj['daypart'] = dp['daypart']
-            dp_obj['name'] = cId_class['name']
-            dp_obj['location'] = dp['location']
-            if 'fitness' in cId_class:
-              dp_obj['fitness'] = cId_class['fitness']
-            else:
-              dp_obj['fitness'] = False
-            dayparts.append(dp_obj)
-            dayparts.sort(key=listOrder)
-        if (len(dayparts) != 8):
-          registration_detail = 'Incomplete schedule: ' +\
-                                s['first'] + ' ' +\
-                                s['last'] + ' ' +\
-                                str(s['current_grade']) + ' ' +\
-                                str(s['current_homeroom']) + '\n'
-          for dp_obj in dayparts:
-            registration_detail += dp_obj['daypart'] + ' ' +\
-                                   dp_obj['name'] + ' ' +\
-                                   dp_obj['location'] + '\n'
-          registration_detail += '\n'
-          errors_all += registration_detail
-          if (s['current_grade'] == 8):
-            errors_8th += registration_detail
-            found_error_8th = True
-          if (s['current_grade'] == 7):
-            errors_7th += registration_detail
-            found_error_7th = True
-          if (s['current_grade'] == 6):
-            errors_6th += registration_detail
-            found_error_6th = True
-          found_error_all = True
-        else:
-          num_PE = 0
-          num_Dance = 0
-          num_fitness = 0
-          num_PE_MT = 0
-          num_PE_TF = 0
-          for dp_obj in dayparts:
-            if (dp_obj['name'] == 'PE'):
-              num_PE += 1
-              if (dp_obj['daypart'].startswith('Mon') or
-                  dp_obj['daypart'].startswith('Tues')):
-                num_PE_MT += 1
-              if (dp_obj['daypart'].startswith('Thurs') or
-                  dp_obj['daypart'].startswith('Fri')):
-                num_PE_TF += 1
-            if (dp_obj['name'] == 'Dance'):
-              num_Dance += 1
-            if (dp_obj['fitness'] == True):
-              num_fitness += 1
-          if ((num_PE < 1 and num_Dance < 2) or
-              num_PE > 2 or # redundant, but keep
-              num_fitness < 2 or
-              num_fitness > 3 or
-              num_PE_MT > 1 or
-              num_PE_TF > 1):
-            registration_detail = 'PE or PE alternative problem: ' +\
-                                  s['first'] + ' ' +\
-                                  s['last'] + ' ' +\
-                                  str(s['current_grade']) + ' ' +\
-                                  str(s['current_homeroom']) + '\n'
-            for dp_obj in dayparts:
-              registration_detail += dp_obj['daypart'] + ' ' +\
-                                     dp_obj['name'] + ' ' +\
-                                     dp_obj['location'] + '\n'
-            registration_detail += '\n'
-            errors_all += registration_detail
-            if (s['current_grade'] == 8):
-              errors_8th += registration_detail
-              found_error_8th = True
-            if (s['current_grade'] == 7):
-              errors_7th += registration_detail
-              found_error_7th = True
-            if (s['current_grade'] == 6):
-              errors_6th += registration_detail
-              found_error_6th = True
-            found_error_all = True
-      else:
-        registration_detail = 'Missing schedule: ' +\
-                              s['first'] + ' ' +\
-                              s['last'] + ' ' +\
-                              str(s['current_grade']) + ' ' +\
-                              str(s['current_homeroom']) + '\n'
-        errors_all += registration_detail
-        if (s['current_grade'] == 8):
-          errors_8th += registration_detail
-          found_error_8th = True
-        if (s['current_grade'] == 7):
-          errors_7th += registration_detail
-          found_error_7th = True
-        if (s['current_grade'] == 6):
-          errors_6th += registration_detail
-          found_error_6th = True
-        found_error_all = True
-      num_students += 1
-      if (s['current_grade'] == 8):
-        num_8th += 1
-      if (s['current_grade'] == 7):
-        num_7th += 1
-      if (s['current_grade'] == 6):
-        num_6th += 1
+      if (grade_level != ALL_GRADES) and (s['current_grade'] != grade_level):
+        continue
+      sched_obj = models.Schedule.FetchEntity(institution, session,
+                                              s['email'].lower())
+      if not(sched_obj and sched_obj.class_ids):
+        err_list.append(('Missing schedule', s, {}))
+        continue
+      s['sched'] = sched_obj.class_ids.split(',')
+      schedule_by_dp = {}
+      for cId in s['sched']:
+        cId_class = classes_by_id[int(cId)]
+        for dp in cId_class['schedule']:
+          schedule_by_dp[dp['daypart']] = {
+            'name': cId_class['name'],
+            'location': dp['location'],
+            'fitness': cId_class.get('fitness', False)}
+      if (len(schedule_by_dp) != 8):
+        err_list.append(('Incomplete schedule', s, schedule_by_dp))
+        continue
+      err_val = checkPE(schedule_by_dp)
+      if err_val == 0:
+        continue
+      if err_val == 1:
+        err_list.append(('Missing PE or Dance', s, schedule_by_dp))
+      if err_val == 2:
+        err_list.append(('Too many PEs, maximum is two', s, schedule_by_dp))
+      if err_val == 3:
+        err_list.append(('Not enough PE or alternatives, minimum is two', s, schedule_by_dp))
+      if err_val == 4:
+        err_list.append(('Too many PE or alternatives, maximum is three', s, schedule_by_dp))
+      if err_val == 5:
+        err_list.append(('Only one PE allowed Mon-Tues, Thurs-Fri', s, schedule_by_dp))
 
-    registration_detail = 'All schedules look good!\n'
-    registration_detail += 'Total students processed: '
-    if (found_error_all == False):
-      errors_all += registration_detail
-      errors_all += str(num_students) + '\n'
-    if (found_error_8th == False):
-      errors_8th += registration_detail
-      errors_8th += str(num_8th) + '\n'
-    if (found_error_7th == False):
-      errors_7th += registration_detail
-      errors_7th += str(num_7th) + '\n'
-    if (found_error_6th == False):
-      errors_6th += registration_detail
-      errors_6th += str(num_6th) + '\n'
     template_values = {
       'user_email' : auth.email,
       'institution' : institution,
       'session' : session,
       'message': message,
-      'errors_all': errors_all,
-      'errors_8th': errors_8th,
-      'errors_7th': errors_7th,
-      'errors_6th': errors_6th,
+      'err_list': err_list,
       'session_query': session_query,
     }
     template = JINJA_ENVIRONMENT.get_template('error_registration.html')
