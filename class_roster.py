@@ -61,7 +61,10 @@ class ClassRoster(webapp2.RequestHandler):
       if not cid:
         logging.fatal("no class id")
       candidates = self.request.get("candidates")
-      candidates = candidates.split(",")
+      if candidates == "":
+        candidates = []
+      else:
+        candidates = candidates.split(",")
       logic.RunLottery(institution, session, cid, candidates)
       self.RedirectToSelf(institution, session, cid, "lottery %s" % cid)
 

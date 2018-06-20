@@ -323,6 +323,8 @@ def RemoveStudentFromWaitlist(institution, session, student_email, class_id):
 
 
 def RunLottery(institution, session, cid, candidates):
+  """Modifies roster, waitlist, student groups, and classes
+  """
   r = models.ClassRoster.FetchEntity(institution, session, cid)
 
   # Put people who aren't part of this lottery in the class
@@ -334,7 +336,8 @@ def RunLottery(institution, session, cid, candidates):
   # Either admin didn't select enough people or admin allowed
   # open enrollment when there weren't enough spots.
   if len(winners) >= r['max_enrollment']:
-    logging.error("Too many non-lottery students. This should not happen. Try selecting more students for the lottery.")
+    logging.error("Too many non-lottery students; class size exceeds maximum enrollment. Try selecting more students to lottery. Lottery aborted.")
+    return
 
   random.shuffle(candidates)
   # Add lottery candidates into the class until max_enrollment reached
