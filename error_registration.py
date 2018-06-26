@@ -14,13 +14,34 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 
 ALL_GRADES = 100
 
+def orderScheduleByDP(sched_obj, classes_by_id):
+  schedule_by_dp = {}
+  sched_list = sched_obj.class_ids.split(',')
+  for cId in sched_list:
+    c = classes_by_id[int(cId)]
+    for dp in c['schedule']:
+      schedule_by_dp[dp['daypart']] = {
+          'name': c['name'],
+          'location': dp['location'],
+          'fitness': c.get('fitness', False)}
+  return schedule_by_dp
+
+def getErrorMsgs(schedule_by_dp, institution, session):
+  err_msgs = []
+  dayparts = models.Dayparts.FetchJson(institution, session)
+  if (len(schedule_by_dp) != len(dayparts)):
+    err_msgs.append("Incomplete schedule")
+  err_msgs.extend(getFitnessErrorMsgs(schedule_by_dp))
+  return err_msgs
+
 # Takes a schedule object
 #   {'Mon A': {'name': 'PE',
 #              'fitness': True,},
 #    . . .}
-# Returns 0 if no error, integer error value otherwise
-def checkPE(schedule_by_dp):
+# Returns list of error messages, [] if no error
+def getFitnessErrorMsgs(schedule_by_dp):
   num_PE = num_Dance = num_fitness = num_PE_MT = num_PE_TF = 0
+  err_msgs = []
   for dp_key, dp_obj in schedule_by_dp.iteritems():
     if (dp_obj['name'] == 'PE'):
       num_PE += 1
@@ -35,16 +56,16 @@ def checkPE(schedule_by_dp):
     if (dp_obj['fitness'] == True):
       num_fitness += 1
   if (num_PE < 1 and num_Dance < 2):
-    return 1 # Must have at least one actual PE or Dance
+    err_msgs.append("At least one PE or Dance required.")
   if num_PE > 2:
-    return 2 # Cannot take more than two actual PE classes
+    err_msgs.append("Too many PE's, maximum is two.")
   if num_fitness < 2:
-    return 3 # Must have at least two fitness classes in all
+    err_msgs.append("At least two PE or PE alternatives required.")
   if num_fitness > 3:
-    return 4 # Cannot take more than three fitness classes in all
+    err_msgs.append("Too many PE or PE alternatives, maximum is three.")
   if num_PE_MT > 1 or num_PE_TF > 1:
-    return 5 # PE cannot be on same half of the week
-  return 0 # No errors found
+    err_msgs.append("Not allowed to have two PE's on Mon/Tues or Thurs/Fri.")
+  return err_msgs
 
 class ErrorRegistration(webapp2.RequestHandler):
   def get(self):
@@ -68,7 +89,7 @@ class ErrorRegistration(webapp2.RequestHandler):
                                       'session': session})
 
     err_list = [] # list of tuples where
-                  #   first element is the error message
+                  #   first element contains a list of error messages
                   #   second element is the student object
                   #   third element is the student schedule object by daypart
 
@@ -84,33 +105,13 @@ class ErrorRegistration(webapp2.RequestHandler):
       sched_obj = models.Schedule.FetchEntity(institution, session,
                                               s['email'].lower())
       if not(sched_obj and sched_obj.class_ids):
-        err_list.append(('Missing schedule', s, {}))
-        continue
-      s['sched'] = sched_obj.class_ids.split(',')
-      schedule_by_dp = {}
-      for cId in s['sched']:
-        cId_class = classes_by_id[int(cId)]
-        for dp in cId_class['schedule']:
-          schedule_by_dp[dp['daypart']] = {
-            'name': cId_class['name'],
-            'location': dp['location'],
-            'fitness': cId_class.get('fitness', False)}
-      if (len(schedule_by_dp) != 8):
-        err_list.append(('Incomplete schedule', s, schedule_by_dp))
-        continue
-      err_val = checkPE(schedule_by_dp)
-      if err_val == 0:
-        continue
-      if err_val == 1:
-        err_list.append(('Missing PE or Dance', s, schedule_by_dp))
-      if err_val == 2:
-        err_list.append(('Too many PEs, maximum is two', s, schedule_by_dp))
-      if err_val == 3:
-        err_list.append(('Not enough PE or alternatives, minimum is two', s, schedule_by_dp))
-      if err_val == 4:
-        err_list.append(('Too many PE or alternatives, maximum is three', s, schedule_by_dp))
-      if err_val == 5:
-        err_list.append(('Only one PE allowed Mon-Tues, Thurs-Fri', s, schedule_by_dp))
+        err_list.append((['Missing schedule'], s, {}))
+        continue # Entire schedule is missing,
+                 # don't bother checking for further errors
+      schedule_by_dp = orderScheduleByDP(sched_obj, classes_by_id)
+      err_msgs = getErrorMsgs(schedule_by_dp, institution, session)
+      if err_msgs != []:
+        err_list.append((err_msgs, s, schedule_by_dp))
 
     template_values = {
       'user_email' : auth.email,

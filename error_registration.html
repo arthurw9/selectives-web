@@ -44,7 +44,6 @@ window.onload = function() {
 <input type="button" id="show8th" value="Show 8th">
 <input type="button" id="show7th" value="Show 7th">
 <input type="button" id="show6th" value="Show 6th">
-<br>Although schedules may have multiple problems, only one error is identified at a time.
 <div id="displayArea">
 <br>
   {% for err_obj in err_list %}
@@ -55,7 +54,11 @@ window.onload = function() {
     {{err_obj[1]['current_grade']}}
     {{err_obj[1]['current_homeroom']}}
     </th>
-    <th style="text-align: left" colspan="3">{{err_obj[0]}}<br></th>
+    <th style="text-align: left" colspan="3">
+      {% for err_msg in err_obj[0] %}
+      {{err_msg}}<br>
+      {% endfor %}
+    </th>
     <th></th>
     <th></th>
     <tr>
@@ -82,5 +85,13 @@ window.onload = function() {
   All schedules look good!
   {% endfor %}
 </div>
+{% if err_list|length > 0 %}
+<br>Copy and paste the following into Serving Rules to grant these students access to their Schedule page.<br>
+<textarea>
+- name: schedule
+  allow:{% for err_obj in err_list %}
+  - email: {{err_obj[1]['email']}}{% endfor %}
+</textarea>
+{% endif %}
 </form>
 {% endblock %}
