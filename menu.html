@@ -16,7 +16,7 @@
   <li><a href="/groups_students?{{session_query }}">Student Groups</a>
   <li><a href="/rosters?{{session_query }}">Class Rosters</a>
 
-  <h3>Configure</h3>
+  <h3>Validate</h3>
   <li><a href="/error_check?{{ session_query }}">Validate Setup</a>
   <li><a href="/error_registration?{{ session_query }}">Validate Registration</a>
 
@@ -26,15 +26,17 @@
   <li><a href="/scheduler?{{ session_query }}">Automated</a>
 
   <h3>Reports</h3>
-  <li><a href="/report/signup_card?{{ session_query }}">Sign Up Card</a>
-  <li><a href="/report/signup_main?{{ session_query }}">Sign Up Form Main</a>
-  <li><a href="/report/homeroom?{{ session_query }}">Homeroom List</a>
-  <li><a href="/report/label?{{ session_query }}">Folder Label</a>
   <li><a href="/report/attendance_list?{{ session_query }}">Attendance Sheets</a>
   <li><a href="/report/student_schedules?{{ session_query }}">Student Schedules</a>
   <li><a href="/report/student_schedules_marked?{{ session_query }}">Student Schedules Marked</a>
-  <li><a href="/student_happiness?{{ session_query }}">Student Happiness</a>
-  <li><a href="/class_demand?{{ session_query }}">Class Demand</a>
+  <li><a href="/report/taken?{{ session_query }}">Taken/Not Taken</a>
+  <li><a href="/class_demand?{{ session_query }}">Stub (Class Demand)</a>
+
+  <h3>Manual Process</h3>
+  <li><a href="/report/signup_card?{{ session_query }}">Sign Up Card</a>
+  <li><a href="/report/signup_main?{{ session_query }}">Sign Up Form Main</a>
+  <li><a href="/report/homeroom?{{ session_query }}">Stub (Homeroom List)</a>
+  <li><a href="/report/label?{{ session_query }}">Folder Label</a>
 </td>
 <td valign='top' width=85%>
   {% block session_body %} {% endblock %}
