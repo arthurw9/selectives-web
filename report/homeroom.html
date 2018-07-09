@@ -7,41 +7,34 @@
 //   http://rawgit.com/MrRio/jsPDF/master/docs/jspdf.js.html#line1158
 </script>
 <script>
-var CLASS_NAME_MAX = 30;
 
 window.onload = function() {
-  var selectAll = document.getElementById("selectAll");
-  var unselectAll = document.getElementById("unselectAll");
-  var viewPDF = document.getElementById("viewPDF");
-
-  selectAll.onclick = function() {
-    {% for c in classes %}
-      document.getElementById("viewPDF{{c['id']}}").checked = true;
-    {% endfor %}
-  }
-  unselectAll.onclick = function() {
-    {% for c in classes %}
-      document.getElementById("viewPDF{{c['id']}}").checked = false;
-    {% endfor %}
-  }
+  var viewPDF = document.getElementById("downloadPDF");
 
   viewPDF.onclick = function() {
     var doc = new jsPDF();
-    {% for c in classes %}
-      if (document.getElementById("viewPDF{{c['id']}}").checked) {
-        var classInfo = new Object();
-        classInfo.name = '{{c['name']}}';
-        classInfo.name = classInfo.name.slice(0,CLASS_NAME_MAX);
-        classInfo.daypart = '{{c['schedule'] | join(' / ', attribute='daypart')}}';
-        {% if c['num_locations'] == 1 %}
-          classInfo.location = '{{c['schedule'][0]['location']}}';
-        {% else %}
-          classInfo.location = '{{c['schedule'] | join(' / ', attribute='location')}}';
-        {% endif %}
-        classInfo.instructor = '{{ c['instructor'] }}';
-      }
+    var pgCnt = 0;
+    {% for hr, students in homerooms.items() %}
+      doc.setFontSize(24);
+      doc.text("Room {{hr}}", 15, 15);
+      doc.setDrawColor(8, 90, 150);
+      doc.setFillColor(8, 90, 150);
+      doc.rect(0, 18, 208, 3, 'F');
+      doc.setDrawColor(90, 90, 90);
+      doc.setFontSize(14);
+      var y_val = 30;
+      doc.line(0, y_val-2, 208, y_val-2);
+      {% for s in students %}
+        doc.rect(5, y_val, 5, 5);
+        doc.line(0, y_val+6, 208, y_val+6);
+        doc.text("{{s['first']}} {{s['last']}}", 22, y_val+4);
+        y_val += 8;
+      {% endfor %}
+      pgCnt += 1;
+      doc.addPage();
     {% endfor %}
-    doc.output('dataurl');
+    doc.deletePage(pgCnt+1);
+    doc.save('selectives_homerooms.pdf');
 
     // Prevent redirect and event bubbling.
     return false;
@@ -53,28 +46,12 @@ window.onload = function() {
 <br>
 <br>
 
-{% if classes %}
+{% if homerooms %}
 <form>
-<input type="button" id="selectAll" value="Select All">
-<input type="button" id="unselectAll" value="Unselect All">
-<input type="button" id="viewPDF" value="View PDF">
-<table>
-  {% for c in classes %}
-    <tr class=highlight>
-      <td><input type="checkBox" id="viewPDF{{c['id']}}" name="download" value="c"+{{c['id']}}></td>
-      <td>{{ c['name'] }}</td>
-      <td>
-        {% for s in c['schedule'] %}
-          {{ s['daypart'] }}
-        {% endfor %}</td>
-      <td>{{ c['instructor'] }}</td>
-    </tr>
-  {% endfor %}
-</table>
+<input type="button" id="downloadPDF" value="Download PDF">
 </form>
 {% else %}
-There are no classes to display.<br>
-Go to Setup >> Classes and add some classes.
+There are no students. Go to Setup >> Students to add students.
 {% endif %}
 
 {% endblock %}
