@@ -52,6 +52,8 @@ import links
 import view_links
 import welcome_setup
 import report.student_schedules_marked
+import report.taken
+import report.not_taken
 
 application = webapp2.WSGIApplication([
   ('/', index.Index),
@@ -106,4 +108,6 @@ application = webapp2.WSGIApplication([
   ('/view_links', view_links.ViewLinks),
   ('/welcome_setup', welcome_setup.WelcomeSetup),
   ('/report/student_schedules_marked', report.student_schedules_marked.StudentSchedulesMarked),
+  ('/report/taken', report.taken.Taken),
+  ('/report/not_taken', report.not_taken.NotTaken),
 ], debug=True)
