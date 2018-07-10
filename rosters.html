@@ -1,16 +1,53 @@
 {% extends 'menu.html' %}
 {% block session_body %}
 
+<style type="text/css">
+#modal-div {
+  visibility: hidden;
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width:100%;
+  height:100%;
+  text-align:center;
+  z-index: 1000;
+  background-image:url(images/blue-wave-transparent-background.png);
+}
+#modal-div div {
+  width:300px;
+  margin: 100px auto;
+  background-color: #def;
+  border:1px solid #000;
+  padding:15px;
+  text-align:center;
+}
+</style>
+
+<script>
+window.onload = function() {
+  var modal = document.getElementById("modal-div");
+  modal.style.visibility = "hidden";
+
+  var b = document.getElementById("submit-button");
+  b.onclick = function() {
+    modal.style.visibility = "visible";
+    form_element = document.forms[0];
+    form_element.submit();
+    return false;
+  }
+}
+</script>
+
 <h3>Rosters</h3>
 <table width='50%'><tr><td style="color:red">
-CAUTION! STUDENT SCHEDULES WILL BE OVERWRITTEN!!!<br>
+CAUTION! STUDENT SCHEDULES WILL BE OVERWRITTEN!!!<br><br>
 </td></tr>
 <tr><td>
 <ul style="margin:0">
   <li>Don't click submit if you have any doubts whatsoever!</li>
   <li>Double-check your data!</li>
-  <li>First submit in a test environment along with Classes, Students, Student Groups to verify your entire setup is consistent.</li>
-  <li>Upload may take a few minutes. Do not click away before the page finishes processing or the data will only be partially saved.</li>
+  <li>First submit in a test environment along with Dayparts, Classes, Students, Student Groups to verify your entire setup is consistent.</li>
+  <li>Upload may take up to two minutes. Do not click away before the page finishes processing or the data will only be partially saved.</li>
 </ul>
 </td></tr></table>
 <form method=post>
@@ -19,7 +56,13 @@ CAUTION! STUDENT SCHEDULES WILL BE OVERWRITTEN!!!<br>
 <textarea name=rosters>
 {{ rosters }}
 </textarea>
-<br />
-<input type=submit />
+<br>
+<input type="button" id="submit-button" value="Submit">
 </form>
+<div id="modal-div">
+  <div>
+    <h3>Please be patient <img src="images/369.gif"></h3>
+    <p>Upload may take up to two minutes. Closing this window will cause the upload to abort and data may be corrupt.</p>
+  </div>
+</div>
 {% endblock %}
