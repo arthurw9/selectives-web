@@ -1,6 +1,88 @@
 {% extends 'menu.html' %}
 {% block session_body %}
 
+<style type="text/css">
+#modal-div {
+  visibility: hidden;
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width:100%;
+  height:100%;
+  text-align:center;
+  z-index: 1000;
+  background-image:url(images/blue-wave-transparent-background.png);
+}
+#modal-div div {
+  width:400px;
+  margin: 100px auto;
+  background-color: #def;
+  border:1px solid #000;
+  padding:15px;
+  text-align:center;
+}
+#modal-div div ul{
+  text-align:left;
+}
+#cancel-button {
+  font-size:18px;
+}
+</style>
+
+<script>
+// The old list of student emails from the server.
+var old_list = [
+  {% for s in students_obj %}
+    '{{s['email']}}',
+  {% endfor %}
+];
+
+window.onload = function() {
+  var modal = document.getElementById("modal-div");
+  var b = document.getElementById("submit-button");
+  var txt = document.getElementById("student-textarea");
+  var cancel_button = document.getElementById("cancel-button");
+  var continue_button = document.getElementById("continue-button");
+
+  b.onclick = function() {
+    // List of newly entered student emails.
+    var new_list = [];
+    var lines = txt.value.split('\n');
+    for (var i=0; i<lines.length; i++) {
+      var line = lines[i].trim();
+      if (line.startsWith('email: ')) {
+          new_list.push(line.substr(7));
+      }
+    }
+    // Check if admin deleted or modified any emails
+    var student_missing = false;
+    for (var i=0; i<old_list.length; i++) {
+      if (!new_list.includes(old_list[i])) {
+        student_missing = true;
+        break;
+      }
+    }
+    if (student_missing) {
+      // Throw up warning message
+      modal.style.visibility = "visible";
+    } else {
+      form_element = document.forms[0];
+      form_element.submit();
+      return false;
+    }
+  }
+  continue_button.onclick = function() {
+    form_element = document.forms[0];
+    form_element.submit();
+    return false;
+  };
+  cancel_button.onclick = function() {
+    modal.style.visibility = "hidden";
+    return false;
+  };
+};
+</script>
+
 <h3>Students</h3>
 <table width='60%'>
 <tr><td>
@@ -35,10 +117,20 @@ Optional field:
 <form method=post>
 <input type=hidden name="institution" value="{{ institution }}" />
 <input type=hidden name="session" value="{{ session }}" />
-<textarea name=students>
+<textarea name=students id="student-textarea">
 {{ students }}
 </textarea>
 <br />
-<input type=submit />
+<input type="button" id="submit-button" value="Submit">
 </form>
+<div id="modal-div">
+  <div>
+    <ul>
+    <li>Deleting or modifying emails will leave behind orphaned roster data; Remaining Spots count will be wrong.</li>
+    <li>Click Cancel. Go to 'Setup > Single Student' to properly delete/modify student emails and all references.</li>
+    </ul>
+    <input type=button id="cancel-button" value="Cancel"><br><br>
+    <input type=button id="continue-button" value="I know what I'm doing. Proceed.">
+  </div>
+</div>
 {% endblock %}

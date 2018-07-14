@@ -62,6 +62,9 @@ class Students(webapp2.RequestHandler):
                                       'session': session})
     setup_status = error_check_logic.Checker.getStatus(institution, session)
     students = models.Students.Fetch(institution, session)
+    students_obj = models.Students.FetchJson(institution, session)
+    if not students_obj:
+      students_obj = []
     if not students:
       students = '\n'.join([
           "# Sample data. Lines with leading # signs are comments.",
@@ -91,6 +94,7 @@ class Students(webapp2.RequestHandler):
       'session_query': session_query,
       'students': students,
       'self': self.request.uri,
+      'students_obj': students_obj,
     }
     template = JINJA_ENVIRONMENT.get_template('students.html')
     self.response.write(template.render(template_values))
