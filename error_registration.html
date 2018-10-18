@@ -12,24 +12,28 @@ window.onload = function() {
   showAll.onclick = function() {
     form_element = document.forms[0];
     form_element.grade_level.value = 100;
+    form_element.message.value = "button clicked";
     form_element.submit();
     return false;
   }
   show8th.onclick = function() {
     form_element = document.forms[0];
     form_element.grade_level.value = 8;
+    form_element.message.value = "button clicked";
     form_element.submit();
     return false;
   }
   show7th.onclick = function() {
     form_element = document.forms[0];
     form_element.grade_level.value = 7;
+    form_element.message.value = "button clicked";
     form_element.submit();
     return false;
   }
   show6th.onclick = function() {
     form_element = document.forms[0];
     form_element.grade_level.value = 6;
+    form_element.message.value = "button clicked";
     form_element.submit();
     return false;
   }
@@ -40,10 +44,12 @@ window.onload = function() {
 <input type=hidden name="institution" value="{{ institution }}" />
 <input type=hidden name="session" value="{{ session }}" />
 <input type=hidden name="grade_level" value="{{ grade_level }}" />
+<input type=hidden name="message" value="{{ message }}" />
 <input type="button" id="showAll" value="Show All">
 <input type="button" id="show8th" value="Show 8th">
 <input type="button" id="show7th" value="Show 7th">
 <input type="button" id="show6th" value="Show 6th">
+<br><br>Click a button to show schedule errors for all grades or a single grade level.<br>
 <div id="displayArea">
 <br>
   {% for err_obj in err_list %}
@@ -82,7 +88,9 @@ window.onload = function() {
     </table>
     <br>
   {% else %}
-  All schedules look good!
+    {% if message == "button clicked" %}
+      Schedules look good!
+    {% endif %}
   {% endfor %}
 </div>
 {% if err_list|length > 0 %}

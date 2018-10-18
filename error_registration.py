@@ -26,10 +26,9 @@ def orderScheduleByDP(sched_obj, classes_by_id):
           'fitness': c.get('fitness', False)}
   return schedule_by_dp
 
-def getErrorMsgs(schedule_by_dp, institution, session):
+def getErrorMsgs(schedule_by_dp, len_dayparts, institution, session):
   err_msgs = []
-  dayparts = models.Dayparts.FetchJson(institution, session)
-  if (len(schedule_by_dp) != len(dayparts)):
+  if (len(schedule_by_dp) != len_dayparts):
     err_msgs.append("Incomplete schedule")
   err_msgs.extend(getFitnessErrorMsgs(schedule_by_dp))
   return err_msgs
@@ -80,10 +79,6 @@ class ErrorRegistration(webapp2.RequestHandler):
     session = self.request.get("session")
     if not session:
       logging.fatal("no session")
-    grade_level = self.request.get("grade_level")
-    if not grade_level:
-      grade_level = ALL_GRADES # default
-    grade_level = int(grade_level)
     message = self.request.get('message')
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
@@ -93,25 +88,31 @@ class ErrorRegistration(webapp2.RequestHandler):
                   #   second element is the student object
                   #   third element is the student schedule object by daypart
 
-    classes = models.Classes.FetchJson(institution, session)
-    classes_by_id = {}
-    for c in classes:
-      classes_by_id[c['id']] = c
+    grade_level = self.request.get("grade_level")
+    if grade_level:
+      grade_level = int(grade_level)
+      len_dayparts = len(models.Dayparts.FetchJson(institution, session))
 
-    students = models.Students.FetchJson(institution, session)
-    for s in students:
-      if (grade_level != ALL_GRADES) and (s['current_grade'] != grade_level):
-        continue
-      sched_obj = models.Schedule.FetchEntity(institution, session,
+      classes = models.Classes.FetchJson(institution, session)
+      classes_by_id = {}
+      for c in classes:
+        classes_by_id[c['id']] = c
+
+      students = models.Students.FetchJson(institution, session)
+      for s in students:
+        if (grade_level != ALL_GRADES) and (s['current_grade'] != grade_level):
+          continue
+        sched_obj = models.Schedule.FetchEntity(institution, session,
                                               s['email'].lower())
-      if not(sched_obj and sched_obj.class_ids):
-        err_list.append((['Missing schedule'], s, {}))
-        continue # Entire schedule is missing,
-                 # don't bother checking for further errors
-      schedule_by_dp = orderScheduleByDP(sched_obj, classes_by_id)
-      err_msgs = getErrorMsgs(schedule_by_dp, institution, session)
-      if err_msgs != []:
-        err_list.append((err_msgs, s, schedule_by_dp))
+        if not(sched_obj and sched_obj.class_ids):
+          err_list.append((['Missing schedule'], s, {}))
+          continue # Entire schedule is missing,
+                   # don't bother checking for further errors
+        schedule_by_dp = orderScheduleByDP(sched_obj, classes_by_id)
+        err_msgs = getErrorMsgs(schedule_by_dp, len_dayparts, institution, session)
+        if err_msgs != []:
+          err_list.append((err_msgs, s, schedule_by_dp))
+    # else no button was clicked, don't do anything
 
     template_values = {
       'user_email' : auth.email,
