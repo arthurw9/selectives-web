@@ -1,5 +1,5 @@
 {% for c in classes_for_catalog %}
-  <h3>{{c['name']}}</h3>
+  <h3 style="height:5px">{{c['name']}}</h3>
   <b>Teacher: </b>{{c['instructor']}}<br>
   <b>Maximum Enrollment: </b>{{c['max_enrollment']}}<br>
   <b>Schedule: </b>
@@ -12,10 +12,10 @@
   {% if c['donation'] %}
     <b>Suggested Donation: </b>{{c['donation']}}<br>
   {% endif %}
-  <br>
+  <div style="line-height:6px"><br></div>
   {% if c['description'] %}
     {% for line in c['description'].splitlines() %}
-      {{ line }}<br>
+      {{ line }}<div style="line-height:6px"><br></div>
     {% endfor %}
    <br>
   {% endif %}
