@@ -94,9 +94,8 @@ window.onload = function() {
     var blockA = ['Mon A', 'Tues A', 'Thurs A', 'Fri A'];
     var blockB = ['Mon B', 'Tues B', 'Thurs B', 'Fri B'];
 
-    doc.setFontSize(TEXT_FONT_SIZE+2);
-    doc.text('Date Last Modified: ' + '{{last_modified}}', 145, 7);
     doc.setFontSize(TEXT_FONT_SIZE);
+    doc.text('Date Last Modified: ' + '{{last_modified}}', 145, 7);
     doc.text('Page ' + totalPgCnt, 180, 12)
     doc.setFontType('bold');
     line0 = currY-4;
@@ -168,6 +167,7 @@ window.onload = function() {
           studentCnt = 1;
           currY = 22;
           totalPgCnt += 1;
+          doc.text('Date Last Modified: ' + '{{last_modified}}', 145, 7);
           doc.text('Page ' + totalPgCnt, 180, 12)
           doc.setFontType('bold');
           doc.text('Monday', 37, line0, null, null, 'center');
@@ -179,7 +179,7 @@ window.onload = function() {
         }
       }
     }
-    doc.save('selectives_student_schedules.pdf');
+    doc.save('student_schedules_marked.pdf');
 
     // Prevent redirect and event bubbling.
     return false;
