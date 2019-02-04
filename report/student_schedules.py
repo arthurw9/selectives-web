@@ -74,8 +74,8 @@ class StudentSchedules(webapp2.RequestHandler):
         s['last_modified'] = str(sched_obj.last_modified.month) + '/' +\
                              str(sched_obj.last_modified.day) + '/' +\
                              str(sched_obj.last_modified.year) + ' ' +\
-                             str(sched_obj.last_modified.hour) + ':' +\
-                             str(sched_obj.last_modified.minute)
+                             str(sched_obj.last_modified.hour).zfill(2) + ':' +\
+                             str(sched_obj.last_modified.minute).zfill(2)
         if sched_obj.last_modified > last_modified_overall:
           last_modified_overall = sched_obj.last_modified
           last_modified_overall_str = s['last_modified']
