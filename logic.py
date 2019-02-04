@@ -371,9 +371,13 @@ def RunLottery(institution, session, cid, candidates):
   class_list = models.Classes.FetchJson(institution, session)
   for c in class_list:
     if c['id'] == int(cid):
-      # Replace existing prerequisites with the new StudentGroup.
-      # Only winners from lottery are allowed in this class.
-      c['prerequisites'] = [{'group':group_name}]
+      # Don't change the prerequisites since serving rules already
+      # restrict student access to the schedule page to those who
+      # lost at least one lottery.
+      # A lottery winner could drop, in which case we want to allow any
+      # lottery loser (who needs to fix their schedule) to add this class.
+      #c['prerequisites'] = [{'group':group_name}]
+
       # Remove open_enrollment field
       result = c.pop('open_enrollment', None)
       if (result == None):
