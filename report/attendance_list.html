@@ -23,6 +23,8 @@ var LINEENDX = 285; // right edge of roster
 var LINESTARTY = 17; // top of roster
 // bottom of roster is calculated below based on number of students
 
+var EXTRA_LINES = 3;
+
 var CLASS_NAME_MAX = 35; // used to limit chars in class name
 
 var CLASS_FONT_SIZE = 24;
@@ -173,6 +175,18 @@ window.onload = function() {
           student_list.push(curr_student);
         {% endfor %}
 
+        // Extra lines for parent helpers or write-in students
+        if (student_list.length > 0) {
+          for (var i=0; i<EXTRA_LINES; i++) {
+            curr_student = {};
+            curr_student.first = '';
+            curr_student.last = '';
+            curr_student.rm = '';
+            curr_student.grade = '';
+            student_list.push(curr_student);
+          }
+        }
+
         var classInfo = new Object();
         classInfo.name = "{{c['name'] | safe}}";
         // shorten the name if it's too long, otherwise it'll overwrite other sections
@@ -184,7 +198,7 @@ window.onload = function() {
           classInfo.location = '{{c['schedule'] | join(' / ', attribute='location')}}';
         {% endif %}
         classInfo.instructor = '{{ c['instructor'] }}';
-        classInfo.enrolled = String(student_list.length);
+        classInfo.enrolled = String(student_list.length - EXTRA_LINES);
         classInfo.max_enrollment = '{{ c['max_enrollment'] }}';
 
         var n = 0;
