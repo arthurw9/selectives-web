@@ -23,7 +23,7 @@ var LINEENDX = 285; // right edge of roster
 var LINESTARTY = 17; // top of roster
 // bottom of roster is calculated below based on number of students
 
-var EXTRA_LINES = 3;
+var EXTRA_LINES = 0;
 
 var CLASS_NAME_MAX = 35; // used to limit chars in class name
 
@@ -146,6 +146,11 @@ window.onload = function() {
   var selectAll = document.getElementById("selectAll");
   var unselectAll = document.getElementById("unselectAll");
   var downloadPDF = document.getElementById("downloadPDF");
+  var extraLines = document.getElementById("extraLines");
+  var maxPerPage = document.getElementById("maxPerPage");
+
+  extraLines.value = EXTRA_LINES;
+  maxPerPage.value = MAX_STUDENTS_PER_PAGE;
 
   selectAll.onclick = function() {
     {% for c in classes %}
@@ -161,7 +166,10 @@ window.onload = function() {
   downloadPDF.onclick = function() {
     var doc = new jsPDF({orientation: 'landscape'});
     var totalPgCnt = 0;
-    
+
+    var intMaxPerPage = parseInt(maxPerPage.value);
+    var intExtraLines = parseInt(extraLines.value);
+
     {% for c in classes %}
       if (document.getElementById("selectPDF{{c['id']}}").checked) {
         
@@ -177,7 +185,7 @@ window.onload = function() {
 
         // Extra lines for parent helpers or write-in students
         if (student_list.length > 0) {
-          for (var i=0; i<EXTRA_LINES; i++) {
+          for (var i=0; i<intExtraLines; i++) {
             curr_student = {};
             curr_student.first = '';
             curr_student.last = '';
@@ -198,16 +206,16 @@ window.onload = function() {
           classInfo.location = '{{c['schedule'] | join(' / ', attribute='location')}}';
         {% endif %}
         classInfo.instructor = '{{ c['instructor'] }}';
-        classInfo.enrolled = String(student_list.length - EXTRA_LINES);
+        classInfo.enrolled = String(student_list.length - intExtraLines);
         classInfo.max_enrollment = '{{ c['max_enrollment'] }}';
 
         var n = 0;
         var classPgCnt = new Object();
-        classPgCnt.total = Math.ceil(student_list.length / MAX_STUDENTS_PER_PAGE);
+        classPgCnt.total = Math.ceil(student_list.length / intMaxPerPage);
         classPgCnt.curr = 0;
         while (n < student_list.length) {
-          var student_batch = student_list.slice(n, n+MAX_STUDENTS_PER_PAGE);
-          n += MAX_STUDENTS_PER_PAGE;
+          var student_batch = student_list.slice(n, n+intMaxPerPage);
+          n += intMaxPerPage;
           classPgCnt.curr += 1;
           totalPgCnt += 1;
           printHeader(doc, classInfo, 0);
@@ -228,11 +236,12 @@ window.onload = function() {
 </script>
 
 <h3>Attendance List</h3>
-<br>
-<br>
-
 {% if classes %}
 <form>
+<p><label for="extraLines">Extra Lines at bottom of page: </label>
+<input id="extraLines" type="text" size="1"></p>
+<p><label for="maxPerPage">Maximum students per page: </label>
+<input id="maxPerPage" type="text" size="1"></p>
 <input type="button" id="selectAll" value="Select All">
 <input type="button" id="unselectAll" value="Unselect All">
 <input type="button" id="downloadPDF" value="Download PDF">
