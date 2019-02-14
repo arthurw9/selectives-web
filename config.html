@@ -1,0 +1,67 @@
+{% extends 'menu.html' %}
+{% block session_body %}
+
+<script>
+window.onload = function() {
+  console.log("H");
+  console.log({{displayRoster}});
+  console.log({{htmlDesc}});
+  {{displayRoster}}.checked = true;
+  {{htmlDesc}}.checked = true;
+  {{twoPE}}.checked = true;
+};
+</script>
+
+<style>
+  .config-group {
+    padding-bottom: 12px;
+    padding-left: 5px;
+  }
+</style>
+
+<h3>Configurations</h3>
+<form method=post>
+<input type=hidden name="institution" value="{{ institution }}" />
+<input type=hidden name="session" value="{{ session }}" />
+
+<div class="config-group">DB Version: {{ db_version }}</div>
+
+<div class="config-group">When a student hovers over a class on the Register page, allow them to see the class roster?
+  <div>
+    <input id="dRYes" type="radio" name="displayRoster" value="dRYes">
+    <label for="dRYes"></label>Yes
+  </div>
+  <div>
+    <input id="dRNo" type="radio" name="displayRoster" value="dRNo">
+    <label for="dRNo"></label>No
+  </div>
+</div>
+
+<div class="config-group">Are class descriptions in HTML and have no newlines?
+  <br>(Only HTML descriptions will display correctly on the student Register page.
+  <br>Before clicking Yes, please check that descriptions are HTML and all newlines
+  <br>have been removed, otherwise, the program will crash!)
+  <div>
+    <input id="htmlYes" type="radio" name="htmlDesc" value="htmlYes">
+    <label for="htmlYes"></label>Yes
+  </div>
+  <div>
+    <input id="htmlNo" type="radio" name="htmlDesc" value="htmlNo">
+    <label for="htmlNo"></label>No
+  </div>
+</div>
+
+<div class="config-group">Allow two PE's on Mon/Tues or Thurs/Fri?
+  <div>
+    <input id="twoPEYes" type="radio" name="twoPE" value="twoPEYes">
+    <label for="twoPEYes"></label>Yes
+  </div>
+  <div>
+    <input id="twoPENo" type="radio" name="twoPE" value="twoPENo">
+    <label for="towPENo"></label>No
+  </div>
+</div>
+
+<input type=submit />
+</form>
+{% endblock %}

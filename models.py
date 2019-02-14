@@ -986,3 +986,39 @@ class Welcome(ndb.Model):
     welcome = Welcome(data = welcome_data)
     welcome.key = Welcome.welcome_key()
     welcome.put()
+
+class Config(ndb.Model):
+  htmlDesc = ndb.StringProperty()
+  displayRoster = ndb.StringProperty()
+  twoPE = ndb.StringProperty()
+
+  @classmethod
+  @timed
+  def config_key(cls, institution, session):
+    return ndb.Key("InstitutionKey", institution,
+                   Session, session,
+                   Config, "config")
+
+  @classmethod
+  @timed
+  def Fetch(cls, institution, session):
+    config = Config.config_key(institution, session).get()
+    if config:
+      cfg = {'displayRoster': config.displayRoster,
+             'htmlDesc': config.htmlDesc,
+             'twoPE': config.twoPE}
+      return cfg
+    else:
+      return {'displayRoster': 'dRNo',
+              'htmlDesc': 'htmlNo',
+              'twoPE': 'twoPENo'}
+
+  @classmethod
+  @timed
+  def store(cls, institution, session_name, displayRoster, htmlDesc, twoPE):
+    config = Config()
+    config.key = Config.config_key(institution, session_name)
+    config.htmlDesc = htmlDesc
+    config.displayRoster = displayRoster
+    config.twoPE = twoPE
+    config.put()

@@ -50,12 +50,14 @@ def GetHoverText(institution, session, admin_view, c):
     else:
       class_desc += 'All'
   r = models.ClassRoster.FetchEntity(institution, session, c['id'])
-  students = models.Students.FetchJson(institution, session)
   if (r['emails']):
-    class_desc += '\n\nNumber Enrolled: ' + str(len(r['emails']))
-    student_names = GetStudentNamesSorted(students, r['emails'])
-    for s in student_names:
-      class_desc += '\n   ' + s
+    class_desc += '\n\nCurrently Enrolled: ' + str(len(r['emails']))
+    config = models.Config.Fetch(institution, session)
+    if config['displayRoster'] == 'dRYes':
+      students = models.Students.FetchJson(institution, session)
+      student_names = GetStudentNamesSorted(students, r['emails'])
+      for s in student_names:
+        class_desc += '\n   ' + s
   return class_desc
 
 def GetStudentNamesSorted(students, roster_emails):
