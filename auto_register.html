@@ -3,18 +3,24 @@
 
 <h3>Auto Register</h3>
 <table width='60%'>
-<tr>After entering the setup here, go to Schedule -> Automated and click "Add Auto Register Classes".
+<tr>
+  <ol>
+    <li>Enter rules for adding groups of students to classes at the same time.</li>
+    <li>Click Validate to check that the YAML syntax is valid.</li>
+    <li>Click Register to add students to classes based on the rules you entered.</li>
+  </ol>
+  Students cannot be registered twice for the same class - the software will not allow this.<br>However please be aware, once a class is full, additional students will not be added and there is no warning message.<br>It is up to you to ensure the class maximum is large enough to accommodate everyone listed in the Auto Register rule.
 </tr>
 <tr><td>
   Example:
-  <pre style="border: solid; border-width: thin; margin-top: 4px; background-color:#d3d3d3">
-- name: 6th Core
+  <pre style="border: solid; border-width: thin; margin-top: 4px; margin-right: 8px; background-color:#d3d3d3">
+- class: 6th Core
   class_id: 65
   applies_to:
     - current_grade: 6
   exempt:
     - leo.payne@gmail.com
-- name: 7th Core
+- class: 7th Core
   class_id: 66
   applies_to:
     - current_grade: 7
@@ -24,12 +30,12 @@
 </td><td>
 Required fields:
 <ul style="margin:0">
-  <li>class_id - must match id from Classes</li>
+  <li>class_id - must match an id from Classes</li>
   <li>id - generated, not the same as class_id</li>
-</ul>
+</ul><br>
 Optional fields:
 <ul style="margin:0">
-  <li>class - reminder which class the class_id points to</li>
+  <li>class - used by the human (you) to identify the name of the class that class_id refers to</li>
   <li>applies_to</li>
   <ul>
     <li>empty list [] for all students</li>
@@ -47,6 +53,7 @@ Optional fields:
 {{ auto_register }}
 </textarea>
 <br />
-<input type=submit />
+<button name="action" value="Save">Validate</button>
+<button name="action" value="Register">Register</button>
 </form>
 {% endblock %}
