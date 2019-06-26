@@ -44,7 +44,7 @@ function EnableLogins(session_name, enabled) {
       <td  class="left-right-padding">
         <a href="{{ item.management_url }}">{{ item.name }}</a></td>
       <td  class="left-right-padding">
-        <input type="checkbox"
+        <input type="radio"
                onchange="return EnableLogins('{{ item.name }}', this.checked);"
                {% if item.active_session %}checked{% endif %}> allow student access</td>
       <td class="left-right-padding">
