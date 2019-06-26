@@ -92,10 +92,11 @@ def FindUser(user_email, user_list):
   return None
 
 def StudentAllowedPageTypes(institution, session, student, serving_rules):
-  """ Returns list containing types of pages student is allowed to access. """
-  """ For example, all page types allowed returns """
-  """ ['materials', 'schedule', 'preferences', 'verification'] """
-  """ No page types allowed returns [] """
+  """ Returns list containing page types a student is allowed to access.
+      For example, if all page types are allowed, returns the list
+      ['materials', 'schedule', 'final', 'preferences', 'verification']
+      If no page types are allowed, returns the empty list []
+      Page types 'preferences' and 'verification' are not currently in use."""
   pt = []
   for serving_rule in serving_rules:
     if serving_rule['allow']: # check that allow for this rule is not blank

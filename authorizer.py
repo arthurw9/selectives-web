@@ -119,6 +119,19 @@ class Authorizer(object):
       return True
     return False
 
+  def GetStartPage(self, institution, session):
+    serving_rules = models.ServingRules.FetchJson(institution, session)
+    page_types = logic.StudentAllowedPageTypes(
+             institution, session, self.student_entity, serving_rules)
+    # When a student is listed under multiple serving rules,
+    # return the start page with highest priority.
+    if "schedule" in page_types:
+      return "schedule"
+    if "final" in page_types:
+      return "postregistration"
+    else:
+      return "preregistration"
+
   def _VerifyStudent(self, institution, session, student_email):
     # returns true on success
     students = models.Students.FetchJson(institution, session)
@@ -129,7 +142,6 @@ class Authorizer(object):
       return True
     logging.error("student not found '%s'" % student_email)
     return False
-
 
   def _VerifyTeacher(self, institution, session, teacher_email):
     # returns true on success
@@ -168,18 +180,17 @@ class Authorizer(object):
     for ss in serving_sessions:
       institution = ss.institution_name
       session = ss.session_name
-      start_page = ss.start_page
       verified = self._VerifyStudent(institution,
                                      session,
                                      self.email)
       if verified:
+        start_page = self.GetStartPage(institution, session)
         logging.info("Redirecting %s to /%s" % (self.email, start_page))
         self.handler.redirect("/%s?%s" % (start_page, urllib.urlencode(
             {'institution': institution,
              'session': session})))
         return
     # are they a teacher with a serving session?
-    serving_sessions = models.ServingSession.FetchAllEntities()
     for ss in serving_sessions:
       institution = ss.institution_name
       session = ss.session_name

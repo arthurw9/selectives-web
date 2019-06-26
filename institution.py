@@ -62,21 +62,16 @@ class Institution(webapp2.RequestHandler):
 
     if action == "enable_logins":
       name = self.request.get("session")
-      start_page = self.request.get("start_page")
-      logging.info('enable start page: %s for session: %s from institution: %s'
-                    % (start_page, name, institution))
-      models.ServingSession.store(institution, name, start_page)
+      logging.info('enable session: %s from institution: %s' % (name, institution))
+      models.ServingSession.store(institution, name)
       self.RedirectToSelf(institution, 'enabled logins for %s' % name)
       return
 
     if action == "disable_logins":
       name = self.request.get("session")
-      start_page = self.request.get("start_page")
-      logging.info('disable start page: %s for session: %s from institution: %s'
-                   % (start_page, name, institution))
+      logging.info('disable session: %s from institution: %s' % (name, institution))
       models.ServingSession.delete(institution)
-      self.RedirectToSelf(institution, 'disabled logins for %s %s'
-                          % (start_page, name))
+      self.RedirectToSelf(institution, 'disabled logins for %s' % name)
       return
 
     name = self.request.get("session")
@@ -106,25 +101,11 @@ class Institution(webapp2.RequestHandler):
     for session in sessions:
       args = urllib.urlencode({'institution': institution,
                                'session': session.name})
-      preferences_start = serving_session.start_page == "preferences"
-      verification_start = serving_session.start_page == "verification"
-      schedule_start = serving_session.start_page == "schedule"
-      preregistration_start = serving_session.start_page == "preregistration"
-      postregistration_start = serving_session.start_page == "postregistration"
-      if not serving_session.session_name == session.name:
-        preferences_start = False
-        verification_start = False
-        schedule_start = False
-        preregistration_start = False
-        postregistration_start = False
+      active_session = serving_session.session_name == session.name
       sessions_and_urls.append(
           {'name': session.name,
            'management_url': ('/dayparts?%s' % args),
-           'verification_start': verification_start,
-           'preferences_start': preferences_start,
-           'schedule_start': schedule_start,
-           'preregistration_start': preregistration_start,
-           'postregistration_start': postregistration_start,
+           'active_session': active_session,
           })
 
     message = self.request.get('message')

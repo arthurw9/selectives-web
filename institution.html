@@ -11,13 +11,12 @@ function RemoveSession(session_name) {
   return false;
 }
 
-function EnableLogins(session_name, start_page, enabled) {
+function EnableLogins(session_name, enabled) {
   if (enabled) {
     document.getElementById("action").value = "enable_logins";
   } else {
     document.getElementById("action").value = "disable_logins";
   }
-  document.getElementById("start_page").value = start_page;
   document.getElementById("session").value = session_name;
   document.getElementById("session_form").submit();
   return false;
@@ -38,31 +37,18 @@ function EnableLogins(session_name, start_page, enabled) {
   <input type="hidden" id="action" name="action" value="">
   <input type="hidden" name="institution" value="{{ institution }}">
   <input type="hidden" id="session" name="session" value="">
-  <input type="hidden" id="start_page" name="start_page" value="">
   <table border=1>
-  <th colspan=2>Session</th><th colspan=4>Student Start Page</th>
+  <th colspan=2>Session</th><th colspan=1></th>
   {% for item in sessions %}
     <tr>
-      <td class="left-right-padding">
-        <a href="" onclick="return RemoveSession('{{ item.name }}');">remove</a></td>
       <td  class="left-right-padding">
         <a href="{{ item.management_url }}">{{ item.name }}</a></td>
       <td  class="left-right-padding">
         <input type="checkbox"
-               onchange="return EnableLogins('{{ item.name }}', 'preferences', this.checked);"
-               {% if item.preferences_start %}checked{% endif %}> Preferences</td>
-      <td  class="left-right-padding">
-        <input type="checkbox"
-               onchange="return EnableLogins('{{ item.name }}', 'schedule', this.checked);"
-               {% if item.schedule_start %}checked{% endif %}> Schedule </td>
-      <td  class="left-right-padding">
-        <input type="checkbox"
-               onchange="return EnableLogins('{{ item.name }}', 'preregistration', this.checked);"
-               {% if item.preregistration_start %}checked{% endif %}> Pre-registration</td>
-      <td  class="left-right-padding">
-        <input type="checkbox"
-               onchange="return EnableLogins('{{ item.name }}', 'postregistration', this.checked);"
-               {% if item.postregistration_start %}checked{% endif %}> Post-registration</td>
+               onchange="return EnableLogins('{{ item.name }}', this.checked);"
+               {% if item.active_session %}checked{% endif %}> allow student access</td>
+      <td class="left-right-padding">
+        <a href="" onclick="return RemoveSession('{{ item.name }}');">remove</a></td>
     </tr>
   {% endfor %}
   </table>

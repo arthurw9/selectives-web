@@ -3,9 +3,14 @@
 
 <h3>Serving Rules</h3>
 <table width='60%'>
-<tr>Use this page to grant and limit student access to certain pages.<br>
-Use "materials" to serve the pre-registration materials. Use "schedule" to serve the schedule page.<br>
-Page types "preferences" and "verification" are not currently in use.
+<tr>Grant student access to certain pages. Also controls the first page students see when they log in.<br>
+There are three types of pages:
+  <ul>
+    <li><strong>materials</strong> - allows access the pre-registration materials</li>
+    <li><strong>schedule</strong> - allows access to the schedule page.</li>
+    <li><strong>final</strong> - allows access to the post-registration final schedule</li>
+  </ul>
+If a student is granted access to multiple pages, the start page priority is: <strong>schedule</strong>, <strong>final</strong>, then <strong>materials</strong>.<br>In other words, if student has access to the <strong>schedule</strong> page, that will be their start page.<br>If <strong>schedule</strong> is not granted, then the first page they see will be <strong>final</strong>.<br>If <strong>final</strong> is also not granted, their start page will be <strong>materials</strong>.
 </tr>
 <tr><td>
   Example:
@@ -14,11 +19,16 @@ Page types "preferences" and "verification" are not currently in use.
   allow:
     - current_grade: 6
     - current_grade: 7
-    - email: sam.gamgee@gmail.com
+    - current_grade: 8
 - name: schedule
   allow:
-    - current_grade: 8
+    - current_grade: 7
     - current_homeroom: 19
+    - email: sam.gamgee@gmail.com
+- name: final
+  allow:
+    - current_grade: 7
+    - current_grade: 8
   </pre>
 </td><td>
 Required field:
