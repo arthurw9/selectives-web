@@ -4,14 +4,16 @@
 {% if not student %}
 Student not found! This error should never happen. Please inform the selectives team. Thanks!
 {% else %}
-<h2 style="margin-bottom:0">
-  {{ student['first'] + ' ' + student['last'] }}
-</h2>
-<h3 style="margin-bottom:4px; margin-top:4px">
-  Homeroom: {{ student['current_homeroom'] }}<br>
-  Grade: {{ student['current_grade'] }}<br>
-</h3>
-<a href="print_schedule?{{ session_query }}&student={{student['email'] }}">View Printer Friendly Page</a>
+<div>
+<div class="profile-user">
+  <h3 class="profile-data">Final Schedule</h3>
+  <h3 class="profile-data"><a href="print_schedule?{{ session_query }}&student={{student['email'] }}">Printer Friendly Page</a></h3>
+</div>
+<div class="profile-user">
+  <h2 class="profile-data">{{ student['first'] + ' ' + student['last'] }}</h2>
+  <h3 class="profile-data">Homeroom: {{ student['current_homeroom'] }}</h3>
+  <h3 class="profile-data">Grade: {{ student['current_grade'] }}</h3>
+</div>
 
 <table>
   {% for row in dayparts_ordered %}
@@ -45,5 +47,6 @@ Student not found! This error should never happen. Please inform the selectives 
   </tr>
   {% endfor %}
 </table>
+</div>
 {% endif %}
 {% endblock %}

@@ -123,3 +123,45 @@ table.attendanceLegend {
   border: 1px solid black;
   border-collapse: collapse;
 }
+#header-user {
+  display: flex;
+  align-items: center;
+  font-family: 'Oxygen', sans-serif;
+  padding: 0px 5px;
+  background-color: #f1f1f1;
+}
+#logo-user {
+  padding: 5px;
+}
+#title-user {
+  font-size: 30px;
+  font-weight: bold;
+  margin-right: auto;
+}
+#login-user {
+  padding: 5px;
+}
+#nav-user {
+  display: flex;
+  justify-content: space-around;
+  max-width: 780px;
+  list-style-type: none;
+  padding: 0;
+}
+#nav-user li a:hover, #nav-user li:active a{
+  color: #f4511e;
+}
+#main-user {
+  display: flex;
+  border-top: thin solid grey;
+  background-color: #fff;
+}
+.profile-user {
+  display: flex;
+  align-items: baseline;
+}
+.profile-data {
+  margin-right: 1em;
+  margin-block-start: .5em;
+  margin-block-end: .2em;
+}

@@ -12,6 +12,16 @@ except:
   ndb = fake_ndb.FakeNdb()
 
 
+# TODO: replace each newline with </div><div>
+# TODO: replace interior single quotes with unicode '\u2019'
+# TODO: replace semicolons with unicode '\u003A'
+def GetHTMLDescription(institution, session, c):
+  if 'description' in c:
+    #orig_desc = c['description'].strip()
+    return c['description']
+  else:
+    return ''
+
 # Students do not need to see class ID, eligibility, locations.
 # Students should not see individual emails which may be on the eligibility list.
 # Room numbers may change during registration as we finalize the schedule, so don't display room numbers to students.

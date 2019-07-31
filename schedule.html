@@ -112,13 +112,38 @@ function confirmOnPageExit(e) {
 //58 : { 'name' : 'Yearbook', 'dayparts': ['Thurs B',]},
 //50 : { 'name' : 'Dance', 'dayparts': ['Thurs B','Fri B',]},
 //};
+{% if html_desc == 'htmlNo' %}
 classes_by_id = {
 {% for class_id in classes_by_id -%}
-{{ class_id }} : { 'name' : '{{ classes_by_id[class_id]['name'] }}', 'dayparts': [{% for s in classes_by_id[class_id]['schedule'] -%}
-'{{ s['daypart'] }}',
-{%- endfor %}]},
+  {{ class_id }} : {
+    'name' : '{{ classes_by_id[class_id]['name'] }}',
+    'dayparts': [{% for s in classes_by_id[class_id]['schedule'] -%}
+                    '{{ s['daypart'] }}',
+                 {%- endfor %}],
+    'max_enrollment': '{{ classes_by_id[class_id]['max_enrollment'] }}',
+    'instructor': '{{ classes_by_id[class_id]['instructor'] }}',
+    'fitness': '{{ classes_by_id[class_id]['fitness'] }}',
+    'donation': '{{ classes_by_id[class_id]['donation']}}'
+  },
 {%- endfor %}
 };
+{% else %}
+classes_by_id = {
+{% for class_id in classes_by_id -%}
+  {{ class_id }} : {
+    'name' : '{{ classes_by_id[class_id]['name'] }}',
+    'dayparts': [{% for s in classes_by_id[class_id]['schedule'] -%}
+                    '{{ s['daypart'] }}',
+                 {%- endfor %}],
+    'max_enrollment': '{{ classes_by_id[class_id]['max_enrollment']}}',
+    'instructor': '{{ classes_by_id[class_id]['instructor']}}',
+    'description': '{{ classes_by_id[class_id]['description']|safe}}',
+    'fitness': '{{ classes_by_id[class_id]['fitness'] }}',
+    'donation': '{{ classes_by_id[class_id]['donation']}}'
+  },
+{%- endfor %}
+};
+{% endif %}
 
 // TODO: move these color choices into the style sheet
 var NOT_SELECTED_COLOR = '#eeeeff'; // light-grey
@@ -234,9 +259,11 @@ function OnClickHandler(daypart, class_id) {
   AddClassToBackend(class_id, loading_gif)
 }
 
-function setMouseOverBackground(element) {
+function setMouseOverBackground(element, class_id) {
+  createSidePanel(class_id);
+
   if (element.selected) {
-    // If mousing over a clicked-on item, don't do anything.
+    // If mousing over a clicked-on item, don't change background color.
     return;
   }
   element.style.background = HOVER_COLOR;
@@ -244,7 +271,7 @@ function setMouseOverBackground(element) {
 
 function setMouseOutBackground(element) {
   if (element.selected) {
-    // If mousing over a clicked-on item, don't do anything.
+    // If mousing over a clicked-on item, don't change background color.
     return;
   }
   element.style.background = NOT_SELECTED_COLOR;
@@ -275,15 +302,86 @@ function SetScheduleInGui(schedule) {
     }
   }
 }
-</script>
 
-<h2 style="margin-bottom:0">
-  {{ student['first'] + ' ' + student['last'] }}
-</h2>
-<h3 style="margin-bottom:4px; margin-top:4px">
-  Homeroom: {{ student['current_homeroom'] }}<br>
-  Grade: {{ student['current_grade'] }}<br>
-</h3>
+function createSidePanel(class_id) {
+  var infoDiv = document.getElementById('info-panel');
+  infoDiv.innerHTML = "";
+
+  var name_div = document.createElement('div');
+  name_div.innerHTML = classes_by_id[class_id]['name'];
+  infoDiv.appendChild(name_div);
+
+  if (classes_by_id[class_id]['instructor']) {
+    var instructor_div = document.createElement('div');
+    instructor_div.innerHTML = 'Instructor: ' + classes_by_id[class_id]['instructor'];
+    infoDiv.appendChild(instructor_div);
+  }
+
+  var sched_div = document.createElement('div');
+  var dp_list = classes_by_id[class_id]['dayparts']
+  sched_div.innerHTML = dp_list.join(', ');
+  infoDiv.appendChild(sched_div);
+
+  var max_div = document.createElement('div');
+  max_div.innerHTML = 'Maximum: ' + classes_by_id[class_id]['max_enrollment'];
+  infoDiv.appendChild(max_div);
+
+  if (classes_by_id[class_id]['donation']) {
+    var donate_div = document.createElement('div');
+    donate_div.innerHTML = 'Donation: ' + classes_by_id[class_id]['donation'];
+    infoDiv.appendChild(donate_div);
+  }
+
+  var fitness_div = document.createElement('div');
+  if (classes_by_id[class_id]['fitness']) {
+    fitness_div.innerHTML = 'Physical activity: Yes';
+  } else {
+    fitness_div.innerHTML = 'Physical activity: No';
+  }
+  infoDiv.appendChild(fitness_div);
+
+  if (classes_by_id[class_id]['description']) {
+    var descr_div = document.createElement('div');
+    descr_div.setAttribute("id", "description");
+    descr_div.innerHTML = classes_by_id[class_id]['description'];
+    infoDiv.appendChild(descr_div);
+  }
+}
+</script>
+<style>
+#info-panel {
+  border: solid grey;
+  border-radius: 2%;
+  width: 350px;
+  padding: 8px;
+}
+/* description divs within #info-panel */
+#info-panel #description, #info-panel div {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+/* direct children (other fields besides description) */
+#info-panel > div {
+  padding-top: 0px;
+  padding-bottom: 2px;
+}
+#info-panel ul {
+  padding-top: 0px;
+  margin-block-start: .2em;
+}
+iframe {
+  width: 350px;
+}
+</style>
+<div id="register-panel">
+  <div class="profile-user">
+    <h3 class="profile-data">Register</h3>
+  </div>
+  <div class="profile-user">
+    <h2 class="profile-data">{{ student['first'] + ' ' + student['last'] }}</h2>
+    <h3 class="profile-data">Homeroom: {{ student['current_homeroom'] }}</h3>
+    <h3 class="profile-data">Grade: {{ student['current_grade'] }}</h3>
+  </div>
 
 <form method=post>
 <input type=hidden name="institution" value="{{ institution }}" />
@@ -305,7 +403,7 @@ function SetScheduleInGui(schedule) {
           <li class="schedListItem" id="{{daypart}}_{{c['id']}}"
               title="{{c['hover_text']}}"
               onclick="OnClickHandler('{{daypart}}', {{c['id']}});"
-              onmouseover="setMouseOverBackground(this);"
+              onmouseover="setMouseOverBackground(this, '{{c['id']}}');"
               onmouseout="setMouseOutBackground(this);">
               <span id='spots_left_{{daypart}}_{{c['id']}}' style="background-color:lightgreen;"></span>
               {{ c['name'] }}
@@ -319,6 +417,11 @@ function SetScheduleInGui(schedule) {
   {% endfor %}
 </table>
 </form>
+</div>
+
+<div id="info-panel">
+</div>
+
 <script>
 SetScheduleInGui({{ schedule|safe }});
 RefreshData();

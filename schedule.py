@@ -108,8 +108,8 @@ class Schedule(webapp2.RequestHandler):
       if class_id not in eligible_classes:
         continue
       classes_by_id[class_id] = c
-      hover_text = logic.GetHoverText(institution, session, use_full_description, c)
-      c['hover_text'] = hover_text
+      c['hover_text'] = logic.GetHoverText(institution, session, use_full_description, c)
+      c['description'] = logic.GetHTMLDescription(institution, session, c)
       for daypart in [s['daypart'] for s in c['schedule']]:
         if daypart in classes_by_daypart:
           classes_by_daypart[daypart].append(c)
@@ -120,6 +120,8 @@ class Schedule(webapp2.RequestHandler):
     schedule = schedule.split(",")
     if schedule and schedule[0] == "":
       schedule = schedule[1:]
+
+    config = models.Config.Fetch(institution, session)
 
     template_values = {
       'user_email' : auth.email,
@@ -133,6 +135,7 @@ class Schedule(webapp2.RequestHandler):
       'dayparts_ordered': dayparts_ordered,
       'schedule': json.dumps(schedule),
       'classes_by_id': classes_by_id,
+      'html_desc': config['htmlDesc'],
     }
     template = JINJA_ENVIRONMENT.get_template('schedule.html')
     self.response.write(template.render(template_values))

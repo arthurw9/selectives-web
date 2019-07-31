@@ -3,11 +3,9 @@ import urllib
 import jinja2
 import webapp2
 import logging
-import json
 
 import models
 import authorizer
-import logic
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
@@ -35,23 +33,9 @@ class Preregistration(webapp2.RequestHandler):
     message = self.request.get('message')
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
-    email = auth.student_email
-    classes = models.Classes.FetchJson(institution, session)
-    try:
-      _ = [c for c in classes]
-    except TypeError:
-      classes = []
-
-    eligible_classes = logic.EligibleClassIdsForStudent(
-      institution, session, auth.student_entity, classes)
-    classes_for_catalog = []
-    for c in classes:
-      class_id = str(c['id'])
-      if class_id not in eligible_classes:
-        continue
-      if not('exclude_from_catalog' in c and c['exclude_from_catalog']):
-        classes_for_catalog.append(c)
-    classes_for_catalog.sort(key=lambda c:c['name'])
+    view_links = models.Links.FetchJson(institution, session)
+    if not view_links:
+      view_links = ''
 
     template_values = {
       'user_email' : auth.email,
@@ -59,8 +43,8 @@ class Preregistration(webapp2.RequestHandler):
       'session' : session,
       'message': message,
       'session_query': session_query,
-      'student': auth.student_entity,
-      'classes_for_catalog': classes_for_catalog,
+      'view_links': view_links,
+      'self': self.request.uri,
     }
     template = JINJA_ENVIRONMENT.get_template('preregistration.html')
     self.response.write(template.render(template_values))

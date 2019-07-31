@@ -19,9 +19,6 @@ import class_roster
 import error_check
 import spots_available
 import preregistration
-import catalog_print
-import catalog_full
-import catalog_full_print
 import logout
 import postregistration
 import print_schedule
@@ -49,7 +46,6 @@ import teacher.attendance_historical
 import class_waitlist
 import hover_text
 import links
-import view_links
 import welcome_setup
 import report.student_schedules_marked
 import report.taken
@@ -76,9 +72,6 @@ application = webapp2.WSGIApplication([
   ('/error_check', error_check.ErrorCheck),
   ('/spots_available', spots_available.SpotsAvailable),
   ('/preregistration', preregistration.Preregistration),
-  ('/catalog_print', catalog_print.CatalogPrint),
-  ('/catalog_full', catalog_full.CatalogFull),
-  ('/catalog_full_print', catalog_full_print.CatalogFullPrint),
   ('/logout', logout.LogoutPage),
   ('/postregistration', postregistration.Postregistration),
   ('/print_schedule', print_schedule.PrintSchedule),
@@ -106,7 +99,6 @@ application = webapp2.WSGIApplication([
   ('/class_waitlist', class_waitlist.ClassWaitlist),
   ('/hover_text', hover_text.HoverText),
   ('/links', links.Links),
-  ('/view_links', view_links.ViewLinks),
   ('/welcome_setup', welcome_setup.WelcomeSetup),
   ('/report/student_schedules_marked', report.student_schedules_marked.StudentSchedulesMarked),
   ('/report/taken', report.taken.Taken),
