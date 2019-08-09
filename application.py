@@ -45,7 +45,7 @@ import teacher.attendance_today
 import teacher.attendance_historical
 import class_waitlist
 import hover_text
-import links
+import materials
 import welcome_setup
 import report.student_schedules_marked
 import report.taken
@@ -98,7 +98,7 @@ application = webapp2.WSGIApplication([
   ('/teacher/attendance_historical', teacher.attendance_historical.AttendanceHistorical),
   ('/class_waitlist', class_waitlist.ClassWaitlist),
   ('/hover_text', hover_text.HoverText),
-  ('/links', links.Links),
+  ('/materials', materials.Materials),
   ('/welcome_setup', welcome_setup.WelcomeSetup),
   ('/report/student_schedules_marked', report.student_schedules_marked.StudentSchedulesMarked),
   ('/report/taken', report.taken.Taken),

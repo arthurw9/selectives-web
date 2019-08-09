@@ -15,10 +15,10 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     autoescape=True)
 
 
-class Links(webapp2.RequestHandler):
+class Materials(webapp2.RequestHandler):
 
   def RedirectToSelf(self, institution, session, message):
-    self.redirect("/links?%s" % urllib.urlencode(
+    self.redirect("/materials?%s" % urllib.urlencode(
         {'message': message, 
          'institution': institution,
          'session': session}))
@@ -35,13 +35,12 @@ class Links(webapp2.RequestHandler):
     session = self.request.get("session")
     if not session:
       logging.fatal("no session")
-    links = self.request.get("links")
-    if not links:
-      logging.fatal("no links")
-    links = schemas.Links().Update(links)
-    models.Links.store(institution, session, links)
+    materials = self.request.get("materials")
+    if not materials:
+      logging.fatal("no materials")
+    models.Materials.store(institution, session, materials)
     error_check_logic.Checker.setStatus(institution, session, 'UNKNOWN')
-    self.RedirectToSelf(institution, session, "saved links")
+    self.RedirectToSelf(institution, session, "saved materials")
 
   def get(self):
     auth = authorizer.Authorizer(self)
@@ -60,16 +59,17 @@ class Links(webapp2.RequestHandler):
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
     setup_status = error_check_logic.Checker.getStatus(institution, session)
-    links = models.Links.Fetch(institution, session)
-    if not links:
-      links = '\n'.join([
-          "# Sample data. Lines with leading # signs are comments.",
-          "# Change the data below.",
-          "- name: 7th Grade Schedule",
-          "  url: https://drive.google.com/drive/folders/0B16740tCYESsUHd3T3NIY00wcWc",
-          "- name: 8th Grade Schedule",
-          "  url: https://drive.google.com/drive/folders/0B16740tCYESsUHd3T3NIY00wcWc",])
-
+    materials = models.Materials.Fetch(institution, session)
+    if not materials:
+      materials = '\n'.join([
+        "<!-- Sample materials page -->",
+        "<!-- Change the text below -->",
+        "<h3>Registration Dates:</h3>",
+        "<ul><li>Mon, January 1 - 8th grade</li>",
+        "<li>Mon, January 8 - 7th grade</li></ul>",
+        "<a href='#' target='_blank'>8th grade - Schedule of Classes</a><br>",
+        "<a href='#' target='_blank'>Course Catalog</a><br>",
+        "<p>Questions or feedback? Please see your teacher or email the selectives team: discovery.selectives@gmail.com</p>",])
     template_values = {
       'user_email' : auth.email,
       'institution' : institution,
@@ -77,8 +77,8 @@ class Links(webapp2.RequestHandler):
       'message': message,
       'setup_status': setup_status,
       'session_query': session_query,
-      'links': links,
+      'materials': materials,
       'self': self.request.uri,
     }
-    template = JINJA_ENVIRONMENT.get_template('links.html')
+    template = JINJA_ENVIRONMENT.get_template('materials.html')
     self.response.write(template.render(template_values))

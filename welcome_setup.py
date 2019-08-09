@@ -62,6 +62,8 @@ class WelcomeSetup(webapp2.RequestHandler):
     welcome_msg = models.Welcome.Fetch()
     if not welcome_msg:
       welcome_msg = '\n'.join([
+        "<!-- Sample welcome message -->",
+        "<!-- Change the text below -->",
         "<h1>Welcome to Discovery Charter School Selectives!</h1>",
         "<h3>To Log In</h3>",
         "<ol>",
@@ -73,7 +75,7 @@ class WelcomeSetup(webapp2.RequestHandler):
         "<li>Click on <b>Log In</b> in the top right corner.</li>",
         "<li>If prompted for permission to access your Google Account, click <b>Allow</b>.</li>",
         "</ol>",
-        "<p>Questions or feedback? Please contact the selectives team or email discovery.selectives@gmail.com</p>",
+        "<p>Questions or feedback? Please see your teacher or email the selectives team: discovery.selectives@gmail.com</p>",
         "<a href='https://www.google.com/search?tbm=isch&q=smiley+face'>Have a smiley face</a>",])
 
     template_values = {

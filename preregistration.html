@@ -5,15 +5,7 @@
   <div class="profile-user">
     <h3 class="profile-data">Materials</h3>
   </div>
-  <div>
-    If you don't see a link for your grade level then it isn't ready yet.<br>
-    Available spots were accurate at the time we created the document; the numbers may have changed.
-  </div>
-  <ul>
-    {% for v in view_links %}
-    <li style="margin-bottom: .5em;"><a href="{{ v['url'] }}" target="_blank">{{ v['name'] }}</a></li>
-    {% endfor %}
-  </ul>
+{{ welcome_msg|safe }}
 <input type=hidden name="institution" value="{{ institution }}" />
 <input type=hidden name="session" value="{{ session }}" />
 </div>

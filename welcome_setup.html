@@ -3,8 +3,8 @@
 
 <script>
 function reload_view() {
-  var input = document.getElementById("input_area").value;
-  document.getElementById("view_area").innerHTML = input;  
+  var input = document.getElementById("welcome-input-area").value;
+  document.getElementById("welcome-view-area").innerHTML = input;
 }
 
 window.onload = function() {
@@ -18,20 +18,21 @@ window.onload = function() {
 </script>
 
 <h3>Welcome Message</h3>
-Caution: the Welcome Message is shared across all institutions and sessions.<br><br>
-<table width='100%'><tr><td width='30%'>
-<form method=post>
-<input type=hidden name="institution" value="{{ institution }}" />
-<input type=hidden name="session" value="{{ session }}" />
-<textarea id="input_area" name=welcome_msg>
-{{ welcome_msg }}
-</textarea>
-<br />
-<input type="button" id="view" value="Preview">
-<input type="submit" />
-</form>
-<td>
-<div id="view_area"></div>
-</td>
-</td></tr></table>
+<div class='setup-instructions'>Enter HTML in the left panel and click Preview. Once you are happy with the results, click Submit to save.<br>Caution: the Welcome Message is shared across all institutions and sessions.</div>
+<div class='setup'>
+  <div class='setup-html'>
+    <form method=post>
+      <input type=hidden name="institution" value="{{ institution }}" />
+      <input type=hidden name="session" value="{{ session }}" />
+      <textarea id="welcome-input-area" name=welcome_msg>{{ welcome_msg }}</textarea>
+      <br />
+      <input type="button" id="view" value="Preview">
+      <input type="submit" />
+    </form>
+  </div>
+  <div>
+    <div class="preview-label">Preview</div>
+    <div id="welcome-view-area" class="setup-preview"></div>
+  </div>
+</div>
 {% endblock %}

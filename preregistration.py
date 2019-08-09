@@ -33,9 +33,7 @@ class Preregistration(webapp2.RequestHandler):
     message = self.request.get('message')
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
-    view_links = models.Links.FetchJson(institution, session)
-    if not view_links:
-      view_links = ''
+    welcome_msg = models.Materials.Fetch(institution, session)
 
     template_values = {
       'user_email' : auth.email,
@@ -43,8 +41,8 @@ class Preregistration(webapp2.RequestHandler):
       'session' : session,
       'message': message,
       'session_query': session_query,
-      'view_links': view_links,
       'self': self.request.uri,
+      'welcome_msg' : welcome_msg,
     }
     template = JINJA_ENVIRONMENT.get_template('preregistration.html')
     self.response.write(template.render(template_values))

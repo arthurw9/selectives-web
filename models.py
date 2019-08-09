@@ -924,42 +924,31 @@ class Attendance(ndb.Model):
     attendance.key = Attendance.attendance_key(institution, session_name, c_id)
     attendance.put()
 
-class Links(ndb.Model):
+class Materials(ndb.Model):
   data = ndb.TextProperty()
-  jdata = ndb.JsonProperty()
 
   @classmethod
   @timed
-  def links_key(cls, institution, session):
+  def materials_key(cls, institution, session):
     return ndb.Key("InstitutionKey", institution,
                    Session, session,
-                   Links, "links")
-
-  @classmethod
-  @timed
-  def FetchJson(cls, institution, session):
-    links = Links.links_key(institution, session).get()
-    if links:
-      return links.jdata
-    else:
-      return ''
+                   Materials, "materials")
 
   @classmethod
   @timed
   def Fetch(cls, institution, session):
-    links = Links.links_key(institution, session).get()
-    if links:
-      return links.data
+    materials = Materials.materials_key(institution, session).get()
+    if materials:
+      return materials.data
     else:
       return ''
 
   @classmethod
   @timed
-  def store(cls, institution, session_name, links_data):
-    links = Links(data = links_data,
-                        jdata = yaml.load(links_data))
-    links.key = Links.links_key(institution, session_name)
-    links.put()
+  def store(cls, institution, session_name, materials):
+    materials = Materials(data = materials)
+    materials.key = Materials.materials_key(institution, session_name)
+    materials.put()
 
 class Welcome(ndb.Model):
   data = ndb.TextProperty()
