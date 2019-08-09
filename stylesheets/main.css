@@ -50,16 +50,13 @@ textarea {
   padding: 0px 5px;
   background-color: #f1f1f1;
 }
-#logo-user {
+#logo-user, #login-user {
   padding: 5px;
 }
 #title-user {
   font-size: 30px;
   font-weight: bold;
   margin-right: auto;
-}
-#login-user {
-  padding: 5px;
 }
 
 #nav-user {
