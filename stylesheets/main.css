@@ -43,11 +43,14 @@ textarea {
 /***** student viewable pages *****/
 /* header, menu, common sections **/
 
+#body-user {
+  margin: 0px;
+}
 #header-user {
   display: flex;
   align-items: center;
   font-family: 'Oxygen', sans-serif;
-  padding: 0px 5px;
+  padding: 0px 8px;
   background-color: #f1f1f1;
 }
 #logo-user, #login-user {
@@ -59,20 +62,29 @@ textarea {
   margin-right: auto;
 }
 
+#nav-user-div {
+  padding: 8px 8px 16px 8px;
+  background-color: #f1f1f1;
+}
 #nav-user {
   display: flex;
   justify-content: space-around;
   max-width: 780px;
   list-style-type: none;
-  padding: 0;
+  padding: 0px;
+  margin: 0px;
 }
 #nav-user li a:hover, #nav-user li:active a{
   color: #f4511e;
 }
 
+#welcome-user {
+  display: block;
+  padding: 0px 8px;
+}
 #main-user {
+  padding: 0px 8px;
   display: flex;
-  border-top: thin solid grey;
   background-color: #fff;
 }
 .profile-user {

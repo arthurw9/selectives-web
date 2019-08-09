@@ -1,10 +1,12 @@
 {% extends 'base_user.html' %}
 {% block body %}
-<ul id="nav-user">
-  <li><a href="/preregistration?{{ session_query }}">Step 1 - Materials</a></li>
-  <li><a href="/schedule?{{ session_query }}">Step 2 - Register</a></li>
-  <li><a href="/postregistration?{{ session_query }}">Step 3 - Final Schedule</a></li>
-</ul>
+<div id="nav-user-div">
+  <ul id="nav-user">
+    <li><a href="/preregistration?{{ session_query }}">Step 1 - Materials</a></li>
+    <li><a href="/schedule?{{ session_query }}">Step 2 - Register</a></li>
+    <li><a href="/postregistration?{{ session_query }}">Step 3 - Final Schedule</a></li>
+  </ul>
+</div>
 <div id="main-user">
   {% block session_body %} {% endblock %}
 </div>
