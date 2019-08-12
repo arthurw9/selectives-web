@@ -3,18 +3,18 @@
 
 <h3>Serving Rules</h3>
 <table width='60%'>
-<tr>Grant student access to certain pages. Also controls the first page students see when they log in.<br>
+<tr>Grant student access. Also controls the start page - the first page students see when they log in.<br><br>
 There are three types of pages:
-  <ul>
-    <li><strong>materials</strong> - allows access the pre-registration materials</li>
+  <ul style="margin:0">
+    <li><strong>materials</strong> - allows access to the pre-registration materials</li>
     <li><strong>schedule</strong> - allows access to the schedule page.</li>
     <li><strong>final</strong> - allows access to the post-registration final schedule</li>
   </ul>
-If a student is granted access to multiple pages, the start page priority is: <strong>schedule</strong>, <strong>final</strong>, then <strong>materials</strong>.<br>In other words, if student has access to the <strong>schedule</strong> page, that will be their start page.<br>If <strong>schedule</strong> is not granted, then the first page they see will be <strong>final</strong>.<br>If <strong>final</strong> is also not granted, their start page will be <strong>materials</strong>.
+If a student is granted access to multiple pages, the start page priority is: 1.)  <strong>schedule</strong>, 2.) <strong>final</strong>, 3.) <strong>materials</strong>.<br>In other words, if a student has access to the <strong>schedule</strong> page, that will be their start page.<br>If <strong>schedule</strong> is not allowed, then their start page is <strong>final</strong>.<br>If <strong>final</strong> is also not allowed, then their start page is <strong>materials</strong>.
 </tr>
 <tr><td>
   Example:
-  <pre style="border: solid; border-width: thin; margin-top: 4px; background-color:#d3d3d3">
+  <pre class="setup-example">
 - name: materials
   allow:
     - current_grade: 6
