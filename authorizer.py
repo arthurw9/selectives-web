@@ -194,7 +194,7 @@ class Authorizer(object):
     for ss in serving_sessions:
       institution = ss.institution_name
       session = ss.session_name
-      start_page = "teacher/take_attendance"
+      start_page = "error_registration"
       verified = self._VerifyTeacher(institution,
                                      session,
                                      self.email)

@@ -3,28 +3,25 @@
 
 <table><tr><td width=180px; max-width=180px; valign='top'; style="border-right: 1px solid black; padding: 5px;">
   
-  <li style="margin-bottom:1em">
-    <a href="/teacher/take_attendance?{{ session_query }}">Take Attendance</a></li>
-  <li>
-    <a href="/teacher/my_rosters?{{ session_query }}">My Rosters</a></li>
-  <li>
-    <a href="/teacher/my_attendance?{{ session_query }}">My Attendance Sheets</a></li>
-  <li style="margin-bottom:1em">
-    <a href="/teacher/my_students?{{ session_query }}">My Student Schedules</a></li>
 
-  <li>
-    <a href="/teacher/teacher_catalog?{{ session_query }}">Course Descriptions</a></li>
-  <li>
-    <a href="/teacher/all_rosters?{{ session_query }}">All Rosters</a></li>
-  <li>
-    <a href="/report/attendance_list?{{ session_query }}">All Attendance Sheets</a></li>
+  <h3 style="margin-bottom:4px">Reports</h3>
+  <li><a href="/error_registration?{{ session_query }}">Show Errors</a></li>
+  <li><a href="/report/attendance_list?{{ session_query }}">Attendance Sheets</a></li>
   <li style="margin-bottom:1em">
-    <a href="/report/student_schedules?{{ session_query }}">All Student Schedules</a></li>
+    <a href="/report/student_schedules?{{ session_query }}">Student Schedules</a>
+  </li>
+  <!--<li><a href="/teacher/all_rosters?{{ session_query }}">Rosters</a></li>-->
   
-  <li>
-    <a href="/teacher/attendance_today?{{ session_query }}">Today's Attendance</a></li>
-  <li>
-    <a href="/teacher/attendance_historical?{{ session_query }}">Historical Attendance</a></li>
+  <h3 style="margin-bottom:4px">Attendance</h3>
+  <li>Take Attendance
+    <!--<a href="/teacher/take_attendance?{{ session_query }}">Take Attendance</a>-->
+  </li>
+  <li>Today's Attendance
+    <!--<a href="/teacher/attendance_today?{{ session_query }}">Today's Attendance</a>-->
+  </li>
+  <li>Historical Attendance
+    <!--<a href="/teacher/attendance_historical?{{ session_query }}">Historical Attendance</a>-->
+  </li>
 
 </td>
 <td valign='top'>
