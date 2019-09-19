@@ -187,9 +187,11 @@ window.onload = function() {
 };
 </script>
 
-<h3>Check lottery classes. Then scroll to bottom and select a group to download.</h3>
-<br>
-<br>
+<h3>Student Schedules with Boxes</h3>
+First, select classes with a lottery - they will be highlighted with a box in the report.
+<br>Then, scroll down to the bottom of the page to select the students to include in the report.
+<br>Finally, click Download.
+<br><br>
 
 {% if classes %}
 <form>
@@ -209,10 +211,11 @@ window.onload = function() {
   {% endfor %}
 </table>
 <table>
+    <tr><td></td><td>------------------</td></tr>
     <tr>
       <td></td><td><input type="radio" id="all" name="radioOption" value="All" checked="checked">All</td>
     </tr>
-    <tr><td>Homerooms</td></tr>
+    <tr><td>By Homeroom</td></tr>
     {% for g in homerooms %}
     <tr>
       {% for hr in homerooms_by_grade[g] %}
@@ -220,7 +223,7 @@ window.onload = function() {
       {% endfor %}
     </tr>
     {% endfor %}
-    <tr><td>Grades</td></tr>
+    <tr><td>By Grade</td></tr>
     <tr>
     {% for g in homerooms %}
       <td><input type="radio" id="grade{{g}}" name="radioOption" value="Grade {{g}}">{{g}}</td>

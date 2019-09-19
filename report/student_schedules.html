@@ -144,15 +144,13 @@ window.onload = function() {
 </script>
 
 <h3>Student Schedules</h3>
-<br>
-<br>
-
+Select students to include in the report, then click Download.<br><br>
 <form>
   <table>
     <tr>
       <td></td><td><input type="radio" id="all" name="radioOption" value="All" checked="checked">All</td>
     </tr>
-    <tr><td>Homerooms</td></tr>
+    <tr><td>By Homeroom</td></tr>
     {% for g in homerooms %}
     <tr>
       {% for hr in homerooms_by_grade[g] %}
@@ -160,7 +158,7 @@ window.onload = function() {
       {% endfor %}
     </tr>
     {% endfor %}
-    <tr><td>Grades</td></tr>
+    <tr><td>By Grade</td></tr>
     <tr>
     {% for g in homerooms %}
       <td><input type="radio" id="grade{{g}}" name="radioOption" value="Grade {{g}}">{{g}}</td>
