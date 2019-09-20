@@ -78,6 +78,34 @@ textarea {
 }
 
 
+/***** teacher viewable pages *****/
+#main-teacher {
+  padding: 0px 8px;
+  display: flex;
+  background-color: #fff;
+}
+#menu-teacher {
+  vertical-align: 'top';
+  border-right: 1px solid black;
+  padding: 5px;
+}
+#menu-teacher ul {
+  margin: 0px;
+}
+#menu-teacher h3 {
+  margin-bottom: 0px;
+}
+#view-teacher {
+  padding: 8px 8px;
+  display: flex;
+  flex-direction: column;
+  width: 80%;
+}
+#view-registration {
+  display: flex;
+  flex-direction: row;
+}
+
 /***** student viewable pages *****/
 /* header, menu, common sections **/
 

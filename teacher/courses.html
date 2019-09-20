@@ -1,0 +1,243 @@
+{% extends 'menu_teacher.html' %}
+{% block session_body %}
+
+<script>
+var refresh_data_timer_object;
+
+function ResetRefreshDataTimer(seconds) {
+  if (refresh_data_timer_object) {
+    clearTimeout(refresh_data_timer_object);
+  }
+  refresh_data_timer_object = setTimeout(RefreshData, seconds * 1000);
+}
+
+function RefreshData() {
+  RefreshSpotsFirm();
+  RefreshHoverText();
+}
+
+function RefreshSpotsFirm() {
+  var request = new XMLHttpRequest();
+  request.open("POST", "/spots_firm");
+  request.onreadystatechange = function() {
+    if (request.status == 403) {
+      window.location.replace("/postregistration?institution={{institution}}&session={{session}}");
+    }
+    if(request.readyState == 4 && request.status == 200) {
+      var result = JSON.parse(request.responseText);
+      WriteSpotsFirmToGui(result);
+      // TODO: How fast can we refresh before Google imposes
+      // limits and starts demanding money?
+      ResetRefreshDataTimer(7);
+    }
+  }
+  var params = new FormData();
+  params.append("institution", "{{ institution }}");
+  params.append("session", "{{ session }}");
+  var class_ids = Object.keys(classes_by_id);
+  class_ids = JSON.stringify(class_ids);
+  params.append("class_ids", class_ids);
+  request.send(params);
+}
+
+function WriteSpotsFirmToGui(class_availability) {
+  for(c_id in class_availability) {
+    dayparts = classes_by_id[c_id]['dayparts'];
+    for(idx in dayparts) {
+      var daypart = dayparts[idx];
+      var dom_element_id = "spots_firm_" + daypart + "_" + c_id;
+      e = document.getElementById(dom_element_id);
+      e.innerHTML = class_availability[c_id];
+
+      var dom_class_id = daypart + "_" + c_id;
+      e = document.getElementById(dom_class_id);
+      if (class_availability[c_id] < 0) {
+        e.style.backgroundColor = LOTTERY_COLOR;
+      } else {
+        e.style.backgroundColor = NOT_SELECTED_COLOR;
+      }
+    }
+  }
+}
+
+function RefreshHoverText() {
+  var request = new XMLHttpRequest();
+  request.open("POST", "/hover_text");
+  request.onreadystatechange = function() {
+    if (request.status == 403) {
+      window.location.replace("/postregistration?institution={{institution}}&session={{session}}");
+    }
+    if (request.readyState == 4 && request.status == 200) {
+      var hov_texts = JSON.parse(request.responseText);
+      WriteHoverTextToGui(hov_texts);
+      // TODO: How fast can we refresh before Google imposes
+      // limits and starts demanding money?
+      ResetRefreshDataTimer(7);
+    }
+  }
+  var params = new FormData();
+  params.append("institution", "{{ institution }}");
+  params.append("session", "{{ session }}");
+  var class_ids = Object.keys(classes_by_id);
+  class_ids = JSON.stringify(class_ids);
+  params.append("class_ids", class_ids);
+  request.send(params);
+}
+
+function WriteHoverTextToGui(hover_texts) {
+  for(c_id in hover_texts) {
+    dayparts = classes_by_id[c_id]['dayparts'];
+    for(idx in dayparts) {
+      var daypart = dayparts[idx];
+      var dom_element_id = daypart + "_" + c_id;
+      e = document.getElementById(dom_element_id);
+      e.title = hover_texts[c_id];
+    }
+  }
+}
+
+//Example classes_by_id objects
+//classes_by_id = {
+//59 : { 'name' : 'Circuit Training', 'dayparts': ['Fri B',]},
+//58 : { 'name' : 'Yearbook', 'dayparts': ['Thurs B',]},
+//50 : { 'name' : 'Dance', 'dayparts': ['Thurs B','Fri B',]},
+//};
+{% if html_desc == 'htmlNo' %}
+classes_by_id = {
+{% for class_id in classes_by_id -%}
+  {{ class_id }} : {
+    'name' : '{{ classes_by_id[class_id]['name'] }}',
+    'dayparts': [{% for s in classes_by_id[class_id]['schedule'] -%}
+                    '{{ s['daypart'] }}',
+                 {%- endfor %}],
+    'max_enrollment': '{{ classes_by_id[class_id]['max_enrollment'] }}',
+    'instructor': '{{ classes_by_id[class_id]['instructor'] }}',
+    'fitness': '{{ classes_by_id[class_id]['fitness'] }}',
+    'donation': '{{ classes_by_id[class_id]['donation']}}'
+  },
+{%- endfor %}
+};
+{% else %}
+classes_by_id = {
+{% for class_id in classes_by_id -%}
+  {{ class_id }} : {
+    'name' : '{{ classes_by_id[class_id]['name'] }}',
+    'dayparts': [{% for s in classes_by_id[class_id]['schedule'] -%}
+                    '{{ s['daypart'] }}',
+                 {%- endfor %}],
+    'max_enrollment': '{{ classes_by_id[class_id]['max_enrollment']}}',
+    'instructor': '{{ classes_by_id[class_id]['instructor']}}',
+    'description': '{{ classes_by_id[class_id]['description']|safe}}',
+    'fitness': '{{ classes_by_id[class_id]['fitness'] }}',
+    'donation': '{{ classes_by_id[class_id]['donation']}}'
+  },
+{%- endfor %}
+};
+{% endif %}
+
+// TODO: move these color choices into the style sheet
+var NOT_SELECTED_COLOR = '#eeeeff'; // light-grey
+var LOTTERY_COLOR = 'pink';
+
+function setMouseOverBackground(element, class_id) {
+  createSidePanel(class_id);
+
+  element.style.color = '#5c8f22';
+  element.style.textShadow = '4px 4px 5px #bbbbbb';
+}
+
+function setMouseOutBackground(element) {
+  element.style.color = '#000000';
+  element.style.textShadow = 'none';
+}
+
+function createSidePanel(class_id) {
+  var infoDiv = document.getElementById('info-panel');
+  infoDiv.innerHTML = "";
+
+  var name_div = document.createElement('div');
+  name_div.innerHTML = classes_by_id[class_id]['name'];
+  infoDiv.appendChild(name_div);
+
+  if (classes_by_id[class_id]['instructor']) {
+    var instructor_div = document.createElement('div');
+    instructor_div.innerHTML = 'Instructor: ' + classes_by_id[class_id]['instructor'];
+    infoDiv.appendChild(instructor_div);
+  }
+
+  var sched_div = document.createElement('div');
+  var dp_list = classes_by_id[class_id]['dayparts']
+  sched_div.innerHTML = dp_list.join(', ');
+  infoDiv.appendChild(sched_div);
+
+  var max_div = document.createElement('div');
+  max_div.innerHTML = 'Maximum: ' + classes_by_id[class_id]['max_enrollment'];
+  infoDiv.appendChild(max_div);
+
+  if (classes_by_id[class_id]['donation']) {
+    var donate_div = document.createElement('div');
+    donate_div.innerHTML = 'Donation: ' + classes_by_id[class_id]['donation'];
+    infoDiv.appendChild(donate_div);
+  }
+
+  var fitness_div = document.createElement('div');
+  if (classes_by_id[class_id]['fitness']) {
+    fitness_div.innerHTML = 'Physical activity: Yes';
+  } else {
+    fitness_div.innerHTML = 'Physical activity: No';
+  }
+  infoDiv.appendChild(fitness_div);
+
+  if (classes_by_id[class_id]['description']) {
+    var descr_div = document.createElement('div');
+    descr_div.setAttribute("id", "description");
+    descr_div.innerHTML = classes_by_id[class_id]['description'];
+    infoDiv.appendChild(descr_div);
+  }
+}
+</script>
+
+<div id="view-registration">
+<div id="register-panel">
+<form method=post>
+<input type=hidden name="institution" value="{{ institution }}" />
+<input type=hidden name="session" value="{{ session }}" />
+<input type=hidden name="class_id" />
+<table>
+  {% for row in dayparts_ordered %}
+  <tr>
+    {% for daypart in row %}
+      <td class="schedHeader">{{ daypart }}</td>
+    {% endfor %}
+  </tr>
+  <tr>
+    {% for daypart in row %}
+      <td class="schedTableData">
+        <ol id="{{daypart}}" class="schedOrderedList">
+        {% for c in classes_by_daypart[daypart] %}
+          <li class="schedListItem" id="{{daypart}}_{{c['id']}}"
+              title="{{c['hover_text']}}"
+              onmouseover="setMouseOverBackground(this, '{{c['id']}}');"
+              onmouseout="setMouseOutBackground(this);">
+              <span style="background-color:lightgreen;">{{ c['max_enrollment'] }}</span>
+              <span style="background-color:lightgreen;" id='spots_firm_{{daypart}}_{{c['id']}}' ></span>
+              {{ c['name'] }}
+          </li>
+        {% endfor %}
+        </ol>
+      </td>
+    {% endfor %}
+  </tr>
+  {% endfor %}
+</table>
+</form>
+</div>
+
+<div id="info-panel">
+</div>
+</div>
+
+<script>
+RefreshData();
+</script>
+{% endblock %}

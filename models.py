@@ -785,6 +785,7 @@ class ClassRoster(ndb.Model):
         r['remaining_space'] = c['open_enrollment'] - len(r['emails'])
       else:
         r['remaining_space'] = c['max_enrollment'] - len(r['emails'])
+      r['remaining_firm'] = c['max_enrollment'] - len(r['emails'])
       if (roster.last_modified):
         r['last_modified'] = roster.last_modified
       else:
@@ -800,6 +801,7 @@ class ClassRoster(ndb.Model):
     r['class_details'] = ''
     r['max_enrollment'] = 0
     r['remaining_space'] = 0
+    r['remaining_firm'] = 0
     r['last_modified'] = None
     return r
 

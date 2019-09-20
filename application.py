@@ -18,6 +18,7 @@ import class_list
 import class_roster
 import error_check
 import spots_available
+import spots_firm
 import preregistration
 import logout
 import postregistration
@@ -34,6 +35,7 @@ import report.homeroom
 import report.label
 import error_registration
 import teachers
+import teacher.courses
 import teacher.take_attendance
 import teacher.all_rosters
 import teacher.teacher_roster
@@ -67,6 +69,7 @@ application = webapp2.WSGIApplication([
   ('/class_roster', class_roster.ClassRoster),
   ('/error_check', error_check.ErrorCheck),
   ('/spots_available', spots_available.SpotsAvailable),
+  ('/spots_firm', spots_firm.SpotsFirm),
   ('/preregistration', preregistration.Preregistration),
   ('/logout', logout.LogoutPage),
   ('/postregistration', postregistration.Postregistration),
@@ -83,6 +86,7 @@ application = webapp2.WSGIApplication([
   ('/report/label', report.label.Label),
   ('/error_registration', error_registration.ErrorRegistration),
   ('/teachers', teachers.Teachers),
+  ('/teacher/courses', teacher.courses.Courses),
   ('/teacher/take_attendance', teacher.take_attendance.TakeAttendance),
   ('/teacher/all_rosters', teacher.all_rosters.AllRosters),
   ('/teacher/teacher_roster', teacher.teacher_roster.TeacherRoster),

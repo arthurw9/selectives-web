@@ -6,7 +6,7 @@ import models
 import authorizer
 import logic
 
-class SpotsAvailable(webapp2.RequestHandler):
+class SpotsFirm(webapp2.RequestHandler):
 
   def post(self):
     auth = authorizer.Authorizer(self)
@@ -32,5 +32,5 @@ class SpotsAvailable(webapp2.RequestHandler):
     results = {}
     for class_id in class_ids:
       roster = models.ClassRoster.FetchEntity(institution, session, class_id)
-      results[str(class_id)] = roster['remaining_space']
+      results[str(class_id)] = roster['remaining_firm']
     self.response.write(json.dumps(results))

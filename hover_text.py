@@ -10,7 +10,8 @@ class HoverText(webapp2.RequestHandler):
 
   def post(self):
     auth = authorizer.Authorizer(self)
-    if not auth.HasStudentAccess():
+    if not (auth.HasStudentAccess() or
+            auth.HasTeacherAccess()):
       self.response.status = 403 # Forbidden
       return
 
@@ -21,7 +22,8 @@ class HoverText(webapp2.RequestHandler):
     if not session:
       logging.fatal("no session")
 
-    if not auth.HasPageAccess(institution, session, "schedule"):
+    if not (auth.HasTeacherAccess() or
+            auth.HasPageAccess(institution, session, "schedule")):
       self.response.status = 403 # Forbidden
       return
 
