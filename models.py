@@ -779,13 +779,19 @@ class ClassRoster(ndb.Model):
         r['instructor'] = c['instructor']
       r['schedule'] = c['schedule']
       r['class_details'] = roster.jclass_obj
-      r['max_enrollment'] = c['max_enrollment']
+      if 'max_enrollment' in c:
+        r['max_enrollment'] = c['max_enrollment']
       if 'open_enrollment' in c:
         r['open_enrollment'] = c['open_enrollment']
         r['remaining_space'] = c['open_enrollment'] - len(r['emails'])
-      else:
+      elif 'max_enrollment' in c:
         r['remaining_space'] = c['max_enrollment'] - len(r['emails'])
-      r['remaining_firm'] = c['max_enrollment'] - len(r['emails'])
+      else:
+        r['remaining_space'] = 0
+      if 'max_enrollment' in c:
+        r['remaining_firm'] = c['max_enrollment'] - len(r['emails'])
+      else:
+        r['remaining_firm'] = 0
       if (roster.last_modified):
         r['last_modified'] = roster.last_modified
       else:
