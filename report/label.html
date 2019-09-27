@@ -1,4 +1,8 @@
-{% extends 'menu.html' %}
+{% if user_type == 'Admin' %}
+  {% extends 'menu.html' %}
+{% elif user_type == 'Teacher' %}
+  {% extends 'menu_teacher.html' %}
+{% endif %}
 {% block session_body %}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.4/jspdf.debug.js">
