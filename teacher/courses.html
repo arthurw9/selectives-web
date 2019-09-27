@@ -53,6 +53,8 @@ function WriteSpotsFirmToGui(class_availability) {
       e = document.getElementById(dom_class_id);
       if (class_availability[c_id] < 0) {
         e.style.backgroundColor = LOTTERY_COLOR;
+      } else if (class_availability[c_id] == 0) {
+        e.style.backgroundColor = ZERO_SPOTS_COLOR;
       } else {
         e.style.backgroundColor = NOT_SELECTED_COLOR;
       }
@@ -136,19 +138,18 @@ classes_by_id = {
 {% endif %}
 
 // TODO: move these color choices into the style sheet
-var NOT_SELECTED_COLOR = '#eeeeff'; // light-grey
+var NOT_SELECTED_COLOR = '#8cafd1';
+var ZERO_SPOTS_COLOR = '#eeeeff'; // light-grey
 var LOTTERY_COLOR = 'pink';
 
 function setMouseOverBackground(element, class_id) {
   createSidePanel(class_id);
 
   element.style.color = '#5c8f22';
-  element.style.textShadow = '4px 4px 5px #bbbbbb';
 }
 
 function setMouseOutBackground(element) {
   element.style.color = '#000000';
-  element.style.textShadow = 'none';
 }
 
 function createSidePanel(class_id) {
