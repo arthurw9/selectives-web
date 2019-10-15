@@ -85,7 +85,7 @@ class Preferences(webapp2.RequestHandler):
     for c in classes:
       class_id = str(c['id'])
       class_name = c['name']
-      class_desc = logic.GetHoverText(use_full_description, c)
+      class_desc = logic.GetHoverText(institution, session, use_full_description, c)
       classes_by_id[class_id] = {'name': class_name,
                                  'description': class_desc }
     if not classes_by_id:

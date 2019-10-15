@@ -1,0 +1,247 @@
+{% extends 'menu_teacher.html' %}
+{% block session_body %}
+
+<script>
+
+var A_jsclasses = {};
+var B_jsclasses = {};
+// For easier manipulation, convert Python dictionary passed via jinja
+// back into dictionary and save into the above globals.
+function SaveToJSVars(rosters) {
+  for (var c_id in rosters) {
+    d = new Date(Date.now());
+    //d = new Date(2017, 10, 10); // 2017, Nov, 10 (Friday)
+    if (matchBlock(rosters[c_id], d.getDay(), "A")) {
+      A_jsclasses[c_id] = rosters[c_id];
+    } else if (matchBlock(rosters[c_id], d.getDay(), "B")) {
+      B_jsclasses[c_id] = rosters[c_id];
+    } else {
+      console.log("Date Mismatch:");
+      console.log(rosters[c_id]);
+    }
+  }
+}
+
+function isEmpty(obj) {
+  for(var key in obj) {
+    if(obj.hasOwnProperty(key))
+      return false;
+  }
+  return true;
+}
+
+function matchBlock(c, day, blk) {
+  var searchString = {
+    0: "Sun",
+    1: "Mon",
+    2: "Tues",
+    3: "Wed",
+    4: "Thurs",
+    5: "Fri",
+    6: "Sat",
+  }[day];
+  searchString += " " + blk;
+  return (c['daypart'].indexOf(searchString) !== -1);
+}
+
+function BuildAttendanceTable(blk, classes) {
+  var table = document.getElementById("student_table" + blk);
+  var tbody = document.getElementById("student_tbody" + blk);
+
+  if (table) {
+    // if the table already exists, replace child tbody
+    table.removeChild(tbody);
+    tbody = document.createElement("tbody");
+    tbody.id = "student_tbody" + blk;
+  } else {
+    table = document.createElement("table");
+    table.id = "student_table" + blk;
+    tbody = document.createElement("tbody");
+    tbody.id = "student_tbody" + blk;
+  }
+
+  var row = document.createElement("tr");
+  var name_th = document.createElement("th");
+  var name_txt = document.createTextNode("Block " + blk);
+  name_th.setAttribute("align", "left");
+  name_th.style.fontSize = "20px";
+  name_th.style.paddingTop = "16px";
+  name_th.appendChild(name_txt);
+  row.appendChild(name_th);
+  tbody.appendChild(row);
+
+  var not_ready = {};
+  var all_present = {};
+  var absences = {};
+
+  for (var id in classes) {
+    if (isEmpty(classes[id]['attendance'])) {
+      not_ready[id] = classes[id];
+    } else if (classes[id]['absent'].length == 0) {
+      all_present[id] = classes[id];
+    } else {
+      absences[id] = classes[id];
+    }
+  }
+
+  // List all the absences first
+  if (!isEmpty(absences)) {
+    var row = document.createElement("tr");
+    var name_th = document.createElement("th");
+    var name_txt = document.createTextNode("Absent");
+    name_th.setAttribute("align", "left");
+    var gr_th = document.createElement("th");
+    var gr_txt = document.createTextNode("Gr");
+    var hr_th = document.createElement("th");
+    var hr_txt = document.createTextNode("Hrm");
+    var sl_th = document.createElement("th");
+    var sl_txt = document.createTextNode("Selective");
+    sl_th.setAttribute("align", "left");
+    name_th.appendChild(name_txt);
+    row.appendChild(name_th);
+    gr_th.appendChild(gr_txt);
+    row.appendChild(gr_th);
+    hr_th.appendChild(hr_txt);
+    row.appendChild(hr_th);
+    sl_th.appendChild(sl_txt);
+    row.appendChild(sl_th);
+    tbody.appendChild(row);
+  }
+  for (var id in absences) {
+    for (var st in classes[id]['absent']) {
+      var s = classes[id]['absent'][st];
+      var row = document.createElement("tr");
+      var name_td = document.createElement("td");
+      var name_txt = s['first'] + " " + s['last'];
+      var name_txt = document.createTextNode(name_txt);
+      name_td.setAttribute("style", "color:blue;");
+      name_td.appendChild(name_txt);
+      row.appendChild(name_td);
+      var gr_td = document.createElement("td");
+      var gr_txt = document.createTextNode(s['current_grade']);
+      gr_td.appendChild(gr_txt);
+      row.appendChild(gr_td);
+      var hr_td = document.createElement("td");
+      var hr_txt = document.createTextNode(s['current_homeroom']);
+      hr_td.appendChild(hr_txt);
+      row.appendChild(hr_td);
+
+      var cl_td = document.createElement("td");
+      var cl_txt = classes[id]['name'] +
+        ", " + classes[id]['instructor'] +
+        ", " + classes[id]['daypart'] +
+        ", " + classes[id]['location'];
+      var cl_txt = document.createTextNode(cl_txt);
+      cl_td.appendChild(cl_txt);
+      row.appendChild(cl_td);
+      tbody.appendChild(row);
+    }
+  }
+
+  // Then list all the classes with no absences
+  for (var id in all_present) {
+    var row = document.createElement("tr");
+    var name_td = document.createElement("td");
+    var name_txt = document.createTextNode("All students present");
+    name_td.appendChild(name_txt);
+    row.appendChild(name_td);
+    var gr_td = document.createElement("td");
+    var gr_txt = document.createTextNode('');
+    gr_td.appendChild(gr_txt);
+    row.appendChild(gr_td);
+    var hr_td = document.createElement("td");
+    var hr_txt = document.createTextNode('');
+    hr_td.appendChild(hr_txt);
+    row.appendChild(hr_td);
+
+    var cl_td = document.createElement("td");
+    var cl_txt = all_present[id]['name'] +
+        ", " + all_present[id]['instructor'] +
+        ", " + all_present[id]['daypart'] +
+        ", " + all_present[id]['location'];
+    var cl_txt = document.createTextNode(cl_txt);
+    cl_td.appendChild(cl_txt);
+    row.appendChild(cl_td);
+    tbody.appendChild(row);
+  }
+
+  // Finally list classes that haven't taken attendance yet
+  var nr_table = document.getElementById("not_ready_table" + blk);
+  var nr_tbody = document.getElementById("not_ready_tbody" + blk);
+  if (nr_table) {
+    // if a table already exists, replace child tbody
+    nr_table.removeChild(nr_tbody);
+    nr_tbody = document.createElement("tbody");
+    nr_tbody.id = "not_ready_tbody" + blk;
+  } else {
+    nr_table = document.createElement("table");
+    nr_table.id = "not_ready_table" + blk;
+    nr_tbody = document.createElement("tbody");
+    nr_tbody.id = "not_ready_tbody"  + blk;
+  }
+
+  if (isEmpty(not_ready)) {
+    var row = document.createElement("tr");
+    var msg_td = document.createElement("td");
+    var msg_txt = document.createTextNode("Attendance complete for this block!");
+    msg_td.setAttribute("style", "color:red; padding-top:10px;");
+    msg_td.appendChild(msg_txt);
+    row.appendChild(msg_td);
+    nr_tbody.appendChild(row);
+  } else {
+    var row = document.createElement("tr");
+    var msg_td = document.createElement("td");
+    var msg_txt = document.createTextNode("Attendance Not Taken");
+    msg_td.setAttribute("style", "color:red; padding-top:10px;");
+    msg_td.appendChild(msg_txt);
+    row.appendChild(msg_td);
+    nr_tbody.appendChild(row);
+    for (var id in not_ready) {
+      var row = document.createElement("tr");
+      var cl_td = document.createElement("td");
+      var cl_txt = not_ready[id]['name'] +
+          ", " + not_ready[id]['instructor'] +
+          ", " + not_ready[id]['daypart'] +
+          ", " + not_ready[id]['location'];
+      var cl_txt = document.createTextNode(cl_txt);
+      cl_td.appendChild(cl_txt);
+      row.appendChild(cl_td);
+      nr_tbody.appendChild(row);
+    }
+  }
+
+  table.appendChild(tbody);
+  nr_table.appendChild(nr_tbody);
+  document.getElementById("absences").appendChild(table);
+  document.getElementById("absences").appendChild(nr_table);
+}
+
+window.onload = function() {
+  var today = new Date(Date.now());
+  var h = document.getElementById("myHeader");
+  h.innerText = "Attendance for " + today.toDateString();
+
+  SaveToJSVars({{ todays_classes|safe }});
+  if (Object.keys(A_jsclasses).length > 0) {
+    BuildAttendanceTable("A", A_jsclasses);
+  }
+  if (Object.keys(B_jsclasses).length > 0) {
+    BuildAttendanceTable("B", B_jsclasses);
+  }
+  if (Object.keys(A_jsclasses).length <= 0 &&
+      Object.keys(B_jsclasses).length <= 0) {
+    var txt = document.getElementById("instructions");
+    txt.innerText = "No attendance available."
+  }
+}
+</script>
+
+{% if not teacher %}
+Teacher not found! This error should never happen. Please inform the selectives team. Thanks!
+{% else %}
+<h3 id="myHeader" style="margin-top:4px; margin-bottom:4px"></h3>
+
+<div id="instructions" style="margin-top:5px; margin-bottom:3px">Please refresh the browser page for the latest attendance results.</div>
+<div id="absences"></div>
+{% endif %}
+{% endblock %}

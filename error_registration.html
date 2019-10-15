@@ -1,11 +1,109 @@
-{% extends 'menu.html' %}
+{% if user_type == 'Admin' %}
+  {% extends 'menu.html' %}
+{% elif user_type == 'Teacher' %}
+  {% extends 'menu_teacher.html' %}
+{% endif %}
 {% block session_body %}
 
-<h3>Validate Registration</h3>
+<script>
+
+window.onload = function() {
+  var showAll = document.getElementById("showAll");
+  var show8th = document.getElementById("show8th");
+  var show7th = document.getElementById("show7th");
+  var show6th = document.getElementById("show6th");
+
+  showAll.onclick = function() {
+    form_element = document.forms[0];
+    form_element.grade_level.value = 100;
+    form_element.message.value = "button clicked";
+    form_element.submit();
+    return false;
+  }
+  show8th.onclick = function() {
+    form_element = document.forms[0];
+    form_element.grade_level.value = 8;
+    form_element.message.value = "button clicked";
+    form_element.submit();
+    return false;
+  }
+  show7th.onclick = function() {
+    form_element = document.forms[0];
+    form_element.grade_level.value = 7;
+    form_element.message.value = "button clicked";
+    form_element.submit();
+    return false;
+  }
+  show6th.onclick = function() {
+    form_element = document.forms[0];
+    form_element.grade_level.value = 6;
+    form_element.message.value = "button clicked";
+    form_element.submit();
+    return false;
+  }
+}
+</script>
+<h3>Show Student Schedule Errors</h3>
+<form method=get>
 <input type=hidden name="institution" value="{{ institution }}" />
 <input type=hidden name="session" value="{{ session }}" />
-{% for line in registration_detail.splitlines() %}
-  {{ line }}<br>
-{% endfor %}
-
+<input type=hidden name="grade_level" value="{{ grade_level }}" />
+<input type=hidden name="message" value="{{ message }}" />
+Click to show student schedule errors for all or by grade.<br><br>
+<input type="button" id="showAll" value="Show All">
+<input type="button" id="show8th" value="Show 8th">
+<input type="button" id="show7th" value="Show 7th">
+<input type="button" id="show6th" value="Show 6th">
+<div id="displayArea">
+<br>
+  {% for err_obj in err_list %}
+    <table style="border-collapse:collapse; table-layout:fixed; width:80%">
+    <th style="text-align: left">
+    {{err_obj[1]['first']}}
+    {{err_obj[1]['last']}}
+    {{err_obj[1]['current_grade']}}
+    {{err_obj[1]['current_homeroom']}}
+    </th>
+    <th style="text-align: left" colspan="3">
+      {% for err_msg in err_obj[0] %}
+      {{err_msg}}<br>
+      {% endfor %}
+    </th>
+    <th></th>
+    <th></th>
+    <tr>
+      {% for dp in ['Mon A', 'Tues A', 'Thurs A', 'Fri A'] %}
+        {% if err_obj[2][dp] is defined %}
+        <td style="border: 1px solid black; background-color:beige">{{err_obj[2][dp]['name']}}</td>
+        {% else %}
+        <td style="border: 1px solid black; background-color:darkgrey"></td>
+        {% endif %}
+      {% endfor %}
+    </tr>
+    <tr>
+      {% for dp in ['Mon B', 'Tues B', 'Thurs B', 'Fri B'] %}
+        {% if err_obj[2][dp] is defined %}
+        <td style="border: 1px solid black; background-color:beige">{{err_obj[2][dp]['name']}}</td>
+        {% else %}
+        <td style="border: 1px solid black; background-color:darkgrey"></td>
+        {% endif %}
+      {% endfor %}
+    </tr>
+    </table>
+    <br>
+  {% else %}
+    {% if message == "button clicked" %}
+      Schedules look good!
+    {% endif %}
+  {% endfor %}
+</div>
+{% if err_list|length > 0 %}
+<br>Copy and paste the following into Serving Rules to grant these students access to their Schedule page.<br>
+<textarea>
+- name: schedule
+  allow:{% for err_obj in err_list %}
+  - email: {{err_obj[1]['email']}}{% endfor %}
+</textarea>
+{% endif %}
+</form>
 {% endblock %}

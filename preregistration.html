@@ -1,20 +1,13 @@
 {% extends 'menu_student.html' %}
 {% block session_body %}
 
-{% if not student %}
-Student not found! This error should never happen. Please inform the selectives team. Thanks!
-{% else %}
-<h2 style="margin-bottom:0">
-  Selectives Personalized Course Catalog<br>
-  {{ student['first'] + ' ' + student['last'] }}
-</h2>
-<h3 style="margin-bottom:4px; margin-top:4px">
-  Homeroom: {{ student['current_homeroom'] }}<br>
-  Grade: {{ student['current_grade'] }}<br>
-</h3>
-<a href="catalog_print?{{ session_query }}&student={{student['email'] }}">View Printer Friendly Page</a><br>
+<div>
+  <div class="profile-user">
+    <h3 class="profile-data">Materials</h3>
+  </div>
+{{ welcome_msg|safe }}
+<input type=hidden name="institution" value="{{ institution }}" />
+<input type=hidden name="session" value="{{ session }}" />
+</div>
 
-<hr width="80%" align="left">
-{% include 'catalog_personal_include.html' %}
-{% endif %}
 {% endblock %}

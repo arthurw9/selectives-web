@@ -1,25 +1,44 @@
 {% extends 'base_user.html' %}
 {% block body %}
 
-<table><tr><td width=150px; max-width=150px; valign='top'; style="border-right: 1px solid black; padding: 5px;">
-  
-  <li style="margin-bottom:1em">
-    <a href="/teacher/take_attendance?{{ session_query }}">Take Attendance</a></li>
-  <li>
-    <a href="/teacher/my_rosters?{{ session_query }}">My Roster(s)</a></li>
-  <li style="margin-bottom:1em">
-    <a href="/teacher/my_attendance?{{ session_query }}">My Attendance Sheet(s)</a></li>
-
-  <li>
-    <a href="/teacher/teacher_catalog?{{ session_query }}">Course Descriptions</a></li>
-  <li>
-    <a href="/teacher/all_rosters?{{ session_query }}">All Rosters</a></li>
-  <li>
-    <a href="/report/attendance_list?{{ session_query }}">All Attendance Sheets</a></li>
-  
-</td>
-<td valign='top'>
+<div id="main-teacher">
+  <div id="menu-teacher">
+    <h3>Reports</h3>
+    <ul>
+      <li>
+        <a href="/teacher/courses?{{ session_query }}">Registration Status</a>
+      </li>
+      <li>
+        <a href="/error_registration?{{ session_query }}">Show Errors</a>
+      </li>
+      <li>
+        <a href="/report/attendance_list?{{ session_query }}">Attendance Sheets</a>
+      </li>
+      <li>
+        <a href="/report/student_schedules?{{ session_query }}">Student Schedules</a>
+      </li>
+      <li>
+        <a href="/report/student_schedules_marked?{{ session_query }}">Student Schedules Boxed</a>
+      </li>
+      <li><a href="/report/label?{{ session_query }}">Attendance Labels</a></li>
+  <!--<li><a href="/teacher/all_rosters?{{ session_query }}">Rosters</a></li>-->
+    </ul>
+    <h3>Attendance</h3>
+    <ul>
+      <li>Take Attendance
+        <!--<a href="/teacher/take_attendance?{{ session_query }}">Take Attendance</a>-->
+      </li>
+      <li>Today's Attendance
+        <!--<a href="/teacher/attendance_today?{{ session_query }}">Today's Attendance</a>-->
+      </li>
+      <li>Historical Attendance
+        <!--<a href="/teacher/attendance_historical?{{ session_query }}">Historical Attendance</a>-->
+      </li>
+    </ul>
+  </div>
+  <div id="view-teacher">
   {% block session_body %} {% endblock %}
-</td></tr></table>
+  </div>
+</div>
 
 {% endblock body %}

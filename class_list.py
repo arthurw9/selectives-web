@@ -3,9 +3,6 @@ import urllib
 import jinja2
 import webapp2
 import logging
-import yaml
-import itertools
-import random
 
 import models
 import authorizer
@@ -29,13 +26,6 @@ def listOrder(c):
             dayOrder.index(c['schedule'][0]['daypart']))
 
 class ClassList(webapp2.RequestHandler):
-
-  def RedirectToSelf(self, institution, session, message):
-    self.redirect("/class_list?%s" % urllib.urlencode(
-        {'message': message, 
-         'institution': institution,
-         'session': session}))
-
   def get(self):
     auth = authorizer.Authorizer(self)
     if not auth.CanAdministerInstitutionFromUrl():
@@ -56,6 +46,11 @@ class ClassList(webapp2.RequestHandler):
     classes = models.Classes.FetchJson(institution, session)
     if classes:
       classes.sort(key=listOrder)
+    for c in classes:
+      r = models.ClassRoster.FetchEntity(institution, session, c['id'])
+      c['num_enrolled'] = len(r['emails'])
+      w = models.ClassWaitlist.FetchEntity(institution, session, c['id'])
+      c['num_waitlist'] = len(w['emails'])
     template_values = {
       'user_email' : auth.email,
       'institution' : institution,

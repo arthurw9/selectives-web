@@ -1,18 +1,14 @@
 {% extends 'base_user.html' %}
 {% block body %}
-
-<table><tr><td width=150px; max-width=150px; valign='top'; style="border-right: 1px solid black; padding: 5px;">
-  <h3>Step 1</h3>
-  <li><a href="/preregistration?{{ session_query }}">View My Catalog</a>
-  <li><a href="/catalog_full?{{ session_query }}">View Full Catalog</a>
-  <h3>Step 2</h3>
-  <li><a href="/schedule?{{ session_query }}">Register For Classes</a>
-  <li><a href="/preferences?{{ session_query }}">Order By Preference</a>
-  <h3>Step 3</h3>
-  <li><a href="/postregistration?{{ session_query }}">View Final Schedule</a>
-</td>
-<td valign='top'>
+<div id="nav-user-div">
+  <ul id="nav-user">
+    <li><a href="/preregistration?{{ session_query }}">Step 1 - Materials</a></li>
+    <li><a href="/schedule?{{ session_query }}">Step 2 - Register</a></li>
+    <li><a href="/postregistration?{{ session_query }}">Step 3 - Final Schedule</a></li>
+  </ul>
+</div>
+<div id="main-user">
   {% block session_body %} {% endblock %}
-</td></tr></table>
+</div>
 
 {% endblock body %}

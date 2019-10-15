@@ -1,0 +1,82 @@
+{% extends 'menu.html' %}
+{% block session_body %}
+
+<script>
+window.onload = function() {
+  var b = document.getElementById("b-submit");
+  var sdd = document.getElementById("session-dropdown");
+
+  b.onclick = function() {
+    form_element = document.forms[0];
+    form_element.submit();
+    return false;
+  };
+  sdd.onchange = function() {
+    form_element = document.forms[0];
+    form_element.submit();
+    return false;
+  };
+  
+  {% for g in grade_levels %}
+    document.getElementById("{{g[1]}}").onchange = filterNotTaken;
+  {% endfor %}
+
+  filterNotTaken();
+};
+
+function filterNotTaken() {
+  var textArea = document.getElementById("not-taken-textarea");
+
+  var txt = "- emails:\n";
+  {% for g in grade_levels %}
+    if (document.getElementById("{{g[1]}}").checked) {
+      {% for e in not_taken %}
+        if ({{e['current_grade']}} == {{g[0]}}) {
+          txt += "  - {{e['email']}}\n";
+        }
+      {% endfor %}      
+    }
+  {% endfor %}
+  txt += "  group_name: NotTaken_{{class_name_id}}";
+
+  textArea.value = txt;
+}
+</script>
+
+<h3>Not Taken</h3>
+Copy and paste a student list into the Taken text area and click Submit. Students from the selected session minus the students in Taken are displayed below.<br>
+Use the dropdown to display students from a different session. Default is current session.<br>
+Use the checkboxes to display students from specific grade levels. Default is all grades.<br>
+Remember, you may combine Taken lists from multiple sessions.<br><br>
+
+<form>
+<input type=hidden name="institution" value="{{ institution }}" />
+<input type=hidden name="session" value="{{ session }}" />
+
+Taken<br>
+<textarea id="taken-textarea" name="taken">{{taken}}
+</textarea><br>
+<input type="button" id="b-submit" value="Submit"><br><br>
+
+<label for="session-dropdown">Session</label><br>
+<select id="session-dropdown" name="session-dd">
+  <option value="None">None</option>
+  {% for s in session_list %}
+    <option value="{{ s['name'] }}"
+      {% if s['name'] == selected_session %}selected{% endif %}>
+      {{ s['name'] }}
+    </option>
+  {% endfor %}
+</select><br>
+
+Grade<br>
+{% for g in grade_levels %}
+  <input type="checkbox" id="{{g[1]}}" name="grade" value="{{g[0]}}" checked />
+  <label for="{{g[1]}}">{{g[0]}}</label>
+{% endfor %}<br><br>
+
+Not Taken<br>
+<textarea id="not-taken-textarea" disabled="true">
+</textarea>
+</form>
+{% endblock %}

@@ -23,7 +23,11 @@ def Classes():
         "      location: REQUIRED\n"
         "  description: OPTIONAL\n"
         "  donation: OPTIONAL\n"
-        "  exclude_from_catalog: OPTIONAL\n")
+        "  exclude_from_catalog: OPTIONAL\n"
+        "  owners:\n"
+        "    - OPTIONAL\n"
+        "  open_enrollment: OPTIONAL\n"
+        "  fitness: OPTIONAL\n")
 
 def Students():
   return yayv.ByExample(
@@ -88,3 +92,8 @@ def ServingRules():
         "    - current_grade: OPTIONAL\n"
         "      current_homeroom: OPTIONAL\n"
         "      email: OPTIONAL\n")
+
+def Links():
+  return yayv.ByExample(
+        "- name: REQUIRED\n"
+        "  url: REQUIRED\n")

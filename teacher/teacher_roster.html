@@ -1,0 +1,45 @@
+{% extends 'menu_teacher.html' %}
+{% block session_body %}
+
+<h3 style="height:3px;margin-bottom:2em">{{ class_details['name'] }} Class Roster</h3>
+<table style="border-collapse:separate;border-spacing:0em;margin-bottom:2em">
+<tr>
+  <td><b>Schedule:</b></td>
+  <td>{{ class_details['schedule'] | join(' / ', attribute='daypart') }}</td>
+</tr>
+<tr>
+  <td><b>Location:</b></td>
+  <td>{{ class_details['schedule'] | join(' / ', attribute='location') }}</td>
+</tr>
+<tr>
+  <td><b>Instructor:</b></td>
+  <td>{{ class_details['instructor'] }}</td>
+</tr>
+<tr>
+  <td><b>Max Enrollment:</b></td>
+  <td>{{ class_details['max_enrollment'] }}</td>
+</tr>
+<tr>
+  <td><b>Actual Enrollment:</b></td>
+  <td>{{ class_roster['emails']|length }}</td>
+</tr>
+</table>
+<table>
+  <tr class=highlight>
+    <th>Student</th>
+    <th>Grade</th>
+    <th>Homeroom</th>
+  </tr>
+  {% for e in class_roster['students'] %}
+    {% if e|length > 1 %}
+    <tr class=highlight>
+      <td>{{ e['first'] }} {{ e['last'] }}</td>
+      <td> {{ e['current_grade'] }}</td>
+      <td> {{ e['current_homeroom'] }}</td>
+    </tr>
+    {% endif %}
+  {% endfor %}
+</table>
+<br>
+
+{% endblock %}

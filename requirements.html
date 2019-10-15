@@ -2,22 +2,26 @@
 {% block session_body %}
 
 <h3>Requirements</h3>
-<table width='50%'><tr><td>
-During registration, student schedules will be checked against requirements listed below. Additionally, the Student Schedule Errors report will generate a list of schedules that don't meet these requirements.
-<br>Classes listed under Auto Register will be checked separately and do not need to be relisted here.
-<br>No-repeat and pre-selected groups from Student Groups also do not need to be relisted here.
-<br><br>Fields:
-<ul style="margin-top: 0px">
-    <li>name: label for this requirement
-    <li>applies_to:
-    <li>- use empty list [] to specify all students
-    <li>- current_grade to specify one grade level such as 8th, 7th, or 6th
-    <li>- email for individual students
-    <li>- group from Student Groups
-    <li>exempt: list of emails who are exempt from this requirement
-    <li>class_or_group_options: the class or Class Groups that are required
+<table width='50%'>
+<tr><td style="color:crimson">REQUIREMENTS IS NOT CURRENTLY IN USE.</td></tr>
+<tr><td>Student schedules will be checked against the requirements listed below. Go to Validate Registration to view invalid schedules.</td></tr>
+<tr><td>Required Fields:
+<ul style="margin: 0">
+  <li>name</li>
+  <li>id (generated)</li>
 </ul>
-Name is a required field.
+Optional Fields:
+<ul style="margin: 0">
+  <li>applies_to:</li>
+  <ul>
+    <li>use empty list [] to specify all students</li>
+    <li>current_grade specifies one grade level such as 8, 7, or 6</li>
+    <li>email for individual students</li>
+    <li>group from Student Groups</li>
+  </ul>
+  <li>exempt: list of emails who are exempt from this requirement</li>
+  <li>class_or_group_options: the class or Class Groups that are required</li>
+</ul>
 </td></tr></table>
 <form method=post>
 <input type=hidden name="institution" value="{{ institution }}" />

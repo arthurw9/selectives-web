@@ -66,13 +66,13 @@ class Teachers(webapp2.RequestHandler):
       teachers = '\n'.join([
           "# Sample data. Lines with leading # signs are comments.",
           "# Change the data below.",
-          "- email: cbauerle@discoveryk8.org",
-          "  first: Carol",
-          "  last: Bauerle",
+          "- email: jteacher@discoveryk8.org",
+          "  first: Joe",
+          "  last: Teacher",
           "  current_homeroom: 27",
-          "- email: ddowling@discoveryk8.org",
-          "  first: Dan",
-          "  last: Dowling",
+          "- email: jinstructor@discoveryk8.org",
+          "  first: Jane",
+          "  last: Instructor",
           "  current_homeroom: 29",])
 
     template_values = {

@@ -8,6 +8,7 @@ import schemas
 import error_check_logic
 import models
 import authorizer
+import logic
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
@@ -22,6 +23,39 @@ class AutoRegister(webapp2.RequestHandler):
         {'message': message, 
          'institution': institution,
          'session': session}))
+
+  def Save(self, institution, session, auto_register):
+    auto_register = schemas.AutoRegister().Update(auto_register)
+    models.AutoRegister.store(institution, session, auto_register)
+    error_check_logic.Checker.setStatus(institution, session, 'UNKNOWN')
+
+  def AutoRegister(self, institution, session, auto_register):
+    auto_register = models.AutoRegister.FetchJson(institution, session)
+    students = models.Students.FetchJson(institution, session)
+    for auto_class in auto_register:
+      class_id = str(auto_class['class_id'])
+      if (auto_class['applies_to'] == []): # applies to all students
+        for s in students:
+          if not ('exempt' in auto_class and s['email'] in auto_class['exempt']):
+            logic.AddStudentToClass(institution, session, s['email'], class_id)
+      for grp in auto_class['applies_to']:
+        if 'current_grade' in grp:
+          for s in students:
+            if (s['current_grade'] == grp['current_grade']):
+              if not ('exempt' in auto_class and s['email'] in auto_class['exempt']):
+                logic.AddStudentToClass(institution, session, s['email'].lower(), class_id)
+        if 'group' in grp:
+          student_groups = models.GroupsStudents.FetchJson(institution, session)
+          for sg in student_groups:
+            if (sg['group_name'] == grp['group']):
+              for s_email in sg['emails']:
+                if not ('exempt' in auto_class and s_email in auto_class['exempt']):
+                  logic.AddStudentToClass(institution, session, s_email.lower(), class_id)
+        if 'email' in grp:
+          # We have no way to prevent an exempt field here, so we should check for it.
+          # But there really is no point to an exempt field when applies_to is email.
+          if not ('exempt' in auto_class and grp['email'] in auto_class['exempt']):
+            logic.AddStudentToClass(institution, session, grp['email'].lower(), class_id)
 
   def post(self):
     auth = authorizer.Authorizer(self)
@@ -38,9 +72,12 @@ class AutoRegister(webapp2.RequestHandler):
     auto_register = self.request.get("auto_register")
     if not auto_register:
       logging.fatal("no auto registrations")
-    auto_register = schemas.AutoRegister().Update(auto_register)
-    models.AutoRegister.store(institution, session, auto_register)
-    error_check_logic.Checker.setStatus(institution, session, 'UNKNOWN')
+    action = self.request.get("action")
+    if action == "Save":
+      self.Save(institution, session, auto_register)
+    if action == "Register":
+      self.Save(institution, session, auto_register)
+      self.AutoRegister(institution, session, auto_register)
     self.RedirectToSelf(institution, session, "saved auto registrations")
 
   def get(self):

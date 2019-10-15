@@ -3,21 +3,32 @@ import urllib
 import jinja2
 import webapp2
 import logging
-import json
+from sets import Set
 
 import models
 import authorizer
-import logic
 
+# Since we are inside the report directory, but Jinja doesn't allow
+# {% extends '../menu.html' %}, call os.path.dirname(os.path.dirname())
+# to go up to the parent directory.
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(os.path.dirname(__file__))),
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
 
-class TeacherCatalog(webapp2.RequestHandler):
+def getStudentsByHomeroom(students):
+  by_homeroom = {}
+  for s in students:
+    if s['current_homeroom'] in by_homeroom:
+      by_homeroom[s['current_homeroom']].append(s)
+    else:
+      by_homeroom[s['current_homeroom']] = [s]
+  return by_homeroom
+
+class Homeroom(webapp2.RequestHandler):
   def get(self):
     auth = authorizer.Authorizer(self)
-    if not auth.HasTeacherAccess():
+    if not auth.CanAdministerInstitutionFromUrl():
       auth.Redirect()
       return
 
@@ -31,7 +42,11 @@ class TeacherCatalog(webapp2.RequestHandler):
     message = self.request.get('message')
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
-    email = auth.teacher_email
+
+    students = models.Students.FetchJson(institution, session)
+    if students:
+      students.sort(key=lambda(s): (s['last'], s['first']))
+    homerooms = getStudentsByHomeroom(students)
 
     template_values = {
       'user_email' : auth.email,
@@ -39,7 +54,7 @@ class TeacherCatalog(webapp2.RequestHandler):
       'session' : session,
       'message': message,
       'session_query': session_query,
-      'teacher': auth.teacher_entity,
+      'homerooms': homerooms,
     }
-    template = JINJA_ENVIRONMENT.get_template('teacher/teacher_catalog.html')
+    template = JINJA_ENVIRONMENT.get_template('report/homeroom.html')
     self.response.write(template.render(template_values))

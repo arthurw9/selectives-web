@@ -244,7 +244,6 @@ class ServingRules(ndb.Model):
 class ServingSession(ndb.Model):
   """Which session is currently serving. Empty if none."""
   session_name = ndb.StringProperty()
-  start_page = ndb.StringProperty(choices=['verification', 'preferences', 'schedule', 'preregistration', 'postregistration'])
 
   @classmethod
   @timed
@@ -263,10 +262,9 @@ class ServingSession(ndb.Model):
 
   @classmethod
   @timed
-  def store(cls, institution, session_name, start_page):
+  def store(cls, institution, session_name):
     serving_session = ServingSession()
     serving_session.session_name = session_name
-    serving_session.start_page = start_page
     serving_session.key = ServingSession.serving_session_key(institution)
     serving_session.put()
 
@@ -278,7 +276,7 @@ class ServingSession(ndb.Model):
   @classmethod
   @timed
   def FetchAllEntities(cls):
-    """Returns a list of triples (institution_name, session_name, start_page)"""
+    """Returns a list of duples (institution_name, session_name)"""
     serving_sessions = ServingSession.query().fetch()
     for ss in serving_sessions:
       ss.institution_name = ss.key.parent().id()
@@ -579,7 +577,7 @@ class GroupsStudents(ndb.Model):
     if groups_students:
       return groups_students.jdata
     else:
-      return ''
+      return []
 
   @classmethod
   @timed
@@ -764,15 +762,6 @@ class ClassRoster(ndb.Model):
     roster.last_modified = datetime.datetime.now() - datetime.timedelta(hours=8)
     roster.put()
 
-  # CAUTION
-  # Do not use jclass_obj. After a roster is created, if the admin makes
-  # changes to Classes data through Setup, jclass_obj will not be consistent
-  # with it. Errors will occur.
-  # Already modified rosters.py, class_roster.py, class_roster.html to
-  # stop using jclass_obj.
-  # TODO: check how other pages are using this and possibly delete it.
-  #       (scheduler.py, logic.py)
-  #       spots_available.py - checked, only uses remaining_space field
   @classmethod
   @timed
   def FetchEntity(cls, institution, session, class_id):
@@ -790,8 +779,19 @@ class ClassRoster(ndb.Model):
         r['instructor'] = c['instructor']
       r['schedule'] = c['schedule']
       r['class_details'] = roster.jclass_obj
-      r['max_enrollment'] = c['max_enrollment']
-      r['remaining_space'] = c['max_enrollment'] - len(r['emails'])
+      if 'max_enrollment' in c:
+        r['max_enrollment'] = c['max_enrollment']
+      if 'open_enrollment' in c:
+        r['open_enrollment'] = c['open_enrollment']
+        r['remaining_space'] = c['open_enrollment'] - len(r['emails'])
+      elif 'max_enrollment' in c:
+        r['remaining_space'] = c['max_enrollment'] - len(r['emails'])
+      else:
+        r['remaining_space'] = 0
+      if 'max_enrollment' in c:
+        r['remaining_firm'] = c['max_enrollment'] - len(r['emails'])
+      else:
+        r['remaining_firm'] = 0
       if (roster.last_modified):
         r['last_modified'] = roster.last_modified
       else:
@@ -807,9 +807,48 @@ class ClassRoster(ndb.Model):
     r['class_details'] = ''
     r['max_enrollment'] = 0
     r['remaining_space'] = 0
+    r['remaining_firm'] = 0
     r['last_modified'] = None
     return r
 
+class ClassWaitlist(ndb.Model):
+  # comma separated list of student emails
+  student_emails = ndb.TextProperty()
+  last_modified = ndb.DateTimeProperty()
+
+  @classmethod
+  @timed
+  def class_waitlist_key(cls, institution, session, class_id):
+    class_id = str(class_id)
+    return ndb.Key("InstitutionKey", institution,
+                   Session, session,
+                   ClassWaitlist, class_id)
+
+  @classmethod
+  @timed
+  def Store(cls, institution, session, class_id, student_emails):
+    student_emails = student_emails.strip()
+    if len(student_emails) and student_emails[-1] == ',':
+      student_emails = student_emails[:-1]
+    waitlist = ClassWaitlist()
+    waitlist.key = ClassWaitlist.class_waitlist_key(institution, session, class_id)
+    waitlist.student_emails = student_emails
+    waitlist.last_modified = datetime.datetime.now() - datetime.timedelta(hours=8)
+    waitlist.put()
+
+  @classmethod
+  @timed
+  def FetchEntity(cls, institution, session, class_id):
+    class_id = str(class_id)
+    waitlist = ClassWaitlist.class_waitlist_key(institution, session, class_id).get()
+    if waitlist:
+      w = {}
+      w['emails'] = waitlist.student_emails.split(",")
+      if w['emails'][0] == "":
+        w['emails'] = w['emails'][1:]
+      return w
+    else:
+      return {'emails': []}
 
 class ErrorCheck(ndb.Model):
   data = ndb.StringProperty(choices=['OK', 'FAIL', 'UNKNOWN'])
@@ -862,3 +901,119 @@ class DBVersion(ndb.Model):
     db_version = DBVersion(data = version)
     db_version.key = DBVersion.db_version_key(institution, session)
     db_version.put()
+
+class Attendance(ndb.Model):
+  jdata = ndb.JsonProperty()
+
+  # 'c_id' is a class id.
+  # 'jdata' is a dictionary:
+  # {date1: {'absent': [email1, email2, ...],
+  #          'present': [email1, email2, ...]},
+  #  date2: {'absent': [email1, email2, ...],
+  #          'present': [email1, email2, ...]},
+  #  ...}
+  @classmethod
+  def attendance_key(cls, institution, session, c_id):
+    return ndb.Key("InstitutionKey", institution,
+                   Session, session,
+                   'Attendance', c_id)
+
+  @classmethod
+  def FetchJson(cls, institution, session, c_id):
+    attendance = Attendance.attendance_key(institution, session, c_id).get()
+    if attendance:
+      return attendance.jdata
+    else:
+      return {}
+
+  @classmethod
+  def store(cls, institution, session_name, c_id, attendance_obj):
+    attendance = Attendance(jdata = attendance_obj)
+    attendance.key = Attendance.attendance_key(institution, session_name, c_id)
+    attendance.put()
+
+class Materials(ndb.Model):
+  data = ndb.TextProperty()
+
+  @classmethod
+  @timed
+  def materials_key(cls, institution, session):
+    return ndb.Key("InstitutionKey", institution,
+                   Session, session,
+                   Materials, "materials")
+
+  @classmethod
+  @timed
+  def Fetch(cls, institution, session):
+    materials = Materials.materials_key(institution, session).get()
+    if materials:
+      return materials.data
+    else:
+      return ''
+
+  @classmethod
+  @timed
+  def store(cls, institution, session_name, materials):
+    materials = Materials(data = materials)
+    materials.key = Materials.materials_key(institution, session_name)
+    materials.put()
+
+class Welcome(ndb.Model):
+  data = ndb.TextProperty()
+
+  @classmethod
+  @timed
+  def welcome_key(cls):
+    return ndb.Key(Welcome, "welcome")
+
+  @classmethod
+  @timed
+  def Fetch(cls):
+    welcome = Welcome.welcome_key().get()
+    if welcome:
+      return welcome.data
+    else:
+      return ''
+
+  @classmethod
+  @timed
+  def store(cls, welcome_data):
+    welcome = Welcome(data = welcome_data)
+    welcome.key = Welcome.welcome_key()
+    welcome.put()
+
+class Config(ndb.Model):
+  htmlDesc = ndb.StringProperty()
+  displayRoster = ndb.StringProperty()
+  twoPE = ndb.StringProperty()
+
+  @classmethod
+  @timed
+  def config_key(cls, institution, session):
+    return ndb.Key("InstitutionKey", institution,
+                   Session, session,
+                   Config, "config")
+
+  @classmethod
+  @timed
+  def Fetch(cls, institution, session):
+    config = Config.config_key(institution, session).get()
+    if config:
+      cfg = {'displayRoster': config.displayRoster,
+             'htmlDesc': config.htmlDesc,
+             'twoPE': config.twoPE}
+      return cfg
+    else:
+      return {'displayRoster': 'dRNo',
+              'htmlDesc': 'htmlNo',
+              'twoPE': 'twoPENo'}
+
+  @classmethod
+  @timed
+  def store(cls, institution, session_name, displayRoster, htmlDesc, twoPE):
+    config = Config()
+    config.key = Config.config_key(institution, session_name)
+    config.htmlDesc = htmlDesc
+    config.displayRoster = displayRoster
+    config.twoPE = twoPE
+    config.put()

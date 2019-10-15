@@ -3,12 +3,13 @@ import urllib
 import jinja2
 import webapp2
 import logging
-import json
 
 import models
 import authorizer
-import logic
 
+# Since we are inside the report directory, but Jinja doesn't allow
+# {% extends '../menu.html' %}, call os.path.dirname(os.path.dirname())
+# to go up to the parent directory.
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(os.path.dirname(__file__))),
     extensions=['jinja2.ext.autoescape'],
@@ -26,16 +27,24 @@ def listOrder(c):
     return (c['name'],
             dayOrder.index(c['schedule'][0]['daypart']))
 
-class MyAttendance(webapp2.RequestHandler):
+def addStudentData(class_roster, students_by_email):
+  class_roster['students'] = []
+  for e in class_roster['emails']:
+    class_roster['students'].append(students_by_email[e])
+
+class SignupMain(webapp2.RequestHandler):
+
+  def RedirectToSelf(self, institution, session, message):
+    self.redirect("/report/signup_main?%s" % urllib.urlencode(
+        {'message': message,
+         'institution': institution,
+         'session': session}))
+
   def get(self):
     auth = authorizer.Authorizer(self)
-    if not auth.HasTeacherAccess():
+    if not auth.CanAdministerInstitutionFromUrl():
       auth.Redirect()
       return
-
-    user_type = 'None'
-    if auth.HasTeacherAccess():
-      user_type = 'Teacher'
 
     institution = self.request.get("institution")
     if not institution:
@@ -47,37 +56,32 @@ class MyAttendance(webapp2.RequestHandler):
     message = self.request.get('message')
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
-    email = auth.teacher_email
 
     classes = models.Classes.FetchJson(institution, session)
     if classes:
       classes.sort(key=listOrder)
-    my_classes = []
-    for c in classes:
-      if 'instructor' in c and c['instructor'] == auth.teacher_entity['last']:
-        my_classes.append(c)
-  
-    rosters = {}
-    for c in classes:
-      rosters[c['id']] = models.ClassRoster.FetchEntity(institution, session, c['id'])
-      c['num_locations'] = len(set(s['location'] for s in c['schedule']))
     students = models.Students.FetchJson(institution, session)
+    students_by_email = {}
     for s in students:
       s['email'] = s['email'].lower()
+      students_by_email[s['email']] = s
     if students:
       students.sort(key=lambda(s): s['last'])
+    class_rosters = {}
+    for c in classes:
+      class_roster = models.ClassRoster.FetchEntity(institution, session, c['id'])
+      class_roster['emails'].sort()
+      addStudentData(class_roster, students_by_email)
+      class_rosters[c['id']] = class_roster
+    logging.info(class_rosters)
     template_values = {
       'user_email' : auth.email,
-      'user_type' : user_type,
       'institution' : institution,
       'session' : session,
       'message': message,
       'session_query': session_query,
-      'classes': my_classes,
-      'rosters': rosters,
-      'students': students,
-      'teacher': auth.teacher_entity,
+      'classes': classes,
+      'class_rosters': class_rosters,
     }
-    template = JINJA_ENVIRONMENT.get_template('report/attendance_list.html')
+    template = JINJA_ENVIRONMENT.get_template('report/signup_main.html')
     self.response.write(template.render(template_values))
-    

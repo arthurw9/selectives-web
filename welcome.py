@@ -23,9 +23,11 @@ class Welcome(webapp2.RequestHandler):
         auth.Redirect()
         return
     login_url = auth.GetLoginUrl()
+    welcome_msg = models.Welcome.Fetch()
     template_values = {
       'login_url': login_url,
       'user_email' : auth.email,
+      'welcome_msg' : welcome_msg,
     }
     template = JINJA_ENVIRONMENT.get_template('welcome.html')
     self.response.write(template.render(template_values))

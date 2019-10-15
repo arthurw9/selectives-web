@@ -10,7 +10,8 @@ handlers:
 - url: /images
   static_dir: images
 - url: /.*
-  script: application.application 
+  script: application.application
+  secure: always
 
 
 libraries:

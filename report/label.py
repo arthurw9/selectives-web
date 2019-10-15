@@ -36,9 +36,16 @@ class Label(webapp2.RequestHandler):
 
   def get(self):
     auth = authorizer.Authorizer(self)
-    if not auth.CanAdministerInstitutionFromUrl():
+    if not (auth.CanAdministerInstitutionFromUrl() or
+            auth.HasTeacherAccess()):
       auth.Redirect()
       return
+
+    user_type = 'None'
+    if auth.CanAdministerInstitutionFromUrl():
+      user_type = 'Admin'
+    elif auth.HasTeacherAccess():
+      user_type = 'Teacher'
 
     institution = self.request.get("institution")
     if not institution:
@@ -56,6 +63,7 @@ class Label(webapp2.RequestHandler):
       classes.sort(key=listOrder)
     template_values = {
       'user_email' : auth.email,
+      'user_type' : user_type,
       'institution' : institution,
       'session' : session,
       'message': message,

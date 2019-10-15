@@ -28,9 +28,16 @@ class StudentSchedules(webapp2.RequestHandler):
 
   def get(self):
     auth = authorizer.Authorizer(self)
-    if not auth.CanAdministerInstitutionFromUrl():
+    if not (auth.CanAdministerInstitutionFromUrl() or
+            auth.HasTeacherAccess()):
       auth.Redirect()
       return
+
+    user_type = 'None'
+    if auth.CanAdministerInstitutionFromUrl():
+      user_type = 'Admin'
+    elif auth.HasTeacherAccess():
+      user_type = 'Teacher'
 
     institution = self.request.get("institution")
     if not institution:
@@ -50,15 +57,25 @@ class StudentSchedules(webapp2.RequestHandler):
     students = models.Students.FetchJson(institution, session)
     last_modified_overall = datetime.datetime(2000,1,1)
     last_modified_overall_str = ''
+    homerooms_by_grade = {}
     for s in students:
+      if s['current_grade'] in homerooms_by_grade:
+        homerooms_by_grade[s['current_grade']].add(s['current_homeroom'])
+      else:
+        homerooms_by_grade[s['current_grade']] = set([s['current_homeroom']])
+
       s['email'] = s['email'].lower()
       sched_obj = models.Schedule.FetchEntity(institution, session, s['email'])
+      if not sched_obj:
+        continue
       s['sched'] = sched_obj.class_ids
       s['last_modified'] = sched_obj.last_modified
       if sched_obj.last_modified:
         s['last_modified'] = str(sched_obj.last_modified.month) + '/' +\
                              str(sched_obj.last_modified.day) + '/' +\
-                             str(sched_obj.last_modified.year)
+                             str(sched_obj.last_modified.year) + ' ' +\
+                             str(sched_obj.last_modified.hour).zfill(2) + ':' +\
+                             str(sched_obj.last_modified.minute).zfill(2)
         if sched_obj.last_modified > last_modified_overall:
           last_modified_overall = sched_obj.last_modified
           last_modified_overall_str = s['last_modified']
@@ -76,12 +93,15 @@ class StudentSchedules(webapp2.RequestHandler):
       students.sort(key=lambda(s): s['last'])
     template_values = {
       'user_email' : auth.email,
+      'user_type': user_type,
       'institution' : institution,
       'session' : session,
       'message': message,
       'session_query': session_query,
       'students': students,
       'last_modified': last_modified_overall_str,
+      'homerooms': sorted(homerooms_by_grade, reverse=True),
+      'homerooms_by_grade': homerooms_by_grade,
     }
     template = JINJA_ENVIRONMENT.get_template('report/student_schedules.html')
     self.response.write(template.render(template_values))

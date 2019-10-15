@@ -2,10 +2,48 @@
 {% block session_body %}
 
 <h3>Serving Rules</h3>
-<table width='50%'>
+<table width='60%'>
+<tr>Grant student access. Also controls the start page - the first page students see when they log in.<br><br>
+There are three types of pages:
+  <ul style="margin:0">
+    <li><strong>materials</strong> - allows access to the pre-registration materials</li>
+    <li><strong>schedule</strong> - allows access to the schedule page.</li>
+    <li><strong>final</strong> - allows access to the post-registration final schedule</li>
+  </ul>
+If a student is granted access to multiple pages, the start page priority is: 1.)  <strong>schedule</strong>, 2.) <strong>final</strong>, 3.) <strong>materials</strong>.<br>In other words, if a student has access to the <strong>schedule</strong> page, that will be their start page.<br>If <strong>schedule</strong> is not allowed, then their start page is <strong>final</strong>.<br>If <strong>final</strong> is also not allowed, then their start page is <strong>materials</strong>.
+</tr>
 <tr><td>
-Required field: name
-Optional field: allow
+  Example:
+  <pre class="setup-example">
+- name: materials
+  allow:
+    - current_grade: 6
+    - current_grade: 7
+    - current_grade: 8
+- name: schedule
+  allow:
+    - current_grade: 7
+    - current_homeroom: 19
+    - email: sam.gamgee@gmail.com
+- name: final
+  allow:
+    - current_grade: 7
+    - current_grade: 8
+  </pre>
+</td><td>
+Required field:
+<ul style="margin:0">
+  <li>name</li>
+</ul>
+Optional field:
+<ul style="margin:0">
+  <li>allow</li>
+  <ul>
+    <li>current_grade specifies one grade level such as 8, 7, or 6</li>
+    <li>current_homeroom</li>
+    <li>email</li>
+  </ul>
+  </ul>
 </td></tr>
 </table>
 

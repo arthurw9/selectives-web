@@ -3,18 +3,21 @@
 
 <table><tr><td width=15% valign='top' style="border-right: 1px solid black; padding: 5px;">
   <h3>Setup</h3>
+  <li><a href="/welcome_setup?{{ session_query }}">Welcome</a>
+  <li><a href="/config?{{ session_query }}">Configuration</a>
   <li><a href="/dayparts?{{ session_query }}">Dayparts</a>
   <li><a href="/classes?{{ session_query }}">Classes</a>
   <li><a href="/students?{{ session_query }}">Students</a>
   <li><a href="/teachers?{{ session_query }}">Teachers</a>
   <li><a href="/auto_register?{{ session_query }}">Auto Register</a>
   <li><a href="/serving_rules?{{session_query }}">Serving Rules</a>
-  <li><a href="/requirements?{{ session_query }}">Requirements</a>
-  <li><a href="/groups_classes?{{ session_query }}">Class Groups</a>
+  <li><a href="/materials?{{session_query }}">Materials</a>
+<!--<li><a href="/requirements?{{ session_query }}">Requirements</a>
+  <li><a href="/groups_classes?{{ session_query }}">Class Groups</a>-->
   <li><a href="/groups_students?{{session_query }}">Student Groups</a>
   <li><a href="/rosters?{{session_query }}">Class Rosters</a>
 
-  <h3>Configure</h3>
+  <h3>Validate</h3>
   <li><a href="/error_check?{{ session_query }}">Validate Setup</a>
   <li><a href="/error_registration?{{ session_query }}">Validate Registration</a>
 
@@ -24,15 +27,18 @@
   <li><a href="/scheduler?{{ session_query }}">Automated</a>
 
   <h3>Reports</h3>
-  <li><a href="/report/signup_card?{{ session_query }}">Sign Up Card</a>
-  <li><a href="/report/signup_main?{{ session_query }}">Sign Up Form Main</a>
-  <li><a href="/report/signup_pe?{{ session_query }}">Sign Up Form PE</a>
-  <li><a href="/report/homeroom?{{ session_query }}">Homeroom List</a>
-  <li><a href="/report/label?{{ session_query }}">Folder Label</a>
   <li><a href="/report/attendance_list?{{ session_query }}">Attendance Sheets</a>
   <li><a href="/report/student_schedules?{{ session_query }}">Student Schedules</a>
-  <li><a href="/student_happiness?{{ session_query }}">Student Happiness</a>
-  <li><a href="/class_demand?{{ session_query }}">Class Demand</a>
+  <li><a href="/report/student_schedules_marked?{{ session_query }}">Student Schedules Marked</a>
+  <li><a href="/report/taken?{{ session_query }}">Taken</a>
+  <li><a href="/report/not_taken?{{ session_query }}">Not Taken</a>
+<!--<li><a href="/class_demand?{{ session_query }}">Stub (Class Demand)</a>-->
+
+  <h3>Manual Process</h3>
+  <li><a href="/report/signup_card?{{ session_query }}">Sign Up Card</a>
+  <li><a href="/report/signup_main?{{ session_query }}">Sign Up Form Main</a>
+  <li><a href="/report/homeroom?{{ session_query }}">Homeroom List</a>
+  <li><a href="/report/label?{{ session_query }}">Folder Label</a>
 </td>
 <td valign='top' width=85%>
   {% block session_body %} {% endblock %}

@@ -2,26 +2,33 @@
 {% block session_body %}
 
 <script>
-var spots_available_timer_object;
+var refresh_data_timer_object;
 
-function ResetSpotsAvailableTimer(seconds) {
-  if (spots_available_timer_object) {
-    clearTimeout(spots_available_timer_object);
+function ResetRefreshDataTimer(seconds) {
+  if (refresh_data_timer_object) {
+    clearTimeout(refresh_data_timer_object);
   }
-  spots_available_timer_object = setTimeout(RefreshSpotsAvailable,
-                                            seconds * 1000);
+  refresh_data_timer_object = setTimeout(RefreshData, seconds * 1000);
+}
+
+function RefreshData() {
+  RefreshSpotsAvailable();
+  RefreshHoverText();
 }
 
 function RefreshSpotsAvailable() {
   var request = new XMLHttpRequest();
   request.open("POST", "/spots_available");
   request.onreadystatechange = function() {
+    if (request.status == 403) {
+      window.location.replace("/postregistration?institution={{institution}}&session={{session}}");
+    }
     if(request.readyState == 4 && request.status == 200) {
-      result = JSON.parse(request.responseText)
+      var result = JSON.parse(request.responseText);
       WriteSpotsAvailableToGui(result);
       // TODO: How fast can we refresh before Google imposes
       // limits and starts demanding money?
-      ResetSpotsAvailableTimer(7);
+      ResetRefreshDataTimer(7);
     }
   }
   var params = new FormData();
@@ -46,6 +53,43 @@ function WriteSpotsAvailableToGui(class_availability) {
   }
 }
 
+function RefreshHoverText() {
+  var request = new XMLHttpRequest();
+  request.open("POST", "/hover_text");
+  request.onreadystatechange = function() {
+    if (request.status == 403) {
+      window.location.replace("/postregistration?institution={{institution}}&session={{session}}");
+    }
+    if (request.readyState == 4 && request.status == 200) {
+      var hov_texts = JSON.parse(request.responseText);
+      WriteHoverTextToGui(hov_texts);
+      // TODO: How fast can we refresh before Google imposes
+      // limits and starts demanding money?
+      ResetRefreshDataTimer(7);
+    }
+  }
+  var params = new FormData();
+  params.append("institution", "{{ institution }}");
+  params.append("session", "{{ session }}");
+  params.append("student", "{{ student['email'] }}");
+  var class_ids = Object.keys(classes_by_id);
+  class_ids = JSON.stringify(class_ids);
+  params.append("class_ids", class_ids);
+  request.send(params);
+}
+
+function WriteHoverTextToGui(hover_texts) {
+  for(c_id in hover_texts) {
+    dayparts = classes_by_id[c_id]['dayparts'];
+    for(idx in dayparts) {
+      var daypart = dayparts[idx];
+      var dom_element_id = daypart + "_" + c_id;
+      e = document.getElementById(dom_element_id);
+      e.title = hover_texts[c_id];
+    }
+  }
+}
+
 function CheckRequirements() {
   // TODO report if we are meeting all requirements
   // TODO set onbeforeunload to null if all requirements are met.
@@ -62,13 +106,44 @@ function confirmOnPageExit(e) {
   return msg;
 }
 
+//Example classes_by_id objects
+//classes_by_id = {
+//59 : { 'name' : 'Circuit Training', 'dayparts': ['Fri B',]},
+//58 : { 'name' : 'Yearbook', 'dayparts': ['Thurs B',]},
+//50 : { 'name' : 'Dance', 'dayparts': ['Thurs B','Fri B',]},
+//};
+{% if html_desc == 'htmlNo' %}
 classes_by_id = {
 {% for class_id in classes_by_id -%}
-{{ class_id }} : { 'name' : '{{ classes_by_id[class_id]['name'] }}', 'dayparts': [{% for s in classes_by_id[class_id]['schedule'] -%}
-'{{ s['daypart'] }}',
-{%- endfor %}]},
+  {{ class_id }} : {
+    'name' : '{{ classes_by_id[class_id]['name'] }}',
+    'dayparts': [{% for s in classes_by_id[class_id]['schedule'] -%}
+                    '{{ s['daypart'] }}',
+                 {%- endfor %}],
+    'max_enrollment': '{{ classes_by_id[class_id]['max_enrollment'] }}',
+    'instructor': '{{ classes_by_id[class_id]['instructor'] }}',
+    'fitness': '{{ classes_by_id[class_id]['fitness'] }}',
+    'donation': '{{ classes_by_id[class_id]['donation']}}'
+  },
 {%- endfor %}
 };
+{% else %}
+classes_by_id = {
+{% for class_id in classes_by_id -%}
+  {{ class_id }} : {
+    'name' : '{{ classes_by_id[class_id]['name'] }}',
+    'dayparts': [{% for s in classes_by_id[class_id]['schedule'] -%}
+                    '{{ s['daypart'] }}',
+                 {%- endfor %}],
+    'max_enrollment': '{{ classes_by_id[class_id]['max_enrollment']}}',
+    'instructor': '{{ classes_by_id[class_id]['instructor']}}',
+    'description': '{{ classes_by_id[class_id]['description']|safe}}',
+    'fitness': '{{ classes_by_id[class_id]['fitness'] }}',
+    'donation': '{{ classes_by_id[class_id]['donation']}}'
+  },
+{%- endfor %}
+};
+{% endif %}
 
 // TODO: move these color choices into the style sheet
 var NOT_SELECTED_COLOR = '#eeeeff'; // light-grey
@@ -150,12 +225,15 @@ function AddClassToBackend(class_id, loading_gif) {
       // if the request is not finished then keep waiting.
       return;
     }
+    if (request.status == 403) {
+      window.location.replace("/postregistration?institution={{institution}}&session={{session}}");
+    }
     if (request.status == 200) {
-      result = JSON.parse(request.responseText)
+      var result = JSON.parse(request.responseText)
       SetScheduleInGui(result);
     }
     loading_gif.style.visibility = "hidden";
-    RefreshSpotsAvailable();
+    RefreshData();
   }
   var params = new FormData();
   params.append("institution", "{{ institution }}");
@@ -181,9 +259,11 @@ function OnClickHandler(daypart, class_id) {
   AddClassToBackend(class_id, loading_gif)
 }
 
-function setMouseOverBackground(element) {
+function setMouseOverBackground(element, class_id) {
+  createSidePanel(class_id);
+
   if (element.selected) {
-    // If mousing over a clicked-on item, don't do anything.
+    // If mousing over a clicked-on item, don't change background color.
     return;
   }
   element.style.background = HOVER_COLOR;
@@ -191,7 +271,7 @@ function setMouseOverBackground(element) {
 
 function setMouseOutBackground(element) {
   if (element.selected) {
-    // If mousing over a clicked-on item, don't do anything.
+    // If mousing over a clicked-on item, don't change background color.
     return;
   }
   element.style.background = NOT_SELECTED_COLOR;
@@ -222,15 +302,62 @@ function SetScheduleInGui(schedule) {
     }
   }
 }
+
+function createSidePanel(class_id) {
+  var infoDiv = document.getElementById('info-panel');
+  infoDiv.innerHTML = "";
+
+  var name_div = document.createElement('div');
+  name_div.innerHTML = classes_by_id[class_id]['name'];
+  infoDiv.appendChild(name_div);
+
+  if (classes_by_id[class_id]['instructor']) {
+    var instructor_div = document.createElement('div');
+    instructor_div.innerHTML = 'Instructor: ' + classes_by_id[class_id]['instructor'];
+    infoDiv.appendChild(instructor_div);
+  }
+
+  var sched_div = document.createElement('div');
+  var dp_list = classes_by_id[class_id]['dayparts']
+  sched_div.innerHTML = dp_list.join(', ');
+  infoDiv.appendChild(sched_div);
+
+  var max_div = document.createElement('div');
+  max_div.innerHTML = 'Maximum: ' + classes_by_id[class_id]['max_enrollment'];
+  infoDiv.appendChild(max_div);
+
+  if (classes_by_id[class_id]['donation']) {
+    var donate_div = document.createElement('div');
+    donate_div.innerHTML = 'Donation: ' + classes_by_id[class_id]['donation'];
+    infoDiv.appendChild(donate_div);
+  }
+
+  var fitness_div = document.createElement('div');
+  if (classes_by_id[class_id]['fitness']) {
+    fitness_div.innerHTML = 'Physical activity: Yes';
+  } else {
+    fitness_div.innerHTML = 'Physical activity: No';
+  }
+  infoDiv.appendChild(fitness_div);
+
+  if (classes_by_id[class_id]['description']) {
+    var descr_div = document.createElement('div');
+    descr_div.setAttribute("id", "description");
+    descr_div.innerHTML = classes_by_id[class_id]['description'];
+    infoDiv.appendChild(descr_div);
+  }
+}
 </script>
 
-<h2 style="margin-bottom:0">
-  {{ student['first'] + ' ' + student['last'] }}
-</h2>
-<h3 style="margin-bottom:4px; margin-top:4px">
-  Homeroom: {{ student['current_homeroom'] }}<br>
-  Grade: {{ student['current_grade'] }}<br>
-</h3>
+<div id="register-panel">
+  <div class="profile-user">
+    <h3 class="profile-data">Register</h3>
+  </div>
+  <div class="profile-user">
+    <h2 class="profile-data">{{ student['first'] + ' ' + student['last'] }}</h2>
+    <h3 class="profile-data">Homeroom: {{ student['current_homeroom'] }}</h3>
+    <h3 class="profile-data">Grade: {{ student['current_grade'] }}</h3>
+  </div>
 
 <form method=post>
 <input type=hidden name="institution" value="{{ institution }}" />
@@ -252,7 +379,7 @@ function SetScheduleInGui(schedule) {
           <li class="schedListItem" id="{{daypart}}_{{c['id']}}"
               title="{{c['hover_text']}}"
               onclick="OnClickHandler('{{daypart}}', {{c['id']}});"
-              onmouseover="setMouseOverBackground(this);"
+              onmouseover="setMouseOverBackground(this, '{{c['id']}}');"
               onmouseout="setMouseOutBackground(this);">
               <span id='spots_left_{{daypart}}_{{c['id']}}' style="background-color:lightgreen;"></span>
               {{ c['name'] }}
@@ -266,8 +393,13 @@ function SetScheduleInGui(schedule) {
   {% endfor %}
 </table>
 </form>
+</div>
+
+<div id="info-panel">
+</div>
+
 <script>
 SetScheduleInGui({{ schedule|safe }});
-RefreshSpotsAvailable();
+RefreshData();
 </script>
 {% endblock %}

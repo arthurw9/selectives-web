@@ -18,10 +18,8 @@ import class_list
 import class_roster
 import error_check
 import spots_available
+import spots_firm
 import preregistration
-import catalog_print
-import catalog_full
-import catalog_full_print
 import logout
 import postregistration
 import print_schedule
@@ -33,16 +31,24 @@ import report.attendance_list
 import report.student_schedules
 import report.signup_card
 import report.signup_main
-import report.signup_pe
 import report.homeroom
 import report.label
 import error_registration
 import teachers
+import teacher.courses
 import teacher.take_attendance
-import teacher.my_rosters
 import teacher.all_rosters
-import teacher.my_attendance
-import teacher.teacher_catalog
+import teacher.teacher_roster
+import teacher.attendance_today
+import teacher.attendance_historical
+import class_waitlist
+import hover_text
+import materials
+import welcome_setup
+import report.student_schedules_marked
+import report.taken
+import report.not_taken
+import config
 
 application = webapp2.WSGIApplication([
   ('/', index.Index),
@@ -63,10 +69,8 @@ application = webapp2.WSGIApplication([
   ('/class_roster', class_roster.ClassRoster),
   ('/error_check', error_check.ErrorCheck),
   ('/spots_available', spots_available.SpotsAvailable),
+  ('/spots_firm', spots_firm.SpotsFirm),
   ('/preregistration', preregistration.Preregistration),
-  ('/catalog_print', catalog_print.CatalogPrint),
-  ('/catalog_full', catalog_full.CatalogFull),
-  ('/catalog_full_print', catalog_full_print.CatalogFullPrint),
   ('/logout', logout.LogoutPage),
   ('/postregistration', postregistration.Postregistration),
   ('/print_schedule', print_schedule.PrintSchedule),
@@ -78,14 +82,22 @@ application = webapp2.WSGIApplication([
   ('/report/student_schedules', report.student_schedules.StudentSchedules),
   ('/report/signup_card', report.signup_card.SignupCard),
   ('/report/signup_main', report.signup_main.SignupMain),
-  ('/report/signup_pe', report.signup_pe.SignupPE),
   ('/report/homeroom', report.homeroom.Homeroom),
   ('/report/label', report.label.Label),
   ('/error_registration', error_registration.ErrorRegistration),
   ('/teachers', teachers.Teachers),
+  ('/teacher/courses', teacher.courses.Courses),
   ('/teacher/take_attendance', teacher.take_attendance.TakeAttendance),
-  ('/teacher/my_rosters', teacher.my_rosters.MyRosters),
   ('/teacher/all_rosters', teacher.all_rosters.AllRosters),
-  ('/teacher/my_attendance', teacher.my_attendance.MyAttendance),
-  ('/teacher/teacher_catalog', teacher.teacher_catalog.TeacherCatalog),
+  ('/teacher/teacher_roster', teacher.teacher_roster.TeacherRoster),
+  ('/teacher/attendance_today', teacher.attendance_today.AttendanceToday),
+  ('/teacher/attendance_historical', teacher.attendance_historical.AttendanceHistorical),
+  ('/class_waitlist', class_waitlist.ClassWaitlist),
+  ('/hover_text', hover_text.HoverText),
+  ('/materials', materials.Materials),
+  ('/welcome_setup', welcome_setup.WelcomeSetup),
+  ('/report/student_schedules_marked', report.student_schedules_marked.StudentSchedulesMarked),
+  ('/report/taken', report.taken.Taken),
+  ('/report/not_taken', report.not_taken.NotTaken),
+  ('/config', config.Config),
 ], debug=True)

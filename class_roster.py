@@ -20,7 +20,7 @@ def addStudentData(class_roster, students):
   class_roster['students'] = []
   for e in class_roster['emails']:
     for s in students:
-      if (s['email'] == e):
+      if (s['email'].lower() == e):
         class_roster['students'].append(s)
 
 class ClassRoster(webapp2.RequestHandler):
@@ -55,6 +55,18 @@ class ClassRoster(webapp2.RequestHandler):
       email = self.request.get("email")
       logic.RemoveStudentFromClass(institution, session, email, class_id)
       self.RedirectToSelf(institution, session, class_id, "removed %s" % email)
+
+    if action == "run lottery":
+      cid = self.request.get("cid")
+      if not cid:
+        logging.fatal("no class id")
+      candidates = self.request.get("candidates")
+      if candidates == "":
+        candidates = []
+      else:
+        candidates = candidates.split(",")
+      logic.RunLottery(institution, session, cid, candidates)
+      self.RedirectToSelf(institution, session, cid, "lottery %s" % cid)
 
     self.RedirectToSelf(institution, session, class_id, "Unknown action")
 

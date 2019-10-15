@@ -2,9 +2,29 @@
 {% block session_body %}
 
 <h3>Teachers</h3>
-<table width='50%'><tr><td>
-Required fields: email, first, last.<br>
-Optional field: current_homeroom.
+<table width='60%'>
+<tr><td>
+  Example:
+  <pre class="setup-example">
+- email: a.einstein@gmail.com
+  first: Al
+  last: Einstein
+  current_homeroom: 29
+- email: inewt@gmail.com
+  first: Isaac
+  last: Newt
+  </pre>
+</td><td>
+Required fields:
+<ul style="margin:0">
+  <li>email</li>
+  <li>first</li>
+  <li>last</li>
+</ul>
+Optional field:
+<ul style="margin:0">
+  <li>current_homeroom</li>
+</ul>
 </td></tr></table>
 <form method=post>
 <input type=hidden name="institution" value="{{ institution }}" />

@@ -3,6 +3,7 @@ import urllib
 import jinja2
 import webapp2
 import logging
+import yaml
 import yayv
 import schemas
 import error_check_logic
@@ -13,7 +14,6 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
-
 
 class Classes(webapp2.RequestHandler):
 
@@ -40,6 +40,28 @@ class Classes(webapp2.RequestHandler):
       logging.fatal("no classes")
     classes = schemas.Classes().Update(classes)
     models.Classes.store(institution, session, classes)
+    
+    # ClassRoster saves a copy of class info in its own jclass_obj
+    # (for efficiency?). When Classes changes, make sure
+    # ClassRoster's jclass_obj stays in sync by calling
+    # ClassRoster.Store(). Otherwise, odd things happen.
+    #
+    # Also, calling ClassRoster.Store() when there are changes
+    # to Classes, udpates the last_modified field. This fixes the
+    # bug where last modified dates on attendance sheet and student
+    # schedule reports don't update when only Classes info changed
+    # but no students were added or deleted.
+    #
+    # Finally, storing every ClassRoster when the corresponding
+    # class is created (because, of course, initially jclass_obj != c),
+    # fixes the bug where remaining spots on the schedule page
+    # initializes incorrectly to 0 instead of max_enrollment.
+    classes = yaml.load(classes)
+    for c in classes:
+      roster = models.ClassRoster.FetchEntity(institution, session, c['id'])
+      if c != roster['class_details']:
+        models.ClassRoster.Store(institution, session, c, ",".join(roster['emails']))
+
     error_check_logic.Checker.setStatus(institution, session, 'UNKNOWN')
     self.RedirectToSelf(institution, session, "saved classes")
 

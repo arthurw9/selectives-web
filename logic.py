@@ -1,6 +1,8 @@
 import models
 import yaml
 import logging
+import random
+import schemas
 try:
   from google.appengine.ext import ndb
 except:
@@ -10,35 +12,44 @@ except:
   ndb = fake_ndb.FakeNdb()
 
 
+# TODO: replace each newline with </div><div>
+# TODO: replace interior single quotes with unicode '\u2019'
+# TODO: replace semicolons with unicode '\u003A'
+def GetHTMLDescription(institution, session, c):
+  if 'description' in c:
+    #orig_desc = c['description'].strip()
+    return c['description']
+  else:
+    return ''
+
 # Students do not need to see class ID, eligibility, locations.
 # Students should not see individual emails which may be on the eligibility list.
-# Room numbers may change during registration as we finalize the schedule.
+# Room numbers may change during registration as we finalize the schedule, so don't display room numbers to students.
 # TODO: add proper class_desc instead of just dumping the yaml
-def GetHoverText(full_text, c):
+def GetHoverText(institution, session, admin_view, c):
   """args:
-       full_text: boolean false if we should censor some details.
+       admin_view: boolean to hide certain fields from students
        c: dict class object to get description of."""
-  
   class_desc = ''
-  if full_text:
-    class_desc += 'Id: ' + str(c['id']) + ' '*12
+  if admin_view:
+    class_desc += 'Id: ' + str(c['id']) + ' '*6
   class_desc += c['name']
   if 'instructor' in c and c['instructor']:
-    class_desc += '\nInstructor: ' + c['instructor']
-  class_desc += ' '*12 + 'Max Enrollment: ' + str(c['max_enrollment'])
-  class_desc += '\nMeets: '
+    class_desc += ' '*6 + 'Instructor: ' + c['instructor']
+  class_desc += '\nMax Enrollment: ' + str(c['max_enrollment'])
+  class_desc += ' '*6 + 'Meets: '
   for s in c['schedule']:
     class_desc += s['daypart']
-    if full_text:
+    if admin_view:
       if isinstance(s['location'], int):
         class_desc += ' (Rm ' + str(s['location']) + ')'
       else:
         class_desc += ' (' + s['location'] + ')'
     class_desc += ', '
   class_desc = class_desc[:-2] # Remove last comma
-  if full_text:
+  if admin_view:
     class_desc += '\nEligible: '
-    if c['prerequisites']:
+    if 'prerequisites' in c:
       for p in c['prerequisites']:
         for k in p.keys():
           class_desc += '\n - ' + k + ': '
@@ -48,12 +59,36 @@ def GetHoverText(full_text, c):
             class_desc += p[k]
     else:
       class_desc += 'All'
-  if 'donation' in c and c['donation']:
-    class_desc += '\nSuggested donation: ' + c['donation']
-  if 'description' in c and c['description']:
-    class_desc += '\n\n' + c['description']
+  r = models.ClassRoster.FetchEntity(institution, session, c['id'])
+  if (r['emails']):
+    class_desc += '\n\nCurrently Enrolled: ' + str(len(r['emails']))
+    config = models.Config.Fetch(institution, session)
+    if config['displayRoster'] == 'dRYes':
+      students = models.Students.FetchJson(institution, session)
+      student_names = GetStudentNamesSorted(students, r['emails'])
+      for s in student_names:
+        class_desc += '\n   ' + s
   return class_desc
 
+def GetStudentNamesSorted(students, roster_emails):
+  if not students:
+    return []
+  roster_names = []
+  students_by_email = {}
+  for s in students:
+    students_by_email[s['email']] = s
+  for roster_email in roster_emails:
+    try:
+      s = students_by_email[roster_email]
+    except KeyError:
+      logging.fatal("HoverText - invalid student in roster!")
+      roster_names.append(roster_email)
+    else:
+      roster_names.append(s['first'] + ' ' +
+                          s['last'] + ' ' +
+                          str(s['current_homeroom']))
+  roster_names.sort()
+  return roster_names
 
 def FindUser(user_email, user_list):
   # is user_list iterable?
@@ -67,10 +102,11 @@ def FindUser(user_email, user_list):
   return None
 
 def StudentAllowedPageTypes(institution, session, student, serving_rules):
-  """ Returns list containing types of pages student is allowed to access. """
-  """ For example, all page types allowed returns """
-  """ ['materials', 'schedule', 'preferences', 'verification'] """
-  """ No page types allowed returns [] """
+  """ Returns list containing page types a student is allowed to access.
+      For example, if all page types are allowed, returns the list
+      ['materials', 'schedule', 'final', 'preferences', 'verification']
+      If no page types are allowed, returns the empty list []
+      Page types 'preferences' and 'verification' are not currently in use."""
   pt = []
   for serving_rule in serving_rules:
     if serving_rule['allow']: # check that allow for this rule is not blank
@@ -90,7 +126,7 @@ def StudentAllowedPageTypes(institution, session, student, serving_rules):
   return pt
 
 def StudentIsEligibleForClass(institution, session, student, c):
-  """returns True is student is eligible for class c."""
+  """returns True if student is eligible for class c."""
   if not c['prerequisites']:
     return True
   for prereq in c['prerequisites']:
@@ -152,6 +188,8 @@ class _ClassRoster(object):
     self.emails = roster['emails']
 
   def SpotsAvailable(self):
+    if 'open_enrollment' in self.class_obj:
+      return self.class_obj['open_enrollment'] - len(self.emails)
     return self.class_obj['max_enrollment'] - len(self.emails)
 
   def add(self, student_email):
@@ -275,3 +313,90 @@ def RemoveStudentFromClass(institution, session, student_email, old_class_id):
   r.remove(student_email)
   s = _StudentSchedule(institution, session, student_email, class_info)
   s.remove(old_class_id)
+
+@ndb.transactional(retries=3, xg=True)
+def AddStudentToWaitlist(institution, session, student_email, class_id):
+  # No need to check SpotsAvailable or add to StudentSchedule
+  # Just make sure student is not already in waitlist
+  w = models.ClassWaitlist.FetchEntity(institution, session, class_id)
+  if student_email in w['emails']:
+    pass
+  else:
+    w['emails'].append(student_email)
+    emails = list(set(w['emails']))
+    emails = ','.join(emails)
+    models.ClassWaitlist.Store(institution, session, class_id, emails)
+
+@ndb.transactional(retries=3, xg=True)
+def RemoveStudentFromWaitlist(institution, session, student_email, class_id):
+  w = models.ClassWaitlist.FetchEntity(institution, session, class_id)
+  emails = [s for s in w['emails'] if s != student_email]
+  emails = ','.join(emails)
+  models.ClassWaitlist.Store(institution, session, class_id, emails)
+
+
+def RunLottery(institution, session, cid, candidates):
+  """Modifies roster, waitlist, student groups, and classes
+  """
+  r = models.ClassRoster.FetchEntity(institution, session, cid)
+
+  # Put people who aren't part of this lottery in the class
+  winners = []
+  for s in r['emails']:
+    if s not in candidates:
+      winners.append(s)
+  # max_enrollment exceeded just from the non-lottery people!
+  # Either admin didn't select enough people or admin allowed
+  # open enrollment when there weren't enough spots.
+  if len(winners) >= r['max_enrollment']:
+    logging.error("Too many non-lottery students; class size exceeds maximum enrollment. Try selecting more students to lottery. Lottery aborted.")
+    return
+
+  random.shuffle(candidates)
+  # Add lottery candidates into the class until max_enrollment reached
+  for c in candidates:
+    if len(winners) >= r['max_enrollment']:
+      AddStudentToWaitlist(institution, session, c, cid)
+      RemoveStudentFromClass(institution, session, c, cid)
+    else:
+      winners.append(c)
+
+  # put winners into StudentGroup
+  group_name = r['class_name'] + '_' + str(r['class_id'])
+  sgroup = models.GroupsStudents.FetchJson(institution, session)
+  if sgroup:
+    if not any(g['group_name'] == group_name for g in sgroup):
+      # group_name doesn't exist in StudentGroup
+      sgroup.append({'group_name': group_name,
+                     'emails': winners})
+    else:
+      # group_name exists, overwrite existing email list
+      for g in sgroup:
+        if group_name == g['group_name']:
+          g['emails'] = winners
+  else:
+    # Entire StudentGroup list is empty, create new list
+    sgroup = [{'group_name': group_name,
+               'emails': winners}]
+  sgroup = schemas.StudentGroups().Update(yaml.safe_dump(sgroup, default_flow_style=False))
+  models.GroupsStudents.store(institution, session, sgroup)
+
+  class_list = models.Classes.FetchJson(institution, session)
+  for c in class_list:
+    if c['id'] == int(cid):
+      # Don't change the prerequisites since serving rules already
+      # restrict student access to the schedule page to those who
+      # lost at least one lottery.
+      # A lottery winner could drop, in which case we want to allow any
+      # lottery loser (who needs to fix their schedule) to add this class.
+      #c['prerequisites'] = [{'group':group_name}]
+
+      # Remove open_enrollment field
+      result = c.pop('open_enrollment', None)
+      if (result == None):
+        logging.error("Extra students found while class is not in open enrollment")
+      # Update roster class_obj to match above class changes
+      r = models.ClassRoster.FetchEntity(institution, session, c['id'])
+      models.ClassRoster.Store(institution, session, c, ','.join(r['emails']))
+  class_list = schemas.Classes().Update(yaml.safe_dump(class_list, default_flow_style=False))
+  models.Classes.store(institution, session, class_list)

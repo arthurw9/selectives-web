@@ -1,0 +1,60 @@
+{% extends 'menu.html' %}
+{% block session_body %}
+
+<script>
+window.onload = function() {
+  var sdd = document.getElementById("session-dropdown");
+  var cdd = document.getElementById("class-dropdown");
+
+  sdd.onchange = function() {
+    cdd.value = 0;
+    form_element = document.forms[0];
+    form_element.submit();
+    return false;
+  };
+  cdd.onchange = function() {
+    form_element = document.forms[0];
+    form_element.submit();
+    return false;
+  };
+};
+
+</script>
+
+<h3>Taken</h3>
+Select a Session and Class to display a list of students who have taken the class during that session.<br>To use the resulting list, copy and paste into Setup > Student Groups.<br>Or copy and paste into Reports > Not Taken to generate the inverse list of students who have not taken the class.<br><br>
+<form>
+<input type=hidden name="institution" value="{{ institution }}" />
+<input type=hidden name="session" value="{{ session }}" />
+<label for="session-dropdown">Session</label><br>
+<select id="session-dropdown" name="session-dd">
+  <option value="None">None</option>
+  {% for s in session_list %}
+    <option value="{{ s['name'] }}"
+      {% if s['name'] == selected_session %}selected{% endif %}>
+      {{ s['name'] }}
+    </option>
+  {% endfor %}
+</select><br><br>
+<label for="class-dropdown">Class</label><br>
+<select id="class-dropdown" name="class-dd">
+  <option value="None">None</option>
+  {% for c in class_list %}
+    <option value={{ c['id'] }}
+      {% if c['id'] == selected_class|int() %}selected{% endif %}>
+      {{ c['name'] }}
+      {% for s in c['schedule'] %}
+        {{ s['daypart'] }}
+      {% endfor %}
+      {{ c['instructor'] }}
+    </option>
+  {% endfor %}
+</select><br><br>
+Taken<br>
+<textarea disabled="true">
+- emails:{% for e in taken['emails'] %}
+  - {{e}}{% endfor %}
+  group_name: Taken_{{taken['class_name']}}_{{taken['class_id']}}
+</textarea>
+</form>
+{% endblock %}

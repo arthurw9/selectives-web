@@ -64,11 +64,11 @@ class GroupsStudents(webapp2.RequestHandler):
       groups_students = '\n'.join([
           "# Sample data. Lines with leading # signs are comments.",
           "# Change the data below.",
-          "- group_name: TLC",
+          "- group_name: TakenBoxing",
           "  emails:",
-          "    - zmeydbray@gmail.com",
-          "    - vmeydbray@gmail.com",
-          "    - tmeydbray@gmail.com"])
+          "    - zmeyd@gmail.com",
+          "    - vmeyd@gmail.com",
+          "    - tmeyd@gmail.com"])
 
     template_values = {
       'user_email' : auth.email,
