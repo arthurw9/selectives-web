@@ -1,17 +1,160 @@
 {% extends 'menu.html' %}
 {% block session_body %}
 
+<script>
+function ConfirmSize() {
+  let class_vals = document.getElementById("select-class").value.split('|');
+  let class_name = class_vals[1];
+  let class_enrolled = class_vals[2];
+  let class_max = class_vals[3];
+
+  let grade_vals = document.getElementById("select-grade").value.split('|');
+  let grade = grade_vals[0];
+  let grade_size = grade_vals[1];
+
+  let group_vals = document.getElementById("select-group").value.split('|');
+  let group = group_vals[0];
+  let group_size = group_vals[1];
+
+  let warningDiv = document.getElementById("autoreg-warning");
+
+  if (class_max - class_enrolled < grade_size + group_size) {
+    let warningMsg = 'Warning: class "' + class_name+ '" does not have enough remaining spots to accommodate';
+    if (group != 'None') {
+      warningMsg += ' group "' + group + '"';
+    }
+    if (grade != 0) {
+      warningMsg += ' grade "' + grade + '"';
+    }
+    warningMsg += '.<br>Not all students will be added.'
+    warningDiv.innerHTML = warningMsg;
+    warningDiv.style.color = 'red';
+  }
+  else {
+    warningDiv.innerHTML = '';
+  }
+}
+
+function GenerateText(orig_str="") {
+  let class_vals = document.getElementById("select-class").value.split('|');
+  let class_id = class_vals[0];
+  let class_name = class_vals[1];
+
+  let grade_vals = document.getElementById("select-grade").value.split('|');
+  let grade = grade_vals[0];
+  let grade_size = grade_vals[1];
+
+  let group_vals = document.getElementById("select-group").value.split('|');
+  let group = group_vals[0];
+  let group_size = group_vals[1];
+
+  ConfirmSize();
+
+  let str = "- applies_to:";
+  if (grade == 0) { // no output
+  }
+  else if (grade == 'All') {
+    str += ' []'
+  }
+  else {
+    str += '\n  - current_grade: ' + grade;
+  }
+
+  if (group == 'None') { // no output
+  }
+  else {
+    str += '\n  - group: ' + group;
+  }
+  str += "\n  class: " + class_name;
+  str += "\n  class_id: " + class_id + "\n";
+  str = orig_str + str;
+
+  return str;
+}
+
+window.onload = function() {
+  document.getElementById("Append").onclick = function() {
+    let textBox = document.getElementById("autoreg-textbox");
+    textBox.value = GenerateText(textBox.value.trim()+'\n');
+  }
+  document.getElementById("Replace").onclick = function() {
+    let textBox = document.getElementById("autoreg-textbox");
+    textBox.value = GenerateText();
+  }
+}
+</script>
 <h3>Auto Register</h3>
-<table width='60%'>
-<tr>
-  <ol>
-    <li>Enter rules for adding groups of students to classes at the same time.</li>
-    <li>Click Validate to check that the YAML syntax is valid.</li>
-    <li>Click Register to add students to classes based on the rules you entered.</li>
-  </ol>
-  Students cannot be registered twice for the same class - the software will not allow this.<br>However please be aware, once a class is full, additional students will not be added and there is no warning message.<br>It is up to you to ensure the class maximum is large enough to accommodate everyone listed in the Auto Register rule.
-</tr>
-<tr><td>
+<div>
+Follow the steps outlined below to automatically register a group or entire grade level for a specific class.<br>
+If you prefer to edit the YAML directly, skip to step 3.
+<ol>
+  <li>Select a class. Then select either a student group or grade.</li>
+</ol>
+<div class="autoreg-select">
+  Classes<br>
+  <select id="select-class">
+    {% for c in classes %}
+      <option value="{{c['id']}}|{{c['name']}}|{{c['num_enrolled']}}|{{c['max_enrollment']}}">
+        {{"%02d" % c['id']}} {{c['name']}} {{c['instructor']}}
+        {% for s in c['schedule'] %}
+          {{s['daypart']}}
+        {% endfor %}
+        , Enrolled: {{c['num_enrolled']}}, Max: {{c['max_enrollment']}}
+      </option>
+    {% endfor %}
+  </select>
+</div>
+<div class="autoreg-select autoreg-grid">
+  <div>Student Groups</div><div>Grades</div>
+  <div><select id="select-group">
+    <option value='None|0'>-----Not Selected-----</option>
+    {% for g in groups %}
+    <option value="{{g['group_name']}}|{{g['num_students']}}">
+      {{g['group_name']}}, Size: {{g['num_students']}}
+    </option>
+    {% endfor %}
+  </select></div>
+  <div><select id="select-grade">
+    <option value=0|0>-----Not Selected-----</option>
+    {% for g in grades %}
+    <option value="{{g[0]}}|{{g[1]}}">
+      {{g[0]}}, Size: {{g[1]}}
+    </option>
+    {% endfor %}
+  </select></div>
+</div>
+<div id="autoreg-warning"></div>
+<ol start="2">
+  <li>Click Append or Replace to generate YAML in the textbox below.</li>
+</ol>
+<div class="autoreg-button">
+  <button id="Append">Append</button>
+  <button id="Replace">Replace</button>
+</div>
+<ol start="3">
+  <li>If needed, manually edit the YAML.<br>For instance, you may add or exempt individual students. (see example below)<br>Or you may remove rules that have previously been applied.</li>
+</ol>
+<form method=post>
+<input type=hidden name="institution" value="{{ institution }}" />
+<input type=hidden name="session" value="{{ session }}" />
+<textarea id="autoreg-textbox" name=auto_register>
+{{ auto_register }}
+</textarea>
+<ol start="4">
+  <li>Click Validate to verify the YAML is valid. This also saves it to the server.</li>
+</ol>
+<div class="autoreg-button">
+  <button name="action" value="Save">Validate</button>
+</div>
+<ol start="5">
+  <li>Click Register to actually register students based on the rules you entered.<br>Don't worry about accidentally adding students twice for the same class - the software will handle this.<br>That said, don't keep old rules around because processing them uses up the daily quota.</li>
+</ol>
+<div class="autoreg-button">
+  <button name="action" value="Register">Register</button>
+</div>
+</form>
+<br>
+<div class="setup"><div>
   Example:
   <pre class="setup-example">
 - class: 6th Core
@@ -27,14 +170,15 @@
     - email: leo.payne@gmail.com
     - group: Visiting_Group
   </pre>
-</td><td>
+</div>
+<div>
 Required field:
 <ul style="margin:0">
-  <li>class_id - must match an id from Classes</li>
+  <li>class_id - must match Class id (first number in drop-down above)</li>
 </ul><br>
 Optional fields:
 <ul style="margin:0">
-  <li>class - used by the human (you) to identify the name of the class that class_id refers to</li>
+  <li>class - used by the human (you) to identify the class name that class_id refers to</li>
   <li>applies_to</li>
   <ul>
     <li>empty list [] for all students</li>
@@ -45,15 +189,5 @@ Optional fields:
   <li>exempt - list of emails exempt from this class</li>
   <li>id - deprecated, kept for backward compatibility, but don't use</li>
 </ul>
-</td></tr></table>
-<form method=post>
-<input type=hidden name="institution" value="{{ institution }}" />
-<input type=hidden name="session" value="{{ session }}" />
-<textarea name=auto_register>
-{{ auto_register }}
-</textarea>
-<br />
-<button name="action" value="Save">Validate</button>
-<button name="action" value="Register">Register</button>
-</form>
+</div></div></div>
 {% endblock %}

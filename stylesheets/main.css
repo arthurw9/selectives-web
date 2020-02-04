@@ -46,6 +46,18 @@ textarea {
   padding: 5px;
 }
 
+.autoreg-select{
+  margin-bottom: 8px;
+  margin-left: 35px;
+}
+.autoreg-grid {
+  display: grid;
+  grid-template-columns: 330px 300px;
+}
+.autoreg-button, #autoreg-textbox, #autoreg-warning {
+  margin-left: 35px;
+}
+
 .config-group {
   padding-bottom: 12px;
   padding-left: 5px;

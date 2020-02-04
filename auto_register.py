@@ -15,6 +15,17 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
 
+dayOrder = ['Mon A', 'Mon B', 'Tues A', 'Tues B',
+            'Thurs A', 'Thurs B', 'Fri A', 'Fri B']
+
+def listOrder(c):
+  if 'instructor' in c:
+    return (c['name'],
+            dayOrder.index(c['schedule'][0]['daypart']),
+            c['instructor'])
+  else:
+    return (c['name'],
+            dayOrder.index(c['schedule'][0]['daypart']))
 
 class AutoRegister(webapp2.RequestHandler):
 
@@ -117,6 +128,29 @@ class AutoRegister(webapp2.RequestHandler):
           "  applies_to:",
           "    - current_grade: 8"])
 
+    classes = models.Classes.FetchJson(institution, session)
+    if classes:
+      classes.sort(key=listOrder)
+    for c in classes:
+      r = models.ClassRoster.FetchEntity(institution, session, c['id'])
+      c['num_enrolled'] = len(r['emails'])
+
+    students = models.Students.FetchJson(institution, session)
+    grades_dict = {}
+    for s in students:
+      grade = s['current_grade']
+      grades_dict[grade] = grades_dict.get(grade, 0) + 1
+      grades_dict['All'] = grades_dict.get('All', 0) + 1
+    grades = []
+    for g in sorted(grades_dict, reverse=True):
+      grades.append([g, grades_dict[g]])
+
+    groups = models.GroupsStudents.FetchJson(institution, session)
+    if groups:
+      groups.sort(key=lambda g: g['group_name'])
+    for g in groups:
+      g['num_students'] = len(g['emails'])
+
     template_values = {
       'user_email' : auth.email,
       'institution' : institution,
@@ -125,6 +159,9 @@ class AutoRegister(webapp2.RequestHandler):
       'setup_status': setup_status,
       'session_query': session_query,
       'auto_register': auto_register,
+      'classes': classes,
+      'grades': grades,
+      'groups': groups,
       'self': self.request.uri,
     }
     template = JINJA_ENVIRONMENT.get_template('auto_register.html')
