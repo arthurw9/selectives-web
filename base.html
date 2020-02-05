@@ -23,17 +23,17 @@
       <!--This message will only display on certain admin pages that pass setup_status.-->
       {% if setup_status and (setup_status == 'DB_UPDATE_NEEDED') %}
       <td style="color:red">
-        Database upgrade required! Go to Error Check to run upgrade script.
+        Database upgrade required! Go to Validate Setup to run upgrade script.
       </td>
       {% endif %}
       {% if setup_status and (setup_status == 'FAIL') %}
       <td style="color:blue">
-        Error Check failed! See Error Check page for details.
+        Setup validation failed! See Validate Setup page for details.
       </td>
       {% endif %}
       {% if setup_status and (setup_status == 'UNKNOWN') %}
       <td style="color:blue">
-        Setup status unknown. Running Error Check is advised.
+        Setup status unknown. Running Validate Setup is advised.
       </td>
       {% endif %}
       <td align=right>
