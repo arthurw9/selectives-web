@@ -50,17 +50,21 @@ class ByExample(object):
   def ErrorMessage(self):
     return '# ' + '\n'.join(self.error_message).replace("\n", "\n# ")
 
-  def IsValid(self, yaml_str):
+  # yaml.load() is very slow so to avoid calling it,
+  # IsValid() takes either a yaml string or object
+  def IsValid(self, yaml_in):
     self.unique_values = {}
     self.counters = {}
     self.counter_values = {}
     self.error_message = []
-    try:
-      yaml_obj = yaml.load(yaml_str)
-    except:
-      self._AddError("ROOT", traceback.format_exc())
-      return False
-    return self._Validate(self.schema, yaml_obj, "ROOT")
+    # only call yaml.load() if yaml is a string
+    if isinstance(yaml_in, basestring):
+      try:
+        yaml_in = yaml.load(yaml_in)
+      except:
+        self._AddError("ROOT", traceback.format_exc())
+        return False
+    return self._Validate(self.schema, yaml_in, "ROOT")
 
   def _AddError(self, parent, msg):
     self.error_message.append("%s in %s" % (msg, parent))
