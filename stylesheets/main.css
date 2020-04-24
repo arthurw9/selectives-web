@@ -107,6 +107,7 @@ textarea {
 .email-list {
   min-width: 750px;
   height: 100px;
+  resize: none;
 }
 .email-copybtn {
   height: 26px;
