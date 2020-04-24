@@ -13,17 +13,14 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
 
-dayOrder = ['Mon A', 'Mon B', 'Tues A', 'Tues B',
-            'Thurs A', 'Thurs B', 'Fri A', 'Fri B']
-
 def listOrder(c):
   if 'instructor' in c:
     return (c['name'],
-            dayOrder.index(c['schedule'][0]['daypart']),
+            c['dayorder'],
             c['instructor'])
   else:
     return (c['name'],
-            dayOrder.index(c['schedule'][0]['daypart']))
+            c['dayorder'])
 
 class ClassList(webapp2.RequestHandler):
   def get(self):
@@ -44,13 +41,18 @@ class ClassList(webapp2.RequestHandler):
                                       'session': session})
 
     classes = models.Classes.FetchJson(institution, session)
-    if classes:
-      classes.sort(key=listOrder)
+    dayparts = models.Dayparts.FetchJson(institution, session)
+    dp_dict = {} # used for ordering by col then row
+    for dp in dayparts:
+      dp_dict[dp['name']] = str(dp['col'])+str(dp['row'])
     for c in classes:
       r = models.ClassRoster.FetchEntity(institution, session, c['id'])
       c['num_enrolled'] = len(r['emails'])
       w = models.ClassWaitlist.FetchEntity(institution, session, c['id'])
       c['num_waitlist'] = len(w['emails'])
+      c['dayorder'] = dp_dict[c['schedule'][0]['daypart']]
+    if classes:
+      classes.sort(key=listOrder)
     template_values = {
       'user_email' : auth.email,
       'institution' : institution,

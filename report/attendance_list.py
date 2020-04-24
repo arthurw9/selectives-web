@@ -16,17 +16,14 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
 
-dayOrder = ['Mon A', 'Mon B', 'Tues A', 'Tues B',
-            'Thurs A', 'Thurs B', 'Fri A', 'Fri B']
-
 def listOrder(c):
   if 'instructor' in c:
     return (c['name'],
-            dayOrder.index(c['schedule'][0]['daypart']),
+            c['dayorder'],
             c['instructor'])
   else:
     return (c['name'],
-            dayOrder.index(c['schedule'][0]['daypart']))
+            c['dayorder'])
 
 class AttendanceList(webapp2.RequestHandler):
 
@@ -61,12 +58,17 @@ class AttendanceList(webapp2.RequestHandler):
                                       'session': session})
 
     classes = models.Classes.FetchJson(institution, session)
-    if classes:
-      classes.sort(key=listOrder)
+    dayparts = models.Dayparts.FetchJson(institution, session)
+    dp_dict = {} # used for ordering by col then row
+    for dp in dayparts:
+      dp_dict[dp['name']] = str(dp['col'])+str(dp['row'])
     rosters = {}
     for c in classes:
       rosters[c['id']] = models.ClassRoster.FetchEntity(institution, session, c['id'])
       c['num_locations'] = len(set(s['location'] for s in c['schedule']))
+      c['dayorder'] = dp_dict[c['schedule'][0]['daypart']]
+    if classes:
+      classes.sort(key=listOrder)
     students = models.Students.FetchJson(institution, session)
     for s in students:
       s['email'] = s['email'].lower()
