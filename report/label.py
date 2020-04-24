@@ -14,17 +14,14 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
 
-dayOrder = ['Mon A', 'Mon B', 'Tues A', 'Tues B',
-            'Thurs A', 'Thurs B', 'Fri A', 'Fri B']
-
 def listOrder(c):
   if 'instructor' in c:
-    return (c['instructor'],
-            c['name'],
-            dayOrder.index(c['schedule'][0]['daypart']))
+    return (c['name'],
+            c['dayorder'],
+            c['instructor'])
   else:
     return (c['name'],
-            dayOrder.index(c['schedule'][0]['daypart']))
+            c['dayorder'])
 
 class Label(webapp2.RequestHandler):
 
@@ -59,6 +56,12 @@ class Label(webapp2.RequestHandler):
                                       'session': session})
 
     classes = models.Classes.FetchJson(institution, session)
+    dayparts = models.Dayparts.FetchJson(institution, session)
+    dp_dict = {} # used for ordering by col then row
+    for dp in dayparts:
+      dp_dict[dp['name']] = str(dp['col'])+str(dp['row'])
+    for c in classes:
+      c['dayorder'] = dp_dict[c['schedule'][0]['daypart']]
     if classes:
       classes.sort(key=listOrder)
     template_values = {
