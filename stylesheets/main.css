@@ -89,6 +89,28 @@ textarea {
   font-size:18px;
 }
 
+#email-main {
+  display: flex;
+  flex-direction: column;
+  background-color: #F4F4F4;
+  padding: 10px 0px 10px 15px;
+  margin: 0px 0px 40px 0px;
+  width: 780px;
+}
+#email-heading {
+  display: flex;
+  flex-direction: row;
+}
+.email-item {
+  padding: 3px 20px 3px 20px;
+}
+.email-list {
+  min-width: 750px;
+  height: 100px;
+}
+.email-copybtn {
+  height: 26px;
+}
 
 /***** teacher viewable pages *****/
 #main-teacher {

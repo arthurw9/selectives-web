@@ -49,6 +49,7 @@ import report.student_schedules_marked
 import report.taken
 import report.not_taken
 import config
+import report.student_emails
 
 application = webapp2.WSGIApplication([
   ('/', index.Index),
@@ -100,4 +101,5 @@ application = webapp2.WSGIApplication([
   ('/report/taken', report.taken.Taken),
   ('/report/not_taken', report.not_taken.NotTaken),
   ('/config', config.Config),
+  ('/report/student_emails', report.student_emails.StudentEmails),
 ], debug=True)

@@ -1,0 +1,43 @@
+{% if user_type == 'Admin' %}
+  {% extends 'menu.html' %}
+{% elif user_type == 'Teacher' %}
+  {% extends 'menu_teacher.html' %}
+{% endif %}
+{% block session_body %}
+
+<script>
+window.onload = function() {
+  let listeners = [];
+  {% for c in classes %}
+    var copyBtn = document.getElementById("copybtn{{c['id']}}");
+    copyBtn.addEventListener('click', function(event) {
+      var emailList = document.getElementById("emails{{c['id']}}");
+      emailList.select();
+      document.execCommand("copy");
+    });
+    listeners.push(copyBtn);
+  {% endfor %}
+};
+</script>
+
+<h3>Student Emails</h3>
+{% if classes %}
+{% for c in classes %}
+<div id="email-main">
+  <div id="email-heading">
+    <button class="email-copybtn" title="copy to clipboard" id="copybtn{{c['id']}}">Copy Emails</button>
+    <div class="email-item">{{ c['name'] }}</div>
+    <div class="email-item">{{ c['instructor'] }}</div>
+    <div class="email-item">{% for s in c['schedule'] %}
+        {{ s['daypart'] }}
+      {% endfor %}</div>
+  </div>
+  <textarea class="email-list" id="emails{{c['id']}}" readonly>{% for email in rosters[c['id']]['emails'] %}{{email}};{% endfor %}</textarea>
+</div>
+{% endfor %}
+{% else %}
+Classes have not been created yet for this session.<br>
+Please contact the selectives website administrator for help.<br><br>
+Administrators: use Setup >> Classes to add classes.
+{% endif %}
+{% endblock %}
