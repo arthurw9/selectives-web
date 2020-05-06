@@ -172,6 +172,46 @@ textarea {
   display: flex;
   flex-direction: row;
 }
+#legend {
+  display: flex;
+  flex-direction: column;
+  border-radius:0.2em;
+  border: 2px solid #666666;
+  margin: 10px 160px 10px 160px;
+  background-color: #f0f0f0;
+}
+#legend1 {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  margin: 6px 0px 2px 0px;
+}
+#legend1 div {
+  margin: 0px 10px 0px 10px;
+  max-width:200px;
+  border: 1px solid #666666;
+  border-radius:0.2em;
+  padding:0.15em 0.3em;
+  line-height:1.0;
+}
+#legend2 {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  margin: 2px 0px 2px 0px;
+}
+#legend span {
+  background-color: lightgreen;
+}
+#legend-remaining {
+  background-color: #cccfe1;
+}
+#legend-zero {
+  background-color: #eeeecc;
+}
+#legend-lottery {
+  background-color: pink;
+}
 
 /***** student viewable pages *****/
 /* header, menu, common sections **/
