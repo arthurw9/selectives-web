@@ -25,7 +25,6 @@ class Schedule(webapp2.RequestHandler):
          'session': session}))
 
   def post(self):
-    # TODO: support removing a class
     auth = authorizer.Authorizer(self)
     if not auth.HasStudentAccess():
       self.response.status = 403 # Forbidden
@@ -43,9 +42,13 @@ class Schedule(webapp2.RequestHandler):
       return
 
     email = auth.student_email
-    new_class_id = self.request.get("class_id")
+    class_id = self.request.get("class_id")
+    action = self.request.get("action")
 
-    logic.AddStudentToClass(institution, session, email, new_class_id)
+    if action == "add":
+      logic.AddStudentToClass(institution, session, email, class_id)
+    if action == "del":
+      logic.RemoveStudentFromClass(institution, session, email, class_id)
     schedule = models.Schedule.Fetch(institution, session, email)
     schedule = schedule.split(",")
     if schedule and schedule[0] == "":

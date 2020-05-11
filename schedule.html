@@ -240,20 +240,49 @@ function AddClassToBackend(class_id, loading_gif) {
   params.append("session", "{{ session }}");
   params.append("student", "{{ student['email'] }}");
   params.append("class_id", class_id);
+  params.append("action", "add");
+  request.send(params);
+}
+
+function DeleteClassFromBackend(class_id, loading_gif) {
+  var request = new XMLHttpRequest();
+  request.open("POST", "/schedule");
+  request.onreadystatechange = function() {
+    if(request.readyState != 4) {
+      // if the request is not finished then keep waiting.
+      return;
+    }
+    if (request.status == 403) {
+      window.location.replace("/postregistration?institution={{institution}}&session={{session}}");
+    }
+    if (request.status == 200) {
+      var result = JSON.parse(request.responseText)
+      SetScheduleInGui(result);
+    }
+    loading_gif.style.visibility = "hidden";
+    RefreshData();
+  }
+  var params = new FormData();
+  params.append("institution", "{{ institution }}");
+  params.append("session", "{{ session }}");
+  params.append("student", "{{ student['email'] }}");
+  params.append("class_id", class_id);
+  params.append("action", "del");
   request.send(params);
 }
 
 function OnClickHandler(daypart, class_id) {
+  var loading_gif = document.getElementById(daypart + "_" + class_id + "_loading_gif");
   if (class_id == selected_class_id_by_daypart[daypart]) {
-    // The class is already selected.
-    // TODO: Support removing classes.
+    // Class is already selected, remove it from the schedule
+    loading_gif.style.visibility = "visible";
+    DeleteClassFromBackend(class_id, loading_gif)
     return;
   }
   if (!ConfirmConflictingClasses(class_id, daypart)) {
     return;
   }
 
-  var loading_gif = document.getElementById(daypart + "_" + class_id + "_loading_gif");
   loading_gif.style.visibility = "visible";
   MarkClassInGui(class_id);
   AddClassToBackend(class_id, loading_gif)
@@ -393,7 +422,7 @@ function createSidePanel(class_id) {
   {% endfor %}
 </table>
 </form>
-<p style="background-color: #eeeeff; padding: 10px">** If you accidentally click a class but do not plan to participate, please email the class name and time to<br>selectives@discoveryk8.org. We'll remove you from the class so someone else can take the spot. Thanks!</p>
+<p style="background-color: #efefef; padding: 10px">*** New Feature! To remove a class from your schedule, click it again. ***</p>
 </div>
 
 <div id="info-panel">
