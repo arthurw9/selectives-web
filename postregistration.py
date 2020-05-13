@@ -68,11 +68,16 @@ class Postregistration(webapp2.RequestHandler):
     for daypart in dayparts:
       schedule_by_daypart[daypart['name']] = []
     admin_flag = auth.CanAdministerInstitutionFromUrl()
+    classes_by_id = {}
     for c in classes:
       if str(c['id']) in schedule:
         for daypart in [s['daypart'] for s in c['schedule']]:
           if daypart in schedule_by_daypart:
             schedule_by_daypart[daypart] = c
+        classes_by_id[str(c['id'])] = c
+        c['description'] = logic.GetHTMLDescription(institution, session, c)
+
+    config = models.Config.Fetch(institution, session)
 
     template_values = {
       'user_email' : auth.email,
@@ -84,6 +89,8 @@ class Postregistration(webapp2.RequestHandler):
       'dayparts': dayparts,
       'schedule_by_daypart': schedule_by_daypart,
       'dayparts_ordered': dayparts_ordered,
+      'classes_by_id': classes_by_id,
+      'html_desc': config['htmlDesc'],
     }
     template = JINJA_ENVIRONMENT.get_template('postregistration.html')
     self.response.write(template.render(template_values))
