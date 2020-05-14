@@ -278,16 +278,17 @@ textarea {
 
 #welcome-user {
   display: block;
-  padding: 0px 8px;
+  padding: 0px 16px;
 }
 #main-user {
-  padding: 0px 8px;
+  padding: 0px 12px;
   display: flex;
   background-color: #fff;
 }
 .profile-user {
   display: flex;
   align-items: baseline;
+  padding-left: 16px;
 }
 .profile-data {
   margin-right: 1em;
