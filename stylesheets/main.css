@@ -235,19 +235,44 @@ textarea {
   margin-right: auto;
 }
 
-#nav-user-div {
-  padding: 8px 8px 16px 8px;
+#menu-user-wrapper {
   background-color: #f1f1f1;
-}
-#nav-user {
   display: flex;
-  justify-content: space-around;
+}
+#menu-user-spacer-left {
+  width: 100px;
+  border-bottom: 2px solid #888888;
+}
+#menu-user-spacer-right {
+  flex-grow: 100;
+  border-bottom: 2px solid #888888;
+}
+#menu-user {
+  display: flex;
   max-width: 780px;
   list-style-type: none;
   padding: 0px;
   margin: 0px;
 }
-#nav-user li a:hover, #nav-user li:active a{
+#menu-user a {
+  text-decoration: none;
+}
+/* Need ".menu-user .menu-user-active" to
+   increase specificity otherwise this will be lower
+   than ".menu-user li" and border-bottom is not erased. */
+#menu-user .menu-user-active {
+  background-color: #ffffff;
+  border-top: 2px solid #888888;
+  border-left: 2px solid #888888;
+  border-right: 2px solid #888888;
+  border-bottom: #ffffff;
+  border-radius: 5px 5px 0px 0px;
+}
+#menu-user li {
+  padding: 8px 50px 16px 50px;
+  border-bottom: 2px solid #888888;
+}
+#menu-user li a:hover {
   color: #f4511e;
 }
 
@@ -268,6 +293,9 @@ textarea {
   margin-right: 1em;
   margin-block-start: .5em;
   margin-block-end: .2em;
+}
+.profile-print {
+  margin-left: auto;
 }
 
 

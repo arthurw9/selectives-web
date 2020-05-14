@@ -103,13 +103,10 @@ Student not found! This error should never happen. Please inform the selectives 
 {% else %}
 <div>
 <div class="profile-user">
-  <h3 class="profile-data">Final Schedule</h3>
-  <h3 class="profile-data"><a href="print_schedule?{{ session_query }}&student={{student['email'] }}">Printer Friendly Page</a></h3>
-</div>
-<div class="profile-user">
   <h2 class="profile-data">{{ student['first'] + ' ' + student['last'] }}</h2>
   <h3 class="profile-data">Homeroom: {{ student['current_homeroom'] }}</h3>
   <h3 class="profile-data">Grade: {{ student['current_grade'] }}</h3>
+  <h3 class="profile-print"><a href="print_schedule?{{ session_query }}&student={{student['email'] }}">Printer Friendly Page</a></h3>
 </div>
 
 <table>
