@@ -49,9 +49,9 @@ window.onload = function() {
 
 <h3>Student Emails</h3>
 {% if classes %}
-<h4>Use this page to get the email addresses of registered students.</h4>
+<h4>Use this page to get email addresses of registered students.</h4>
 <p>To download emails for all classes to .csv file, click here: <button id="copyall">Download All</button><br>When opening the .csv file, choose semicolon ";" as the separator.</p>
-<p>To copy emails for a single class: find the class you want below and click Copy Emails to save to your clipboard.<br>Then go to your email app and paste (Ctrl-v) the email addresses into the To: field.</p>
+<p>To copy emails for a single class, find the class you want below and click Copy Emails to save to your clipboard.<br>Then go to your email and paste (Ctrl-v) the email addresses into the 'To' field of your message.</p>
 {% for c in classes %}
 <div id="email-main">
   <div id="email-heading">
