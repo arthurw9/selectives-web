@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block body %}
 
-<table id="menu-main"><tr><td width=15% valign='top' style="border-right: 1px solid black; padding: 5px;">
+<table><tr><td id="menu-main" width=15% valign='top' style="border-right: 1px solid black; padding: 5px;">
   <h3>Setup</h3>
   <ul>
     <li><a href="/welcome_setup?{{ session_query }}">Welcome</a></li>
@@ -36,6 +36,7 @@
     <li><a href="/report/student_schedules_marked?{{ session_query }}">Student Schedules Marked</a></li>
     <li><a href="/report/taken?{{ session_query }}">Taken</a></li>
     <li><a href="/report/not_taken?{{ session_query }}">Not Taken</a></li>
+    <li><a href="/teacher/courses?{{ session_query }}">Registration Status</a></li>
     <li><a href="/report/student_emails?{{ session_query }}">Student Emails</a></li>
     <!--<li><a href="/class_demand?{{ session_query }}">Stub (Class Demand)</a>-->
   </ul>

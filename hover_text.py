@@ -9,12 +9,6 @@ import logic
 class HoverText(webapp2.RequestHandler):
 
   def post(self):
-    auth = authorizer.Authorizer(self)
-    if not (auth.HasStudentAccess() or
-            auth.HasTeacherAccess()):
-      self.response.status = 403 # Forbidden
-      return
-
     institution = self.request.get("institution")
     if not institution:
       logging.fatal("no institution")
@@ -22,8 +16,11 @@ class HoverText(webapp2.RequestHandler):
     if not session:
       logging.fatal("no session")
 
-    if not (auth.HasTeacherAccess() or
-            auth.HasPageAccess(institution, session, "schedule")):
+    auth = authorizer.Authorizer(self)
+    if not (auth.CanAdministerInstitutionFromUrl() or
+            auth.HasTeacherAccess() or
+            (auth.HasStudentAccess() and
+             auth.HasPageAccess(institution, session, "schedule"))):
       self.response.status = 403 # Forbidden
       return
 
