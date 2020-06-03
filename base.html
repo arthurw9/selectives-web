@@ -38,9 +38,9 @@
       {% endif %}
       <td align=right>
         {% if user_email %}
-          {{ user_email }} <a href="/logout">logout</a>
+          {{ user_email }} <a class="button" href="/logout">Sign out</a>
         {% else %}
-          <a href="{{ login_url }}">Log In</a>
+          <a class="button" href="{{ login_url }}">Sign in</a>
         {% endif %}
       </td>
     </tr></table>

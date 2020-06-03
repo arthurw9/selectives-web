@@ -2,6 +2,21 @@ body {
   overflow-x: hidden; /* needed to extend student menu border to edges */
 }
 
+.button {
+  font-size: 14px;
+  font-family: 'Oxygen', sans-serif;
+  text-decoration: none;
+  background-color: #c6979d;
+  color: #000000;
+  padding: 5px 12px 5px 12px;
+  margin: 3px;
+  border-radius: 0.2em;
+}
+
+.button:hover {
+  background-color: #d6979d;
+}
+
 /***** admin viewable pages *****/
 /* menu-main and menu-teacher (below) should match */
 #menu-main h3 {
@@ -232,6 +247,7 @@ textarea {
   font-family: 'Oxygen', sans-serif;
   background-color: #f1f1f1;
   min-width: 900px;
+  min-height: 70px;
 }
 #logo-user {
   padding: 5px 5px 0px 5px;
@@ -239,7 +255,7 @@ textarea {
   align-items: center;
 }
 #title-user {
-  font-size: 16px;
+  font-size: 20px;
   font-weight: bold;
   padding: 5px;
 }
@@ -253,7 +269,8 @@ textarea {
   align-items: flex-end;
 }
 #email-user {
-  font-size: 14px;
+  font-size: 15px;
+  margin: 0px 0px 5px 0px;
 }
 #menu-user-wrapper {
   background-color: #f1f1f1;

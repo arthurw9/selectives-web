@@ -21,9 +21,9 @@
           <div id="email-user">{{ user_email }}</div>
         {% endif %}
         {% if user_email %}
-          <div><a href="/logout">Sign out</a></div>
+          <div><a class="button" href="/logout">Sign out</a></div>
         {% else %}
-          <div><a href="{{ login_url }}">Sign in</a></div>
+          <div><a class="button" href="{{ login_url }}">Sign in</a></div>
         {% endif %}
       </div>
     </div>
