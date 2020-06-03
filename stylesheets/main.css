@@ -1,3 +1,7 @@
+body {
+  overflow-x: hidden; /* needed to extend student menu border to edges */
+}
+
 /***** admin viewable pages *****/
 /* menu-main and menu-teacher (below) should match */
 #menu-main h3 {
@@ -218,34 +222,59 @@ textarea {
 
 #body-user {
   margin: 0px;
+  display: flex;
+  flex-direction: column;
 }
 #header-user {
   display: flex;
+  justify-content: space-evenly;
   align-items: center;
   font-family: 'Oxygen', sans-serif;
-  padding: 0px 8px;
   background-color: #f1f1f1;
+  min-width: 900px;
 }
-#logo-user, #login-user {
-  padding: 5px;
+#logo-user {
+  padding: 5px 5px 0px 5px;
+  display: flex;
+  align-items: center;
 }
 #title-user {
-  font-size: 30px;
+  font-size: 16px;
   font-weight: bold;
-  margin-right: auto;
+  padding: 5px;
 }
-
+#session-user {
+  font-size: 24px;
+  font-weight: bold;
+}
+#login-user {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+#email-user {
+  font-size: 14px;
+}
 #menu-user-wrapper {
   background-color: #f1f1f1;
   display: flex;
+  justify-content: center;
+  min-width: 800px;
+  font-family: 'Oxygen', sans-serif;
 }
 #menu-user-spacer-left {
-  width: 100px;
+  width: 10%;
   border-bottom: 2px solid #888888;
+  /* trick to extend bottom border of spacer to edge */
+  padding-left: 1000px;
+  margin-left: -1000px;
 }
 #menu-user-spacer-right {
-  flex-grow: 100;
+  width: 10%;
   border-bottom: 2px solid #888888;
+  /* trick to extend bottom border of spacer to edge */
+  padding-right: 1000px;
+  margin-right: -1000px;
 }
 #menu-user {
   display: flex;
@@ -279,11 +308,13 @@ textarea {
 #welcome-user {
   display: block;
   padding: 0px 16px;
+  margin: auto;
 }
 #main-user {
   padding: 0px 12px;
   display: flex;
   background-color: #fff;
+  justify-content: center;
 }
 .profile-user {
   display: flex;

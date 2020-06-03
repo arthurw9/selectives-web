@@ -13,18 +13,17 @@
     <div id="header-user">
       <div id="logo-user">
         <img src="/images/DiscoveryMascot_Logo_Tiny.jpg" alt="DCS phoenix logo" width="50px">
+        <div id=title-user>Discovery Selectives</div>
       </div>
-      <div id="title-user">
-        Discovery Selectives
-        {% if session %}
-          - <small>{{session}}</small>
-        {% endif %}
-      </div>
+      <div id="session-user">{% if session %}{{session}}{% endif %}</div>
       <div id="login-user">
         {% if user_email %}
-          {{ user_email }} <a href="/logout">logout</a>
+          <div id="email-user">{{ user_email }}</div>
+        {% endif %}
+        {% if user_email %}
+          <div><a href="/logout">Sign out</a></div>
         {% else %}
-          <a href="{{ login_url }}">Log In</a>
+          <div><a href="{{ login_url }}">Sign in</a></div>
         {% endif %}
       </div>
     </div>
