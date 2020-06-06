@@ -30,12 +30,15 @@ class ComingSoon(webapp2.RequestHandler):
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
     email = auth.student_email
+    closed_msg = models.Closed.Fetch(institution, session)
+
     template_values = {
       'user_email' : auth.email,
       'institution' : institution,
       'session' : session,
       'message': message,
       'session_query': session_query,
+      'closed_msg' : closed_msg,
     }
     template = JINJA_ENVIRONMENT.get_template('coming_soon.html')
     self.response.write(template.render(template_values))

@@ -932,6 +932,32 @@ class Attendance(ndb.Model):
     attendance.key = Attendance.attendance_key(institution, session_name, c_id)
     attendance.put()
 
+class Closed(ndb.Model):
+  data = ndb.TextProperty()
+
+  @classmethod
+  @timed
+  def closed_key(cls, institution, session):
+    return ndb.Key("InstitutionKey", institution,
+                   Session, session,
+                   Closed, "closed")
+
+  @classmethod
+  @timed
+  def Fetch(cls, institution, session):
+    closed = Closed.closed_key(institution, session).get()
+    if closed:
+      return closed.data
+    else:
+      return ''
+
+  @classmethod
+  @timed
+  def store(cls, institution, session_name, closed):
+    closed = Closed(data = closed)
+    closed.key = Closed.closed_key(institution, session_name)
+    closed.put()
+
 class Materials(ndb.Model):
   data = ndb.TextProperty()
 

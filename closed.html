@@ -1,0 +1,38 @@
+{% extends 'menu.html' %}
+{% block session_body %}
+
+<script>
+function reload_view() {
+  var input = document.getElementById("closed-input-area").value;
+  document.getElementById("closed-view-area").innerHTML = input;  
+}
+
+window.onload = function() {
+  reload_view();
+  var view = document.getElementById("view");
+
+  view.onclick = function() {
+    reload_view();
+  }
+}
+</script>
+
+<h3>Temporarily Closed Message</h3>
+<div class='setup-instructions'>Create a message to display on a student page when it is not accessible. This usually happens when the page is not being served.<br><br>Enter HTML in the left panel and click Preview.<br>Once you are happy with the results, click Submit to save.</div>
+<div class='setup'>
+  <div class='setup-html'>
+    <form method=post>
+    <input type=hidden name="institution" value="{{ institution }}"/>
+    <input type=hidden name="session" value="{{ session }}"/>
+    <textarea id="closed-input-area" name=closed>{{ closed }}</textarea>
+    <br/>
+    <input type="button" id="view" value="Preview">
+    <input type="submit"/>
+    </form>
+  </div>
+  <div>
+    <div class="preview-label">Preview</div>
+    <div id="closed-view-area" class="setup-preview"></div>
+  </div>
+</div>
+{% endblock %}
