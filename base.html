@@ -13,13 +13,11 @@
         {# TODO fix this hack:
            We need an institution url not a session_query #}
         {% if session_query %}
-          <a href="/institution?{{ session_query }}">
+          <a href="/institution?{{ session_query }}">{{ institution }} {{ session }} Selectives</a>
         {% else %}
-          <a href="/">
+          <a href="/">{{ institution }} {{ session }} Selectives</a>
         {% endif %}
-        {{ institution }} {{ session }} Selectives
-        </a></h1>
-      </td>
+      </h1></td>
       <!--This message will only display on certain admin pages that pass setup_status.-->
       {% if setup_status and (setup_status == 'DB_UPDATE_NEEDED') %}
       <td style="color:red">
