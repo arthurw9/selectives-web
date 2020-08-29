@@ -15,26 +15,23 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
 
-dayOrder = ['Mon A', 'Mon B', 'Tues A', 'Tues B',
-            'Thurs A', 'Thurs B', 'Fri A', 'Fri B']
-
 def daypartOrder(c):
   if 'instructor' in c:
-    return (dayOrder.index(c['schedule'][0]['daypart']),
+    return (c['dayorder'],
             c['name'],
             c['instructor'])
   else:
-    return (dayOrder.index(c['schedule'][0]['daypart']),
+    return (c['dayorder'],
             c['name'])
 
 def alphaOrder(c):
   if 'instructor' in c:
     return (c['name'],
-            dayOrder.index(c['schedule'][0]['daypart']),
+            c['dayorder'],
             c['instructor'])
   else:
     return (c['name'],
-            dayOrder.index(c['schedule'][0]['daypart']))
+            c['dayorder'])
 
 def buildRoster(institution, session, c, students):
   r = {}
@@ -116,11 +113,16 @@ class TakeAttendance(webapp2.RequestHandler):
     # TODO: How to save the current dropdown selection upon
     # screen refresh?
     classes = models.Classes.FetchJson(institution, session)
+    dayparts = models.Dayparts.FetchJson(institution, session)
+    dp_dict = {}
+    for dp in dayparts:
+      dp_dict[dp['name']] = str(dp['col'])+str(dp['row'])
     if not classes:
       classes = []
     my_classes = []
     other_classes = []
     for c in classes:
+      c['dayorder'] = dp_dict[c['schedule'][0]['daypart']]
       hasOwner = False
       if 'owners' in c:
         for owner in c['owners']:

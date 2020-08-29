@@ -14,44 +14,13 @@ function SaveToJSVar(rosters, jsrosters) {
   }
 }
 
-// Nice to have, displays attendance list based on the current day
-// and time. 2:29pm or later is block B, before that is block A.
-// Swap this function out for a more general one if we ever
-// support more than one school.
-function GetCurrentRoster(today) {
-  var searchString = "";
-  switch (today.getDay()) {
-    case 1:
-      searchString += "Mon";
-      break;
-    case 2:
-      searchString += "Tues";
-      break;
-    case 4:
-      searchString += "Thurs";
-      break;
-    case 5:
-      searchString += "Fri";
-      break;
-    default:
-  }
-  if (today.getHours() >= 14 && today.getMinutes() >= 29) {
-    searchString += " B";
-  } else {
-    searchString += " A";
-  }
-  for (var c_id in my_jsrosters) {
-    if (my_jsrosters[c_id]['daypart'].indexOf(searchString) !== -1) {
-      return c_id;
-    }
-  }
-  // Fell out of loop because no daypart match.
+function GetCurrentRoster() {
   // Return first class on 'my' list.
   {% for c in my_classes %}
     return {{ c['id'] }};
   {% endfor %}
 
-  // Again fell out, try first class on general list.
+  // If fell out, try first class on general list.
   {% for c in other_classes %}
     return {{ c['id'] }};
   {% endfor %}
@@ -61,7 +30,7 @@ function GetCurrentRoster(today) {
   return 0;
 }
 
-function SetupDropDown(today) {
+function SetupDropDown() {
   var class_dropdown = document.getElementById("classDropDown");
   {% for c in my_classes %}
     var opt = document.createElement("option");
@@ -90,7 +59,7 @@ function SetupDropDown(today) {
     class_dropdown.add(opt);
   {% endfor %}
 
-  var curr_id = GetCurrentRoster(today);
+  var curr_id = GetCurrentRoster();
   console.log(curr_id);
   class_dropdown.value = curr_id;
   BuildRosterTable(class_dropdown.value);
@@ -208,7 +177,7 @@ window.onload = function() {
   SaveToJSVar({{ other_rosters|safe }}, other_jsrosters);
   if (Object.keys(my_jsrosters).length > 0 ||
       Object.keys(other_jsrosters).length > 0) {
-    SetupDropDown(today);
+    SetupDropDown();
 
     var class_dropdown = document.getElementById("classDropDown");
     class_dropdown.onchange = function() {
