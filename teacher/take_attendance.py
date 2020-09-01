@@ -163,6 +163,7 @@ class TakeAttendance(webapp2.RequestHandler):
 #         'students': [list of student objects based on the emails]},
 # {cid2: ...}}
     template_values = {
+      'user_email' : auth.email,
       'institution' : institution,
       'session' : session,
       'message': message,
