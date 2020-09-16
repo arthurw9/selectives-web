@@ -187,18 +187,14 @@ class Rosters(webapp2.RequestHandler):
       roster_students = [getStudentInfo(student_get_dict, s) for s in class_roster['emails']]
       roster_students = sorted(roster_students)
       if (len(roster_students) > 0):
-        rosters += ',"' + roster_students[0][0] + '"'
-        rosters += ',"' + roster_students[0][1] + '"'
-        rosters += ',"' + roster_students[0][2] + '"'
-        rosters += ',"' + roster_students[0][3] + '"'
-        rosters += ',"' + roster_students[0][4] + '"\n'
-      else:
-        rosters += '\n'
+        for student_data_field in roster_students[0]:
+          rosters += ',"' + student_data_field + '"'
+      rosters += '\n'
       for s in roster_students[1:]:
         if s:
           rosters += '"","","","","","","' + s[0] + '"'
-          for data in s[1:]:
-            rosters += ',"' + data + '"'
+          for student_data_field in s[1:]:
+            rosters += ',"' + student_data_field + '"'
           rosters += '\n'
         else:
           logging.error("Student in roster_students is empty string!")
