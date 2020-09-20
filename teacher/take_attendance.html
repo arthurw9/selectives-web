@@ -2,160 +2,259 @@
 {% block session_body %}
 
 <script>
+// TODO
+// - Delete button, in case wrong date or class and needs to be deleted.
 
-var my_jsrosters = {};
-var other_jsrosters = {};
-// Save the python dictionaries passed via jinja into the above
-// javascript global variables so I can access the data
-// as a dictionary instead of string.
-function SaveToJSVar(rosters, jsrosters) {
-  for (var c_id in rosters) {
-    jsrosters[c_id] = rosters[c_id];
-  }
+// New student added will show up under every date, because there is no
+// way to differentiate between new student and student that just didn't
+// get counted present or absent.
+// Students who dropped the class are handled here - client side.
+// Withdrawn students (not on any list) are handled server side.
+
+// my_roster is a python dictionary passed here as a jinja string
+// For convenience, save as JavaScript dictionary, global to this script.
+const js_roster = {{ my_roster|safe }};
+
+function attendanceTaken() {
+  return 'submitted_by' in js_roster;
 }
 
-function GetCurrentRoster() {
-  // Return first class on 'my' list.
-  {% for c in my_classes %}
-    return {{ c['id'] }};
-  {% endfor %}
-
-  // If fell out, try first class on general list.
-  {% for c in other_classes %}
-    return {{ c['id'] }};
-  {% endfor %}
-
-  // If there are no classes, we shouldn't have entered this function.
-  console.log("Fatal error in GetCurrentRoster");
-  return 0;
+function zeroStudents() {
+  return (js_roster['students'].length === 0);
 }
 
-function SetupDropDown() {
-  var class_dropdown = document.getElementById("classDropDown");
+// https://stackoverflow.com/questions/679915/how-do-i-test-for-an-empty-javascript-object
+function isEmptyObject(js_roster) {
+  return (Object.keys(js_roster).length === 0 && js_roster.constructor === Object);
+}
+
+function fillDate() {
+  let date_dropdown = document.getElementById("dateInput");
+  {% if current_date %}
+    date_dropdown.value = "{{current_date}}";
+  {% else %}
+    let today = new Date(Date.now());
+    let todayISO = today.getFullYear().toString() + '-' +
+                   (today.getMonth()+1).toString().padStart(2, '0') + '-' +
+                   (today.getDate()).toString().padStart(2, '0');
+    date_dropdown.value = todayISO;
+  {% endif %}
+}
+
+function fillClassesDropDown() {
+  let class_dropdown = document.getElementById("classDropDown");
+  let opt = document.createElement("option");
+  opt.disabled = "disabled";
+  opt.selected = "selected";
+  opt.hidden = "hidden";
+  opt.text = "-- select a class --"
+  class_dropdown.add(opt);
+
   {% for c in my_classes %}
-    var opt = document.createElement("option");
-    var c_id = parseInt({{ c['id'] }});
+    opt = document.createElement("option");
+    let c_id = parseInt({{ c['id'] }});
     opt.value = c_id;
-    var dp_text = my_jsrosters[c_id]['daypart'];
-    opt.text = my_jsrosters[c_id]['name'] + " - " +
-               my_jsrosters[c_id]['instructor'] + " - " +
+    let dp_text = "{{c['daypart']}}";
+    opt.text = "{{c['name']}} - {{c['instructor']}} - " +
                dp_text;
     class_dropdown.add(opt);
   {% endfor %}
 
-  var opt = document.createElement("option");
+  opt = document.createElement("option");
   opt.disabled = "disabled";
   opt.text = "------------------";
   class_dropdown.add(opt);
 
   {% for c in other_classes %}
-    var opt = document.createElement("option");
-    var c_id = parseInt({{ c['id'] }});
+    opt = document.createElement("option");
+    c_id = parseInt({{ c['id'] }});
     opt.value = c_id;
-    var dp_text = other_jsrosters[c_id]['daypart'];
-    opt.text = other_jsrosters[c_id]['name'] + " - " +
-               other_jsrosters[c_id]['instructor'] + " - " +
+    dp_text = "{{c['daypart']}}";
+    opt.text = "{{c['name']}} - {{c['instructor']}} - " +
                dp_text;
     class_dropdown.add(opt);
   {% endfor %}
 
-  var curr_id = GetCurrentRoster();
-  console.log(curr_id);
-  class_dropdown.value = curr_id;
-  BuildRosterTable(class_dropdown.value);
+  {% if current_cid > 0 %}
+    class_dropdown.value = {{current_cid}};
+  {% endif %}
 }
 
-function BuildRosterTable(selected_class) {
-  var table = document.getElementById("student_table");
-  var tbody = document.getElementById("student_tbody");
+function buildRosterTable() {
+  let table = document.getElementById("roster_table")
+  let tbody = document.createElement("tbody");
 
-  if (table) {
-    // if a table already exists, replace child tbody
-    table.removeChild(tbody);
-    tbody = document.createElement("tbody");
-    tbody.id = "student_tbody";
-  } else {
-    table = document.createElement("table");
-    table.id = "student_table";
-    tbody = document.createElement("tbody");
-    tbody.id = "student_tbody";
-  }
+  js_roster['students'].forEach(function(student, i) {
+    let row = document.createElement("tr");
 
-  var row = document.createElement("tr");
-  var name_th = document.createElement("th");
-  var name_txt = document.createTextNode("Name");
-  var gr_th = document.createElement("th");
-  var gr_txt = document.createTextNode("Gr");
-  var hr_th = document.createElement("th");
-  var hr_txt = document.createTextNode("Hrm");
-  name_th.appendChild(name_txt);
-  row.appendChild(name_th);
-  gr_th.appendChild(gr_txt);
-  row.appendChild(gr_th);
-  hr_th.appendChild(hr_txt);
-  row.appendChild(hr_th);
-  tbody.appendChild(row);
-
-  if (selected_class in my_jsrosters) {
-    jsrosters = my_jsrosters;
-  } else {
-    jsrosters = other_jsrosters;
-  }
-  for (var i in jsrosters[selected_class]['students']) {
-    var row = document.createElement("tr");
-    var name_td = document.createElement("td");
-    var name_txt = document.createTextNode(
-                    jsrosters[selected_class]['students'][i]['first'] + " " +
-                    jsrosters[selected_class]['students'][i]['last']);
-    name_td.appendChild(name_txt);
+    let name_td = document.createElement("td");
+    name_td.appendChild(
+      document.createTextNode(student['first'] + " " + student['last']));
     row.appendChild(name_td);
-    var gr_td = document.createElement("td");
-    var gr_txt = document.createTextNode(jsrosters[selected_class]['students'][i]['current_grade']);
-    gr_td.appendChild(gr_txt);
+
+    let gr_td = document.createElement("td");
+    gr_td.appendChild(document.createTextNode(student['current_grade']));
     row.appendChild(gr_td);
-    var hr_td = document.createElement("td");
-    var hr_txt = document.createTextNode(jsrosters[selected_class]['students'][i]['current_homeroom']);
-    hr_td.appendChild(hr_txt);
+
+    let hr_td = document.createElement("td");
+    hr_td.appendChild(document.createTextNode(student['current_homeroom']));
     row.appendChild(hr_td);
 
-    var present_td = document.createElement("td");
-    var label_present = document.createElement("label");
-    var radio_present = document.createElement("input");
+    let present_td = document.createElement("td");
+    let label_present = document.createElement("label");
+    let radio_present = document.createElement("input");
     radio_present.type = "radio";
     radio_present.name = i;
     radio_present.id = "present" + i;
     radio_present.value = "present" + i;
-    radio_present.checked = true;
+    radio_present.className = "present";
     label_present.appendChild(radio_present);
     label_present.appendChild(document.createTextNode("present"));
     present_td.appendChild(label_present);
     row.appendChild(present_td);
 
-    var absent_td = document.createElement("td");
-    var label_absent = document.createElement("label");
-    var radio_absent = document.createElement("input");
+    let absent_td = document.createElement("td");
+    let label_absent = document.createElement("label");
+    let radio_absent = document.createElement("input");
     radio_absent.type = "radio";
     radio_absent.name = i;
     radio_absent.id = "absent" + i;
     radio_absent.value = "absent" + i;
+    radio_absent.className = "absent";
     label_absent.appendChild(radio_absent);
     label_absent.appendChild(document.createTextNode("absent"));
     absent_td.appendChild(label_absent);
     row.appendChild(absent_td);
 
     tbody.appendChild(row);
-  }
+  });
+
   table.appendChild(tbody);
-  document.getElementById("roster_table").appendChild(table);
+
+  if (attendanceTaken()) {
+    let taken_warning_div = document.getElementById("taken_warning")
+    taken_warning_div.appendChild(
+      document.createTextNode("Attendance taken by " +
+                              js_roster['submitted_by'] + " on " +
+                              js_roster['submitted_date']));
+    let taken_msg_div = document.getElementById("taken_msg")
+    taken_msg_div.appendChild(
+      document.createTextNode("Click Edit to modify. Click Submit to overwrite previous attendance."));
+
+    setAttendance();
+  }
+}
+
+function setAttendance() {
+  let dropped_present = [];
+  let dropped_absent = [];
+
+  js_roster['present'].forEach(function(present_student) {
+    let p_indx = js_roster['students'].findIndex(s => s['email'] === present_student['email']);
+    if (p_indx >= 0) {
+      let radio_btn = document.getElementById("present" + p_indx);
+      radio_btn.checked = true;
+    } else {
+      dropped_present.push(present_student['email']);
+    }
+  });
+
+  js_roster['absent'].forEach(function(absent_student) {
+    let a_indx = js_roster['students'].findIndex(s => s['email'] === absent_student['email']);
+    if (a_indx >= 0) {
+      let radio_btn = document.getElementById("absent" + a_indx);
+      radio_btn.checked = true;
+    } else {
+      dropped_absent.push(absent_student['email']);
+    }
+  });
+
+  let dropped = document.getElementById("dropped");
+  for (const student of dropped_present) {
+    dropped.innerHTML += "Also present but has since dropped: " + student;
+  }
+  for (const student of dropped_absent) {
+    dropped.innerHTML += "Also absent but has since dropped: " + student;
+  }
+}
+
+function disableRadioInput(val) {
+  let radio = document.getElementById('present_all');
+  radio.disabled = val;
+  radio = document.getElementById('absent_all');
+  radio.disabled = val;
+
+  let radios = document.getElementsByClassName('present');
+  for (let r of radios) {
+    r.disabled = val;
+  }
+  radios = document.getElementsByClassName('absent');
+  for (let r of radios) {
+    r.disabled = val;
+  }
+}
+
+function setNote() {
+  let note = document.getElementById('attend-note');
+  note.innerHTML = '<div><b>Optional note</b></div>';
+  let textarea = document.createElement('textarea');
+  textarea.id = 'attend-text';
+  textarea.style.width = '500px';
+  textarea.style.height = '100px';
+  if ('note' in js_roster) {
+    textarea.innerHTML = js_roster['note'];
+  }
+  note.appendChild(textarea);
+}
+
+function disableTextArea(val) {
+  let textarea = document.getElementById('attend-text');
+  if (textarea) {
+    textarea.disabled = val;
+  }
+}
+
+function disableInput() {
+  let submit_btn = document.getElementById("attend-submit");
+  let edit_btn = document.getElementById("attend-edit");
+  disableRadioInput(true);
+  disableTextArea(true);
+  submit_btn.disabled = true;
+  edit_btn.disabled = false;
+}
+
+function enableInput() {
+  let submit_btn = document.getElementById("attend-submit");
+  let edit_btn = document.getElementById("attend-edit");
+  disableRadioInput(false);
+  disableTextArea(false);
+  submit_btn.disabled = false;
+  edit_btn.disabled = true;
 }
 
 // https://stackoverflow.com/questions/133925/javascript-post-request-like-a-form-submit
-function post(params) {
-  var form = document.createElement("form");
+function sendPost(params) {
+  let form = document.createElement("form");
   form.setAttribute("method", "post");
-  for (var key in params) {
+  for (let key in params) {
     if (params.hasOwnProperty(key)) {
-      var hiddenField = document.createElement("input");
+      let hiddenField = document.createElement("input");
+      hiddenField.setAttribute("type", "hidden");
+      hiddenField.setAttribute("name", key);
+      hiddenField.setAttribute("value", params[key]);
+      form.appendChild(hiddenField);
+    }
+  }
+  document.body.appendChild(form);
+  form.submit();
+}
+
+function sendGet(params) {
+  let form = document.createElement("form");
+  form.setAttribute("method", "get");
+  for (let key in params) {
+    if (params.hasOwnProperty(key)) {
+      let hiddenField = document.createElement("input");
       hiddenField.setAttribute("type", "hidden");
       hiddenField.setAttribute("name", key);
       hiddenField.setAttribute("value", params[key]);
@@ -167,58 +266,98 @@ function post(params) {
 }
 
 window.onload = function() {
-  var today = new Date(Date.now());
-  var h = document.getElementById("myHeader");
-  h.innerText = "Attendance for " +
-                "{{teacher['first']}}" + " " + "{{teacher['last']}}" +
-                " - " + today.toDateString();
-
-  SaveToJSVar({{ my_rosters|safe }}, my_jsrosters);
-  SaveToJSVar({{ other_rosters|safe }}, other_jsrosters);
-  if (Object.keys(my_jsrosters).length > 0 ||
-      Object.keys(other_jsrosters).length > 0) {
-    SetupDropDown();
-
-    var class_dropdown = document.getElementById("classDropDown");
-    class_dropdown.onchange = function() {
-      BuildRosterTable(class_dropdown.value);
-    }
-  } else {
-    var txt = document.getElementById("instructions");
-    txt.innerText = "No classes to display, contact the selective team for help."
+  if ({{my_classes|length}} <= 0 && {{other_classes|length}} <= 0) {
+    let txt = document.getElementById("instructions");
+    txt.innerText = "No classes to display, please contact the selectives website administrator for help."
+    return;
   }
 
-  var submit_btn = document.getElementById("submit");
-  submit_btn.onclick = function() {
-    var class_dropdown = document.getElementById("classDropDown");
-    var c_id = class_dropdown.value;
-    var present_kids = [];
-    var absent_kids = [];
-    if (c_id in my_jsrosters) {
-      jsrosters = my_jsrosters;
+  let class_dropdown = document.getElementById("classDropDown");
+  let date_dropdown = document.getElementById("dateInput");
+  let edit_btn = document.getElementById("attend-edit");
+  let submit_btn = document.getElementById("attend-submit");
+  let present_radio = document.getElementById("present_all");
+  let absent_radio = document.getElementById("absent_all");
+
+  fillDate();
+  fillClassesDropDown();
+  if (! isEmptyObject(js_roster)) {
+    if (zeroStudents()) {
+      disableInput();
+      edit_btn.disabled = true;
     } else {
-      jsrosters = other_jsrosters;
+      buildRosterTable();
+      setNote();
+      if (attendanceTaken()) {
+        disableInput();
+      }
+      else {
+        enableInput();
+      }
     }
-    for (var i=0; i<jsrosters[c_id]['students'].length; i++) {
-      var rp_button = document.getElementById("present"+i);
+  }
+
+  class_dropdown.onchange = function() {
+    if (date_dropdown.value && class_dropdown.value) {
+      sendGet({"institution" : "{{institution}}",
+               "session" : "{{session}}",
+               "selected_date" : date_dropdown.value,
+               "selected_cid" : class_dropdown.value});
+    }
+  }
+
+  date_dropdown.onchange = function() {
+    if (date_dropdown.value && (class_dropdown.value !== "-- select a class --")) {
+      sendGet({"institution" : "{{institution}}",
+               "session" : "{{session}}",
+               "selected_date" : date_dropdown.value,
+               "selected_cid" : class_dropdown.value});
+    }
+  }
+
+  edit_btn.onclick = function() {
+    enableInput();
+  }
+
+  submit_btn.onclick = function() {
+    let c_id = class_dropdown.value;
+    let submitted_date = date_dropdown.value;
+    let present_kids = [];
+    let absent_kids = [];
+    for (let i=0; i<js_roster['students'].length; i++) {
+      let rp_button = document.getElementById("present"+i);
       if (rp_button.checked) {
-        //console.log(rp_button.value);
-        //console.log(jsrosters[c_id]['students'][i]['email']);
-        present_kids.push(jsrosters[c_id]['students'][i]['email']);
+        present_kids.push(js_roster['students'][i]['email']);
       }
-      var ra_button = document.getElementById("absent"+i);
+      let ra_button = document.getElementById("absent"+i);
       if (ra_button.checked) {
-        //console.log(r_button.value);
-        //console.log(jsrosters[c_id]['students'][i]['email']);
-        absent_kids.push(jsrosters[c_id]['students'][i]['email']);
+        absent_kids.push(js_roster['students'][i]['email']);
       }
     }
-    post({"institution":"{{institution}}",
-          "session":"{{session}}",
-          "today":today.toDateString(),
-          "c_id":c_id,
-          "present_kids":present_kids,
-          "absent_kids":absent_kids});
+    let note = document.getElementById("attend-text").value;
+    sendPost({"institution" : "{{institution}}",
+              "session" : "{{session}}",
+              "submitted_date" : submitted_date,
+              "c_id" : c_id,
+              "present_kids" : present_kids,
+              "absent_kids" : absent_kids,
+              "note" : note});
+  }
+
+  present_radio.onclick = function() {
+    if (! isEmptyObject(js_roster)) {
+      js_roster['students'].forEach(function(student, i) {
+        document.getElementById("present" + i).checked = true;
+      });
+    }
+  }
+
+  absent_radio.onclick = function() {
+    if (! isEmptyObject(js_roster)) {
+      js_roster['students'].forEach(function(student, i) {
+        document.getElementById("absent" + i).checked = true;
+      });
+    }
   }
 }
 </script>
@@ -226,12 +365,32 @@ window.onload = function() {
 {% if not teacher %}
 Teacher not found! This error should never happen. Please inform the selectives team. Thanks!
 {% else %}
-<h3 id="myHeader" style="margin-bottom:4px; margin-top:4px"></h3>
-<p id="instructions">Clicking submit more than once is OK; only the most recent submission will be saved.
+<h3 style="margin-bottom:4px; margin-top:4px">Attendance</h3>
+<p id="instructions">Classes that you teach or assist in are listed first; other classes are listed below the dashed line.<br>
+If you would like to be added as an instructor or assistant to a class, please email selectives@discoveryk8.org.
 </p>
-<select id="classDropDown"></select>
-
-<div id="roster_table"></div>
-<input type="button" id="submit" value="Submit">
+<div>
+  <div id="attend-date"><input type="date" id="dateInput" required></div>
+  <div id="attend-select"><select id="classDropDown"></select></div>
+  <div id="taken_warning" style="color:red; font-size: 120%; font-weight: bold; margin: 7px;"></div>
+  <div id="taken_msg" style="margin: 7px;"></div>
+  <div>
+    <table id="roster_table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Grade</th>
+          <th>Homeroom</th>
+          <th><label><input type="radio" id="present_all" name="r_all" value="present_all">All Present</label></th>
+          <th><label><input type="radio" id="absent_all" name="r_all" value="absent_all">All Absent</label></th>
+        </tr>
+      </thead>
+    </table>
+  </div>
+  <div id="dropped" style="margin: 4px 0px 4px 0px"></div>
+  <div id="attend-note"></div>
+  <div id="attend-buttons"><input type="button" id="attend-edit" value="Edit">
+  <input type="button" id="attend-submit" value="Submit"></div>
+</div>
 {% endif %}
 {% endblock %}

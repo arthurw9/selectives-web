@@ -231,7 +231,24 @@ textarea {
 #legend-lottery {
   background-color: pink;
 }
-
+#attend-date {
+  margin: 0px 0px 10px 0px;
+}
+#attend-select {
+  margin: 0px 0px 10px 0px;
+}
+#attend-buttons {
+  margin: 5px 0px 0px 0px;
+}
+#attend-edit {
+  width: 70px;
+  height: 26px;
+  margin: 0px 10px 0px 0px;
+}
+#attend-submit {
+  width: 70px;
+  height: 26px;
+}
 /***** student viewable pages *****/
 /* header, menu, common sections **/
 
