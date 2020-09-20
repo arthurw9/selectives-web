@@ -220,7 +220,7 @@ function disableInput() {
   disableRadioInput(true);
   disableTextArea(true);
   submit_btn.disabled = true;
-  edit_btn.disabled = false;
+  edit_btn.disabled = true;
 }
 
 function enableInput() {
@@ -281,17 +281,15 @@ window.onload = function() {
 
   fillDate();
   fillClassesDropDown();
+  disableInput();
   if (! isEmptyObject(js_roster)) {
-    if (zeroStudents()) {
-      disableInput();
-      edit_btn.disabled = true;
-    } else {
+    if (! zeroStudents()) {
       buildRosterTable();
       setNote();
       if (attendanceTaken()) {
-        disableInput();
-      }
-      else {
+        disableInput(); // call again for new elements
+        edit_btn.disabled = false;
+      } else {
         enableInput();
       }
     }
