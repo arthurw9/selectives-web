@@ -44,17 +44,14 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
 
-dayOrder = ['Mon A', 'Mon B', 'Tues A', 'Tues B',
-            'Thurs A', 'Thurs B', 'Fri A', 'Fri B']
-
 def listOrder(c):
   if 'instructor' in c:
     return (c['name'],
-            dayOrder.index(c['schedule'][0]['daypart']),
+            c['dayorder'],
             c['instructor'])
   else:
     return (c['name'],
-            dayOrder.index(c['schedule'][0]['daypart']))
+            c['dayorder'])
 
 class Taken(webapp2.RequestHandler):
   def get(self):
@@ -76,12 +73,17 @@ class Taken(webapp2.RequestHandler):
     selected_session = self.request.get("session-dd")
     selected_class = self.request.get("class-dd")
     session_list = models.Session.FetchAllSessions(institution)
-
     class_list = []
     if selected_session:
+      dayparts = models.Dayparts.FetchJson(institution, selected_session)
+      dp_dict = {} # used for ordering by col then row
+      for dp in dayparts:
+        dp_dict[dp['name']] = str(dp['col'])+str(dp['row'])
       class_list = models.Classes.FetchJson(institution, selected_session)
-    if class_list: # Unfortunately, models returns '' if none.
-      class_list.sort(key=listOrder)
+      for c in class_list:
+        c['dayorder'] = dp_dict[c['schedule'][0]['daypart']]
+      if class_list: # Unfortunately, models returns '' if none.
+        class_list.sort(key=listOrder)
     
     taken = []
     if selected_session and selected_class:

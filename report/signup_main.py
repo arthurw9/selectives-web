@@ -15,17 +15,14 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
 
-dayOrder = ['Mon A', 'Mon B', 'Tues A', 'Tues B',
-            'Thurs A', 'Thurs B', 'Fri A', 'Fri B']
-
 def listOrder(c):
   if 'instructor' in c:
     return (c['name'],
-            dayOrder.index(c['schedule'][0]['daypart']),
+            c['dayorder'],
             c['instructor'])
   else:
     return (c['name'],
-            dayOrder.index(c['schedule'][0]['daypart']))
+            c['dayorder'])
 
 def addStudentData(class_roster, students_by_email):
   class_roster['students'] = []
@@ -57,7 +54,14 @@ class SignupMain(webapp2.RequestHandler):
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
 
+    dayparts = models.Dayparts.FetchJson(institution, session)
+    dp_dict = {} # used for ordering by col then row
+    for dp in dayparts:
+      dp_dict[dp['name']] = str(dp['col'])+str(dp['row'])
+
     classes = models.Classes.FetchJson(institution, session)
+    for c in classes:
+      c['dayorder'] = dp_dict[c['schedule'][0]['daypart']]
     if classes:
       classes.sort(key=listOrder)
     students = models.Students.FetchJson(institution, session)
@@ -73,7 +77,6 @@ class SignupMain(webapp2.RequestHandler):
       class_roster['emails'].sort()
       addStudentData(class_roster, students_by_email)
       class_rosters[c['id']] = class_roster
-    logging.info(class_rosters)
     template_values = {
       'user_email' : auth.email,
       'institution' : institution,
