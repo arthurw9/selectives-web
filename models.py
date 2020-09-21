@@ -906,31 +906,58 @@ class Attendance(ndb.Model):
   jdata = ndb.JsonProperty()
 
   # 'c_id' is a class id.
+  # 'submitted_date' is the date attendance was taken.
   # 'jdata' is a dictionary:
-  # {date1: {'absent': [email1, email2, ...],
-  #          'present': [email1, email2, ...]},
-  #  date2: {'absent': [email1, email2, ...],
-  #          'present': [email1, email2, ...]},
-  #  ...}
+  #   { 'absent': [email1, email2, ...],
+  #     'present': [email1, email2, ...],
+  #     'submitted_by': email,
+  #     'note': string }
   @classmethod
-  def attendance_key(cls, institution, session, c_id):
+  def attendance_key(cls, institution, session, c_id, submitted_date):
     return ndb.Key("InstitutionKey", institution,
                    Session, session,
-                   'Attendance', c_id)
+                   "ClassId", c_id,
+                   Attendance, submitted_date)
 
   @classmethod
-  def FetchJson(cls, institution, session, c_id):
-    attendance = Attendance.attendance_key(institution, session, c_id).get()
+  def FetchJson(cls, institution, session, c_id, submitted_date):
+    attendance = Attendance.attendance_key(institution, session, c_id, submitted_date).get()
     if attendance:
       return attendance.jdata
     else:
       return {}
 
   @classmethod
-  def store(cls, institution, session_name, c_id, attendance_obj):
+  def store(cls, institution, session_name, c_id, submitted_date, attendance_obj):
     attendance = Attendance(jdata = attendance_obj)
-    attendance.key = Attendance.attendance_key(institution, session_name, c_id)
+    attendance.key = Attendance.attendance_key(institution, session_name, c_id, submitted_date)
     attendance.put()
+
+class Closed(ndb.Model):
+  data = ndb.TextProperty()
+
+  @classmethod
+  @timed
+  def closed_key(cls, institution, session):
+    return ndb.Key("InstitutionKey", institution,
+                   Session, session,
+                   Closed, "closed")
+
+  @classmethod
+  @timed
+  def Fetch(cls, institution, session):
+    closed = Closed.closed_key(institution, session).get()
+    if closed:
+      return closed.data
+    else:
+      return ''
+
+  @classmethod
+  @timed
+  def store(cls, institution, session_name, closed):
+    closed = Closed(data = closed)
+    closed.key = Closed.closed_key(institution, session_name)
+    closed.put()
 
 class Materials(ndb.Model):
   data = ndb.TextProperty()

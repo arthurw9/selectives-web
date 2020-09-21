@@ -15,6 +15,14 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
 
+def listOrder(c):
+  if 'instructor' in c:
+    return (c['name'],
+            c['dayorder'],
+            c['instructor'])
+  else:
+    return (c['name'],
+            c['dayorder'])
 
 class AutoRegister(webapp2.RequestHandler):
 
@@ -117,6 +125,34 @@ class AutoRegister(webapp2.RequestHandler):
           "  applies_to:",
           "    - current_grade: 8"])
 
+    classes = models.Classes.FetchJson(institution, session)
+    dayparts = models.Dayparts.FetchJson(institution, session)
+    dp_dict = {} # used for ordering by col then row
+    for dp in dayparts:
+      dp_dict[dp['name']] = str(dp['col'])+str(dp['row'])
+    for c in classes:
+      r = models.ClassRoster.FetchEntity(institution, session, c['id'])
+      c['num_enrolled'] = len(r['emails'])
+      c['dayorder'] = dp_dict[c['schedule'][0]['daypart']]
+    if classes:
+      classes.sort(key=listOrder)
+
+    students = models.Students.FetchJson(institution, session)
+    grades_dict = {}
+    for s in students:
+      grade = s['current_grade']
+      grades_dict[grade] = grades_dict.get(grade, 0) + 1
+      grades_dict['All'] = grades_dict.get('All', 0) + 1
+    grades = []
+    for g in sorted(grades_dict, reverse=True):
+      grades.append([g, grades_dict[g]])
+
+    groups = models.GroupsStudents.FetchJson(institution, session)
+    if groups:
+      groups.sort(key=lambda g: g['group_name'])
+    for g in groups:
+      g['num_students'] = len(g['emails'])
+
     template_values = {
       'user_email' : auth.email,
       'institution' : institution,
@@ -125,6 +161,9 @@ class AutoRegister(webapp2.RequestHandler):
       'setup_status': setup_status,
       'session_query': session_query,
       'auto_register': auto_register,
+      'classes': classes,
+      'grades': grades,
+      'groups': groups,
       'self': self.request.uri,
     }
     template = JINJA_ENVIRONMENT.get_template('auto_register.html')

@@ -53,7 +53,7 @@ def AutoRegister():
         "    - current_grade: OPTIONAL\n"
         "      email: OPTIONAL\n"
         "      group: OPTIONAL\n"
-        "  id: AUTO_INC\n"
+        "  id: OPTIONAL\n"
         "  exempt:\n"
         "    - OPTIONAL\n")
 

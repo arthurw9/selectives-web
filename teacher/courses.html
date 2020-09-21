@@ -1,4 +1,8 @@
-{% extends 'menu_teacher.html' %}
+{% if user_type == 'Admin' %}
+  {% extends 'menu.html' %}
+{% elif user_type == 'Teacher' %}
+  {% extends 'menu_teacher.html' %}
+{% endif %}
 {% block session_body %}
 
 <script>
@@ -138,8 +142,8 @@ classes_by_id = {
 {% endif %}
 
 // TODO: move these color choices into the style sheet
-var NOT_SELECTED_COLOR = '#8cafd1';
-var ZERO_SPOTS_COLOR = '#eeeeff'; // light-grey
+var NOT_SELECTED_COLOR = '#cccfe1';
+var ZERO_SPOTS_COLOR = '#eeeecc'; // tan
 var LOTTERY_COLOR = 'pink';
 
 function setMouseOverBackground(element, class_id) {
@@ -200,6 +204,26 @@ function createSidePanel(class_id) {
 
 <div id="view-registration">
 <div id="register-panel">
+  <div id="legend">
+    <div id="legend1">
+      <div id="legend-remaining">
+        <span>max</span>
+        <span>remaining</span>
+        Class Name
+      </div>
+      <div id="legend-zero">
+        <span>max</span>
+        <span>0</span>
+        Class Full
+      </div>
+      <div id="legend-lottery">
+        <span>max</span>
+        <span>-5</span>
+        Lottery Class
+      </div>
+    </div>
+    <div id="legend2">Hover your mouse over a class to view class details and roster.</div>
+  </div>
 <form method=post>
 <input type=hidden name="institution" value="{{ institution }}" />
 <input type=hidden name="session" value="{{ session }}" />

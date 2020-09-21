@@ -20,11 +20,17 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 def getStudentInfo(student_dict, email):
   if email in student_dict:
     s = student_dict[email]
-    return [s['first'],
-            s['last'],
-            str(s['current_grade']),
-            str(s['current_homeroom']),
-            str(s['edtechid'])]
+    if 'edtechid' in s:
+      return [s['first'],
+              s['last'],
+              str(s['current_grade']),
+              str(s['current_homeroom']),
+              str(s['edtechid'])]
+    else:
+      return [s['first'],
+              s['last'],
+              str(s['current_grade']),
+              str(s['current_homeroom'])]
   else:
     logging.error('getStudentInfo: ' + email + ' not found in dictionary')
     return ''
@@ -181,20 +187,15 @@ class Rosters(webapp2.RequestHandler):
       roster_students = [getStudentInfo(student_get_dict, s) for s in class_roster['emails']]
       roster_students = sorted(roster_students)
       if (len(roster_students) > 0):
-        rosters += ',"' + roster_students[0][0] + '"'
-        rosters += ',"' + roster_students[0][1] + '"'
-        rosters += ',"' + roster_students[0][2] + '"'
-        rosters += ',"' + roster_students[0][3] + '"'
-        rosters += ',"' + roster_students[0][4] + '"\n'
-      else:
-        rosters += '\n'
+        for student_data_field in roster_students[0]:
+          rosters += ',"' + student_data_field + '"'
+      rosters += '\n'
       for s in roster_students[1:]:
         if s:
           rosters += '"","","","","","","' + s[0] + '"'
-          rosters += ',"' + s[1] + '"'
-          rosters += ',"' + s[2] + '"'
-          rosters += ',"' + s[3] + '"'
-          rosters += ',"' + s[4] + '"\n'
+          for student_data_field in s[1:]:
+            rosters += ',"' + student_data_field + '"'
+          rosters += '\n'
         else:
           logging.error("Student in roster_students is empty string!")
 

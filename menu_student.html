@@ -1,11 +1,38 @@
 {% extends 'base_user.html' %}
 {% block body %}
-<div id="nav-user-div">
-  <ul id="nav-user">
-    <li><a href="/preregistration?{{ session_query }}">Step 1 - Materials</a></li>
-    <li><a href="/schedule?{{ session_query }}">Step 2 - Register</a></li>
-    <li><a href="/postregistration?{{ session_query }}">Step 3 - Final Schedule</a></li>
+<script>
+function makeActive() {
+}
+window.onload = function() {
+  let elems = document.querySelectorAll('li');
+  for (let i=0; i<elems.length; i++) {
+    elems[i].classList.remove('menu-user-active');
+  }
+  let active = null;
+  if (window.location.pathname == '/preregistration') {
+    active = document.getElementById('menu-user-prereg');
+  }
+  if (window.location.pathname == '/schedule') {
+    active = document.getElementById('menu-user-sched');
+  }
+  if (window.location.pathname == '/postregistration') {
+    active = document.getElementById('menu-user-postreg');
+  }
+  if (active != null) {
+    active.classList.add('menu-user-active');
+  } else {
+    console.log("menu_student.html pathname error");
+  }
+};
+</script>
+<div id="menu-user-wrapper">
+  <div id="menu-user-spacer-left"></div>
+  <ul id="menu-user">
+    <li id='menu-user-prereg'><a href="/preregistration?{{ session_query }}">Step 1 - Materials</a></li>
+    <li id='menu-user-sched'><a href="/schedule?{{ session_query }}">Step 2 - Register</a></li>
+    <li id='menu-user-postreg'><a href="/postregistration?{{ session_query }}">Step 3 - Final Schedule</a></li>
   </ul>
+  <div id="menu-user-spacer-right"></div>
 </div>
 <div id="main-user">
   {% block session_body %} {% endblock %}

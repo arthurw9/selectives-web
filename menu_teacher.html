@@ -3,8 +3,19 @@
 
 <div id="main-teacher">
   <div id="menu-teacher">
+    <h3>Attendance</h3>
+    <ul>
+      <li><a href="/teacher/take_attendance?{{ session_query }}">Take Attendance</a>
+      </li>
+      <li>View Attendance
+        <!--<a href="/teacher/attendance_today?{{ session_query }}">Today's Attendance</a>-->
+      </li>
+    </ul>
     <h3>Reports</h3>
     <ul>
+      <li>
+        <a href="/report/student_emails?{{ session_query }}">Student Emails</a>
+      </li>
       <li>
         <a href="/teacher/courses?{{ session_query }}">Registration Status</a>
       </li>
@@ -22,18 +33,6 @@
       </li>
       <li><a href="/report/label?{{ session_query }}">Attendance Labels</a></li>
   <!--<li><a href="/teacher/all_rosters?{{ session_query }}">Rosters</a></li>-->
-    </ul>
-    <h3>Attendance</h3>
-    <ul>
-      <li>Take Attendance
-        <!--<a href="/teacher/take_attendance?{{ session_query }}">Take Attendance</a>-->
-      </li>
-      <li>Today's Attendance
-        <!--<a href="/teacher/attendance_today?{{ session_query }}">Today's Attendance</a>-->
-      </li>
-      <li>Historical Attendance
-        <!--<a href="/teacher/attendance_historical?{{ session_query }}">Historical Attendance</a>-->
-      </li>
     </ul>
   </div>
   <div id="view-teacher">

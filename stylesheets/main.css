@@ -1,4 +1,41 @@
+body {
+  overflow-x: hidden; /* needed to extend student menu border to edges */
+}
+
+.button {
+  font-size: 14px;
+  font-family: 'Oxygen', sans-serif;
+  text-decoration: none;
+  background-color: #c6979d;
+  color: #000000;
+  padding: 5px 12px 5px 12px;
+  margin: 3px;
+  border-radius: 0.2em;
+}
+
+.button:hover {
+  background-color: #d6979d;
+}
+
 /***** admin viewable pages *****/
+/* menu-main and menu-teacher (below) should match */
+#menu-main h3 {
+  margin: 18px 0px 3px 0px;
+}
+#menu-main ul {
+  margin: 0px 0px 25px 0px;
+  padding: 1px 0px 0px 10px;
+  list-style-type: none;
+}
+#menu-main li {
+  padding: 0px 0px 2px 0px;
+}
+#menu-main a {
+  text-decoration: none;
+}
+#menu-main a:hover {
+  text-decoration: underline;
+}
 
 textarea {
   width:60%;
@@ -46,6 +83,18 @@ textarea {
   padding: 5px;
 }
 
+.autoreg-select{
+  margin-bottom: 8px;
+  margin-left: 35px;
+}
+.autoreg-grid {
+  display: grid;
+  grid-template-columns: 330px 300px;
+}
+.autoreg-button, #autoreg-textbox, #autoreg-warning {
+  margin-left: 35px;
+}
+
 .config-group {
   padding-bottom: 12px;
   padding-left: 5px;
@@ -77,6 +126,29 @@ textarea {
   font-size:18px;
 }
 
+#email-main {
+  display: flex;
+  flex-direction: column;
+  background-color: #F4F4F4;
+  padding: 10px 0px 10px 15px;
+  margin: 0px 0px 40px 0px;
+  width: 780px;
+}
+#email-heading {
+  display: flex;
+  flex-direction: row;
+}
+.email-item {
+  padding: 3px 20px 3px 20px;
+}
+.email-list {
+  min-width: 750px;
+  height: 100px;
+  resize: none;
+}
+.email-copybtn {
+  height: 26px;
+}
 
 /***** teacher viewable pages *****/
 #main-teacher {
@@ -84,17 +156,31 @@ textarea {
   display: flex;
   background-color: #fff;
 }
+
+/* menu-teacher should match menu-main above */
 #menu-teacher {
   vertical-align: 'top';
   border-right: 1px solid black;
   padding: 5px;
 }
-#menu-teacher ul {
-  margin: 0px;
-}
 #menu-teacher h3 {
-  margin-bottom: 0px;
+  margin: 18px 0px 3px 0px;
 }
+#menu-teacher ul {
+  margin: 0px 0px 25px 0px;
+  padding: 1px 0px 0px 10px;
+  list-style-type: none;
+}
+#menu-teacher li {
+  padding: 0px 0px 2px 0px;
+}
+#menu-teacher a {
+  text-decoration: none;
+}
+#menu-teacher a:hover {
+  text-decoration: underline;
+}
+
 #view-teacher {
   padding: 8px 8px;
   display: flex;
@@ -105,62 +191,177 @@ textarea {
   display: flex;
   flex-direction: row;
 }
-
+#legend {
+  display: flex;
+  flex-direction: column;
+  border-radius:0.2em;
+  border: 2px solid #666666;
+  margin: 10px 160px 10px 160px;
+  background-color: #f0f0f0;
+}
+#legend1 {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  margin: 6px 0px 2px 0px;
+}
+#legend1 div {
+  margin: 0px 10px 0px 10px;
+  max-width:200px;
+  border: 1px solid #666666;
+  border-radius:0.2em;
+  padding:0.15em 0.3em;
+  line-height:1.0;
+}
+#legend2 {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  margin: 2px 0px 2px 0px;
+}
+#legend span {
+  background-color: lightgreen;
+}
+#legend-remaining {
+  background-color: #cccfe1;
+}
+#legend-zero {
+  background-color: #eeeecc;
+}
+#legend-lottery {
+  background-color: pink;
+}
+#attend-date {
+  margin: 0px 0px 10px 0px;
+}
+#attend-select {
+  margin: 0px 0px 10px 0px;
+}
+#attend-buttons {
+  margin: 5px 0px 0px 0px;
+}
+#attend-edit {
+  width: 70px;
+  height: 26px;
+  margin: 0px 10px 0px 0px;
+}
+#attend-submit {
+  width: 70px;
+  height: 26px;
+}
 /***** student viewable pages *****/
 /* header, menu, common sections **/
 
 #body-user {
   margin: 0px;
+  display: flex;
+  flex-direction: column;
 }
 #header-user {
   display: flex;
+  justify-content: space-evenly;
   align-items: center;
   font-family: 'Oxygen', sans-serif;
-  padding: 0px 8px;
   background-color: #f1f1f1;
+  min-width: 900px;
+  min-height: 70px;
 }
-#logo-user, #login-user {
-  padding: 5px;
+#logo-user {
+  padding: 5px 5px 0px 5px;
+  display: flex;
+  align-items: center;
 }
 #title-user {
-  font-size: 30px;
+  font-size: 20px;
   font-weight: bold;
-  margin-right: auto;
+  padding: 5px;
 }
-
-#nav-user-div {
-  padding: 8px 8px 16px 8px;
-  background-color: #f1f1f1;
+#session-user {
+  font-size: 24px;
+  font-weight: bold;
 }
-#nav-user {
+#login-user {
   display: flex;
-  justify-content: space-around;
+  flex-direction: column;
+  align-items: flex-end;
+}
+#email-user {
+  font-size: 15px;
+  margin: 0px 0px 5px 0px;
+}
+#menu-user-wrapper {
+  background-color: #f1f1f1;
+  display: flex;
+  justify-content: center;
+  min-width: 800px;
+  font-family: 'Oxygen', sans-serif;
+}
+#menu-user-spacer-left {
+  width: 10%;
+  border-bottom: 2px solid #888888;
+  /* trick to extend bottom border of spacer to edge */
+  padding-left: 1000px;
+  margin-left: -1000px;
+}
+#menu-user-spacer-right {
+  width: 10%;
+  border-bottom: 2px solid #888888;
+  /* trick to extend bottom border of spacer to edge */
+  padding-right: 1000px;
+  margin-right: -1000px;
+}
+#menu-user {
+  display: flex;
   max-width: 780px;
   list-style-type: none;
   padding: 0px;
   margin: 0px;
 }
-#nav-user li a:hover, #nav-user li:active a{
+#menu-user a {
+  text-decoration: none;
+}
+/* Need ".menu-user .menu-user-active" to
+   increase specificity otherwise this will be lower
+   than ".menu-user li" and border-bottom is not erased. */
+#menu-user .menu-user-active {
+  background-color: #ffffff;
+  border-top: 2px solid #888888;
+  border-left: 2px solid #888888;
+  border-right: 2px solid #888888;
+  border-bottom: #ffffff;
+  border-radius: 5px 5px 0px 0px;
+}
+#menu-user li {
+  padding: 8px 50px 16px 50px;
+  border-bottom: 2px solid #888888;
+}
+#menu-user li a:hover {
   color: #f4511e;
 }
 
 #welcome-user {
   display: block;
-  padding: 0px 8px;
+  padding: 0px 16px;
+  margin: auto;
 }
 #main-user {
-  padding: 0px 8px;
+  padding: 0px 12px;
   display: flex;
   background-color: #fff;
+  justify-content: center;
 }
 .profile-user {
   display: flex;
   align-items: baseline;
+  padding-left: 16px;
 }
 .profile-data {
   margin-right: 1em;
   margin-block-start: .5em;
   margin-block-end: .2em;
+}
+.profile-print {
+  margin-left: auto;
 }
 
 

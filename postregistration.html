@@ -1,18 +1,112 @@
 {% extends 'menu_student.html' %}
 {% block session_body %}
 
+<script>
+var HOVER_COLOR = '#5544ff'; // purple
+var NOT_SELECTED_COLOR = '#000000'; // black
+
+//classes_by_id = {
+//59 : { 'name' : 'Circuit Training', 'dayparts': ['Fri B',]},
+//58 : { 'name' : 'Yearbook', 'dayparts': ['Thurs B',]},
+//50 : { 'name' : 'Dance', 'dayparts': ['Thurs B','Fri B',]},
+//};
+{% if html_desc == 'htmlNo' %}
+classes_by_id = {
+{% for class_id in classes_by_id -%}
+  {{ class_id }} : {
+    'name' : '{{ classes_by_id[class_id]['name'] }}',
+    'dayparts': [{% for s in classes_by_id[class_id]['schedule'] -%}
+                    '{{ s['daypart'] }}',
+                 {%- endfor %}],
+    'max_enrollment': '{{ classes_by_id[class_id]['max_enrollment'] }}',
+    'instructor': '{{ classes_by_id[class_id]['instructor'] }}',
+    'fitness': '{{ classes_by_id[class_id]['fitness'] }}',
+    'donation': '{{ classes_by_id[class_id]['donation']}}'
+  },
+{%- endfor %}
+};
+{% else %}
+classes_by_id = {
+{% for class_id in classes_by_id -%}
+  {{ class_id }} : {
+    'name' : '{{ classes_by_id[class_id]['name'] }}',
+    'dayparts': [{% for s in classes_by_id[class_id]['schedule'] -%}
+                    '{{ s['daypart'] }}',
+                 {%- endfor %}],
+    'max_enrollment': '{{ classes_by_id[class_id]['max_enrollment']}}',
+    'instructor': '{{ classes_by_id[class_id]['instructor']}}',
+    'description': '{{ classes_by_id[class_id]['description']|safe}}',
+    'fitness': '{{ classes_by_id[class_id]['fitness'] }}',
+    'donation': '{{ classes_by_id[class_id]['donation']}}'
+  },
+{%- endfor %}
+};
+{% endif %}
+
+function setMouseOverBackground(element, class_id) {
+  createSidePanel(class_id);
+  element.style.color = HOVER_COLOR;
+}
+
+function setMouseOutBackground(element) {
+  element.style.color = NOT_SELECTED_COLOR;
+}
+
+function createSidePanel(class_id) {
+  var infoDiv = document.getElementById('info-panel');
+  infoDiv.innerHTML = "";
+
+  var name_div = document.createElement('div');
+  name_div.innerHTML = classes_by_id[class_id]['name'];
+  infoDiv.appendChild(name_div);
+
+  if (classes_by_id[class_id]['instructor']) {
+    var instructor_div = document.createElement('div');
+    instructor_div.innerHTML = 'Instructor: ' + classes_by_id[class_id]['instructor'];
+    infoDiv.appendChild(instructor_div);
+  }
+
+  var sched_div = document.createElement('div');
+  var dp_list = classes_by_id[class_id]['dayparts']
+  sched_div.innerHTML = dp_list.join(', ');
+  infoDiv.appendChild(sched_div);
+
+  var max_div = document.createElement('div');
+  max_div.innerHTML = 'Maximum: ' + classes_by_id[class_id]['max_enrollment'];
+  infoDiv.appendChild(max_div);
+
+  if (classes_by_id[class_id]['donation']) {
+    var donate_div = document.createElement('div');
+    donate_div.innerHTML = 'Donation: ' + classes_by_id[class_id]['donation'];
+    infoDiv.appendChild(donate_div);
+  }
+
+  var fitness_div = document.createElement('div');
+  if (classes_by_id[class_id]['fitness']) {
+    fitness_div.innerHTML = 'Physical activity: Yes';
+  } else {
+    fitness_div.innerHTML = 'Physical activity: No';
+  }
+  infoDiv.appendChild(fitness_div);
+
+  if (classes_by_id[class_id]['description']) {
+    var descr_div = document.createElement('div');
+    descr_div.setAttribute("id", "description");
+    descr_div.innerHTML = classes_by_id[class_id]['description'];
+    infoDiv.appendChild(descr_div);
+  }
+}
+</script>
+
 {% if not student %}
 Student not found! This error should never happen. Please inform the selectives team. Thanks!
 {% else %}
 <div>
 <div class="profile-user">
-  <h3 class="profile-data">Final Schedule</h3>
-  <h3 class="profile-data"><a href="print_schedule?{{ session_query }}&student={{student['email'] }}">Printer Friendly Page</a></h3>
-</div>
-<div class="profile-user">
   <h2 class="profile-data">{{ student['first'] + ' ' + student['last'] }}</h2>
   <h3 class="profile-data">Homeroom: {{ student['current_homeroom'] }}</h3>
   <h3 class="profile-data">Grade: {{ student['current_grade'] }}</h3>
+  <h3 class="profile-print"><a href="print_schedule?{{ session_query }}&student={{student['email'] }}">Printer Friendly Page</a></h3>
 </div>
 
 <table>
@@ -33,7 +127,9 @@ Student not found! This error should never happen. Please inform the selectives 
     {% for daypart in row %}
       <td class="schedPostRegItem">
       {% if schedule_by_daypart[daypart] %}
-        {{ schedule_by_daypart[daypart]['name'] }}<br>
+        <div onmouseover="setMouseOverBackground(this, '{{ schedule_by_daypart[daypart]['id'] }}');"
+             onmouseout="setMouseOutBackground(this);">
+        <b>{{ schedule_by_daypart[daypart]['name'] }}</b><br>
         {% for s in schedule_by_daypart[daypart]['schedule'] %}
           {% if s['daypart'] == daypart %}
           {{ s['location'] }}<br>
@@ -41,6 +137,7 @@ Student not found! This error should never happen. Please inform the selectives 
         {% endfor %}
         {{ schedule_by_daypart[daypart]['instructor'] }}<br>
         {{ schedule_by_daypart[daypart]['donation'] }}<br>
+        </div>
       {% endif %}
       </td>
     {% endfor %}
@@ -48,5 +145,6 @@ Student not found! This error should never happen. Please inform the selectives 
   {% endfor %}
 </table>
 </div>
+<div id="info-panel"></div>
 {% endif %}
 {% endblock %}

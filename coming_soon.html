@@ -2,12 +2,8 @@
 {% block session_body %}
 
 <div>
-<h2>Page Not Available</h2>
-During registration, if you are seeing this message, either:<br>
-<ul>
-  <li>You won the lottery and your schedule is complete. Go to <i>Step 3 - Final Schedule</i> to confirm that your final schedule is complete.</li>
-  <li>Something is wrong with the setup preventing you from accessing this page. Please talk to your teacher and contact the selectives team right away.</li>
-</ul>
-Otherwise, registration has not started or has already ended. Please double check the dates listed in <i>Step 1 - Materials</i> or ask your teacher for the open registration dates for your grade level.
+{{ closed_msg|safe }}
+<input type=hidden name="institution" value="{{ institution }}" />
+<input type=hidden name="session" value="{{ session }}" />
 </div>
 {% endblock %}

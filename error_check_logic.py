@@ -43,6 +43,7 @@ import logging
 import yayv
 import schemas
 from datetime import date
+import time
 
 try:
   from google.appengine.ext import ndb
@@ -116,14 +117,14 @@ class Checker(object):
       error_check_detail: String containing detailed results for all tests
     Sets datastore to value of error_check_status
     """
-    dayparts = models.Dayparts.Fetch(self.institution, self.session)
-    classes = models.Classes.Fetch(self.institution, self.session)
-    students = models.Students.Fetch(self.institution, self.session)
-    #requirements = models.Requirements.Fetch(self.institution, self.session)
-    #class_groups = models.GroupsClasses.Fetch(self.institution, self.session)
-    student_groups = models.GroupsStudents.Fetch(self.institution, self.session)
-    auto_register = models.AutoRegister.Fetch(self.institution, self.session)
-    serving_rules = models.ServingRules.Fetch(self.institution, self.session)
+    dayparts = models.Dayparts.FetchJson(self.institution, self.session)
+    classes = models.Classes.FetchJson(self.institution, self.session)
+    students = models.Students.FetchJson(self.institution, self.session)
+    #requirements = models.Requirements.FetchJson(self.institution, self.session)
+    #class_groups = models.GroupsClasses.FetchJson(self.institution, self.session)
+    student_groups = models.GroupsStudents.FetchJson(self.institution, self.session)
+    auto_register = models.AutoRegister.FetchJson(self.institution, self.session)
+    serving_rules = models.ServingRules.FetchJson(self.institution, self.session)
 
     isValid_dayparts = schemas.Dayparts().IsValid(dayparts)
     isValid_classes = schemas.Classes().IsValid(classes)
@@ -142,15 +143,6 @@ class Checker(object):
     self._Validate(student_groups, isValid_student_groups, 'Student Groups')
     self._Validate(auto_register, isValid_auto_register, 'Auto Register')
     self._Validate(serving_rules, isValid_serving_rules, "Serving Rules")
-
-    dayparts = models.Dayparts.FetchJson(self.institution, self.session)
-    classes = models.Classes.FetchJson(self.institution, self.session)
-    students = models.Students.FetchJson(self.institution, self.session)
-    #requirements = models.Requirements.FetchJson(self.institution, self.session)
-    #class_groups = models.GroupsClasses.FetchJson(self.institution, self.session)
-    student_groups = models.GroupsStudents.FetchJson(self.institution, self.session)
-    auto_register = models.AutoRegister.FetchJson(self.institution, self.session)
-    serving_rules = models.ServingRules.FetchJson(self.institution, self.session)
     
     self._CheckClassDayparts(dayparts, isValid_dayparts,
                              classes, isValid_classes)
@@ -183,15 +175,15 @@ class Checker(object):
     
     return self.error_check_status, self.error_check_detail
 
-  def _Validate(self, yaml_str, isValid_schema, name):
+  def _Validate(self, yaml_obj, isValid_schema, name):
     self.error_check_detail += '\nValidate %s: ' % name
-    if not yaml_str:
+    if not yaml_obj:
       self.error_check_status = 'FAIL'
-      self.error_check_detail += 'yaml string not found, check your Setup.'
+      self.error_check_detail += 'yaml not found, check your Setup.'
       return
     if not isValid_schema:
       self.error_check_status = 'FAIL'
-      self.error_check_detail += 'invalid yaml string, check your Setup.'
+      self.error_check_detail += 'invalid yaml, check your Setup.'
       return
     self.error_check_detail += 'OK'
     return

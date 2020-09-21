@@ -1,0 +1,73 @@
+{% if user_type == 'Admin' %}
+  {% extends 'menu.html' %}
+{% elif user_type == 'Teacher' %}
+  {% extends 'menu_teacher.html' %}
+{% endif %}
+{% block session_body %}
+
+<script>
+window.onload = function() {
+  let listeners = [];
+  {% for c in classes %}
+    var copyBtn = document.getElementById("copybtn{{c['id']}}");
+    copyBtn.addEventListener("click", function(event) {
+      var emailList = document.getElementById("emails{{c['id']}}");
+      emailList.select();
+      document.execCommand("copy");
+    });
+    listeners.push(copyBtn);
+  {% endfor %}
+
+  let copyAll = document.getElementById("copyall");
+  copyAll.addEventListener("click", function(event) {
+    // Each item separated by semicolon, each row separated by \n
+    let csv_data = "Name; Instructor; Time\n";
+    {% for c in classes %}
+      csv_data += "{{c['name']}}; {{c['instructor']}};";
+      {% for s in c['schedule'] %}
+        csv_data += "{{s['daypart']}}";
+        csv_data += "{{', ' if not loop.last else ''}}";
+      {% endfor %}
+      csv_data += ";";
+      {% for email in rosters[c['id']]['emails'] %}
+        csv_data += "{{email}}";
+        csv_data += "{{';' if not loop.last else ''}}";
+      {% endfor %}
+      csv_data += "\n";
+    {% endfor %}
+    // Download .csv file
+    let hiddenLink = document.createElement("a");
+    hiddenLink.href = "data:text/csv;charset=utf-8," + encodeURI(csv_data);
+    hiddenLink.target = "_blank";
+    hiddenLink.download = "selective_emails.csv";
+    document.body.appendChild(hiddenLink);
+    hiddenLink.click();
+    document.body.removeChild(hiddenLink);
+  });
+};
+</script>
+
+<h3>Student Emails</h3>
+{% if classes %}
+<h4>Use this page to get email addresses of registered students.</h4>
+<p>To download emails for all classes to .csv file, click here: <button id="copyall">Download All</button><br>When opening the .csv file, choose semicolon ";" as the separator.</p>
+<p>To copy emails for a single class, find the class you want below and click Copy Emails to save to your clipboard.<br>Then go to your email and paste (Ctrl-v) the email addresses into the 'To' field of your message.</p>
+{% for c in classes %}
+<div id="email-main">
+  <div id="email-heading">
+    <button class="email-copybtn" title="copy to clipboard" id="copybtn{{c['id']}}">Copy Emails</button>
+    <div class="email-item">{{ c['name'] }}</div>
+    <div class="email-item">{{ c['instructor'] }}</div>
+    <div class="email-item">{% for s in c['schedule'] %}
+        {{ s['daypart'] }}{{', ' if not loop.last }}
+      {% endfor %}</div>
+  </div>
+  <textarea class="email-list" id="emails{{c['id']}}" readonly>{% for email in rosters[c['id']]['emails'] %}{{email}}{{';' if not loop.last }}{% endfor %}</textarea>
+</div>
+{% endfor %}
+{% else %}
+Classes have not been created yet for this session.<br>
+Please contact the selectives website administrator for help.<br><br>
+Administrators: use Setup >> Classes to add classes.
+{% endif %}
+{% endblock %}
