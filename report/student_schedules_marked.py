@@ -18,17 +18,14 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
 
-dayOrder = ['Mon A', 'Mon B', 'Tues A', 'Tues B',
-            'Thurs A', 'Thurs B', 'Fri A', 'Fri B']
-
 def listOrder(c):
   if 'instructor' in c:
     return (c['name'],
-            dayOrder.index(c['schedule'][0]['daypart']),
+            c['dayorder'],
             c['instructor'])
   else:
     return (c['name'],
-            dayOrder.index(c['schedule'][0]['daypart']))
+            c['dayorder'])
 
 class StudentSchedulesMarked(webapp2.RequestHandler):
 
@@ -62,12 +59,18 @@ class StudentSchedulesMarked(webapp2.RequestHandler):
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
 
+    dayparts = models.Dayparts.FetchJson(institution, session)
+    dp_dict = {} # used for ordering by col then row
+    for dp in dayparts:
+      dp_dict[dp['name']] = str(dp['col'])+str(dp['row'])
+
     classes_by_id = {}
     classes = models.Classes.FetchJson(institution, session)
-    if classes:
-      classes.sort(key=listOrder)
     for c in classes:
       classes_by_id[c['id']] = c
+      c['dayorder'] = dp_dict[c['schedule'][0]['daypart']]
+    if classes:
+      classes.sort(key=listOrder)
     students = models.Students.FetchJson(institution, session)
     last_modified_overall = datetime.datetime(2000,1,1)
     last_modified_overall_str = ''
