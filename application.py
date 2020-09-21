@@ -37,8 +37,6 @@ import error_registration
 import teachers
 import teacher.courses
 import teacher.take_attendance
-import teacher.all_rosters
-import teacher.teacher_roster
 import teacher.attendance_today
 import teacher.attendance_historical
 import class_waitlist
@@ -90,8 +88,6 @@ application = webapp2.WSGIApplication([
   ('/teachers', teachers.Teachers),
   ('/teacher/courses', teacher.courses.Courses),
   ('/teacher/take_attendance', teacher.take_attendance.TakeAttendance),
-  ('/teacher/all_rosters', teacher.all_rosters.AllRosters),
-  ('/teacher/teacher_roster', teacher.teacher_roster.TeacherRoster),
   ('/teacher/attendance_today', teacher.attendance_today.AttendanceToday),
   ('/teacher/attendance_historical', teacher.attendance_historical.AttendanceHistorical),
   ('/class_waitlist', class_waitlist.ClassWaitlist),
