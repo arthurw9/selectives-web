@@ -90,6 +90,7 @@ class Courses(webapp2.RequestHandler):
 
     template_values = {
       'user_type' : user_type,
+      'user_email' : auth.email,
       'institution' : institution,
       'session' : session,
       'message': message,

@@ -205,7 +205,7 @@ window.onload = function() {
         {% else %}
           classInfo.location = '{{c['schedule'] | join(' / ', attribute='location')}}';
         {% endif %}
-        classInfo.instructor = '{{ c['instructor'] }}';
+        classInfo.instructor = "{{ c['instructor'] | safe}}";
         classInfo.enrolled = String(student_list.length - intExtraLines);
         classInfo.max_enrollment = '{{ c['max_enrollment'] }}';
 

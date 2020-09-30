@@ -185,13 +185,13 @@ function createSidePanel(class_id) {
     infoDiv.appendChild(donate_div);
   }
 
-  var fitness_div = document.createElement('div');
-  if (classes_by_id[class_id]['fitness']) {
-    fitness_div.innerHTML = 'Physical activity: Yes';
-  } else {
-    fitness_div.innerHTML = 'Physical activity: No';
-  }
-  infoDiv.appendChild(fitness_div);
+  //var fitness_div = document.createElement('div');
+  //if (classes_by_id[class_id]['fitness']) {
+  //  fitness_div.innerHTML = 'PE Alternative: Yes';
+  //} else {
+  //  fitness_div.innerHTML = 'PE Alternative: No';
+  //}
+  //infoDiv.appendChild(fitness_div);
 
   if (classes_by_id[class_id]['description']) {
     var descr_div = document.createElement('div');

@@ -55,7 +55,7 @@ function fillClassesDropDown() {
     let c_id = parseInt({{ c['id'] }});
     opt.value = c_id;
     let dp_text = "{{c['daypart']}}";
-    opt.text = "{{c['name']}} - {{c['instructor']}} - " +
+    opt.text = "{{c['name']}} - {{c['instructor'] | safe}} - " +
                dp_text;
     class_dropdown.add(opt);
   {% endfor %}
@@ -70,7 +70,7 @@ function fillClassesDropDown() {
     c_id = parseInt({{ c['id'] }});
     opt.value = c_id;
     dp_text = "{{c['daypart']}}";
-    opt.text = "{{c['name']}} - {{c['instructor']}} - " +
+    opt.text = "{{c['name'] | safe}} - {{c['instructor'] | safe}} - " +
                dp_text;
     class_dropdown.add(opt);
   {% endfor %}

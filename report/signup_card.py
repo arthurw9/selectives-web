@@ -14,12 +14,9 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
 
-dayOrder = ['Mon A', 'Tues A', 'Thurs A', 'Fri A',
-            'Mon B', 'Tues B', 'Thurs B', 'Fri B']
-
 def listOrder(c):
-  return (dayOrder.index(c['schedule'][0]['daypart']),
-         c['name'])
+  return (c['dayorder'],
+          c['name'])
 
 class SignupCard(webapp2.RequestHandler):
 
@@ -46,18 +43,27 @@ class SignupCard(webapp2.RequestHandler):
     session_query = urllib.urlencode({'institution': institution,
                                       'session': session})
 
+    dayparts = models.Dayparts.FetchJson(institution, session)
+    dp_dict = {} # used for ordering by col then row
+    for dp in dayparts:
+      dp_dict[dp['name']] = str(dp['col'])+str(dp['row'])
+
     classes = models.Classes.FetchJson(institution, session)
-    if classes:
-      classes = [c for c in classes if 'exclude_from_catalog' not in c
-                                    or c['name'] == 'PE']
-      classes.sort(key=listOrder)
+    classes_to_print = []
+    for c in classes:
+      c['dayorder'] = dp_dict[c['schedule'][0]['daypart']]
+      if 'exclude_from_catalog' not in c or c['name'] == 'PE':
+        classes_to_print.append(c)
+    if classes_to_print:
+      classes_to_print.sort(key=listOrder)
+
     template_values = {
       'user_email' : auth.email,
       'institution' : institution,
       'session' : session,
       'message': message,
       'session_query': session_query,
-      'classes': classes,
+      'classes': classes_to_print,
     }
     template = JINJA_ENVIRONMENT.get_template('report/signup_card.html')
     self.response.write(template.render(template_values))
